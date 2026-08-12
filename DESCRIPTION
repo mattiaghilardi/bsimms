@@ -16,9 +16,12 @@ Description: Fits Bayesian stable isotope mixing models (SIMMs) via
 License: MIT + file LICENSE
 URL: https://github.com/mattiaghilardi/bsimms
 BugReports: https://github.com/mattiaghilardi/bsimms/issues
-Depends: 
+Depends:
     R (>= 4.1.0)
-Suggests: 
+Imports:
+    cli,
+    rlang
+Suggests:
     knitr,
     markdown,
     testthat (>= 3.0.0)
