@@ -20,7 +20,9 @@ Depends:
     R (>= 4.1.0)
 Imports:
     cli,
-    rlang
+    reformulas,
+    rlang,
+    stats
 Suggests:
     knitr,
     markdown,
