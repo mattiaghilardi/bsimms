@@ -1,0 +1,31 @@
+Package: bsimms
+Title: Bayesian Stable Isotope Mixing Models using 'Stan'
+Version: 0.0.0.9000
+Authors@R: 
+    person("Mattia", "Ghilardi", , "mattia.ghilardi91@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9592-7252"))
+Description: Fits Bayesian stable isotope mixing models (SIMMs) via
+    'Stan', estimating the proportional contribution of two or more
+    sources to a mixture from tracer data such as stable isotopes.
+    Supports the core modelling options of the 'JAGS'-based package
+    'MixSIAR' (raw or summarised source and trophic discrimination factor
+    data, concentration dependence, flexible error structures), and
+    extends them by allowing source proportions to depend on an arbitrary
+    'lme4'-style fixed- and random-effects formula of mixture-level
+    covariates.
+License: MIT + file LICENSE
+URL: https://github.com/mattiaghilardi/bsimms
+BugReports: https://github.com/mattiaghilardi/bsimms/issues
+Depends: 
+    R (>= 4.1.0)
+Suggests: 
+    knitr,
+    markdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
+Additional_repositories: https://stan-dev.r-universe.dev/
+Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
