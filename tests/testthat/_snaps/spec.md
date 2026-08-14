@@ -7,6 +7,47 @@
       Error in `build_bsimms_spec()`:
       ! `error_structure` must be one of "process_residual", "process_only", or "residual_only", not "banana".
 
+# a single mixture data point requires process_only error
+
+    Code
+      build_bsimms_spec(formula = ~1, mixture_data = one_mix, source_data = source_data,
+        tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual")
+    Condition
+      Error:
+      ! With a single mixture data point, `error_structure` must be "process_only".
+      i Residual (observation-level) error cannot be estimated without replication; only process error, propagated from the source/TDF data, is identifiable here.
+
+---
+
+    Code
+      build_bsimms_spec(formula = ~1, mixture_data = one_mix, source_data = source_data,
+        tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "residual_only")
+    Condition
+      Error:
+      ! With a single mixture data point, `error_structure` must be "process_only".
+      i Residual (observation-level) error cannot be estimated without replication; only process error, propagated from the source/TDF data, is identifiable here.
+
+# one mixture sample per level of a single fixed factor requires process_only
+
+    Code
+      build_bsimms_spec(formula = ~Individual, mixture_data = ind_mix, source_data = source_data,
+        tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual")
+    Condition
+      Error:
+      ! With one mixture data point per level of Individual, `error_structure` must be "process_only".
+      i Residual (observation-level) error cannot be separated from the effect of Individual when every level has exactly one mixture sample.
+
+# one mixture sample per level of a random-effect group requires process_only
+
+    Code
+      build_bsimms_spec(formula = ~ 1 + (1 | Individual), mixture_data = ind_mix,
+      source_data = source_data, tdf_data = tdf_data, isotope_names = c("d13C",
+        "d15N"), error_structure = "process_residual")
+    Condition
+      Error:
+      ! With one mixture data point per level of Individual, `error_structure` must be "process_only".
+      i Residual (observation-level) error cannot be separated from the group-level variance of Individual when every level has exactly one mixture sample.
+
 # build_bsimms_spec errors on invalid isotope_names
 
     Code

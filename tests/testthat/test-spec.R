@@ -83,6 +83,66 @@ test_that("error_structure defaults to process_residual and is validated", {
   )
 })
 
+test_that("a single mixture data point requires process_only error", {
+  one_mix <- mixture_data[1, ]
+  spec <- build_bsimms_spec(
+    formula = ~1, mixture_data = one_mix, source_data = source_data,
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+  )
+  expect_equal(spec$N, 1)
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~1, mixture_data = one_mix, source_data = source_data,
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+    )
+  )
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~1, mixture_data = one_mix, source_data = source_data,
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "residual_only"
+    )
+  )
+})
+
+test_that("one mixture sample per level of a single fixed factor requires process_only", {
+  ind_mix <- data.frame(
+    d13C = c(-20, -21, -19),
+    d15N = c(10, 11, 9),
+    Individual = factor(c("A", "B", "C"))
+  )
+  spec <- build_bsimms_spec(
+    formula = ~Individual, mixture_data = ind_mix, source_data = source_data,
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+  )
+  expect_equal(spec$N, 3)
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~Individual, mixture_data = ind_mix, source_data = source_data,
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+    )
+  )
+})
+
+test_that("one mixture sample per level of a random-effect group requires process_only", {
+  ind_mix <- mixture_data
+  ind_mix$Individual <- factor(paste0("I", seq_len(nrow(ind_mix))))
+  spec <- build_bsimms_spec(
+    formula = ~ 1 + (1 | Individual), mixture_data = ind_mix, source_data = source_data,
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+  )
+  expect_equal(spec$N, 6)
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~ 1 + (1 | Individual), mixture_data = ind_mix, source_data = source_data,
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+    )
+  )
+})
+
 test_that("build_bsimms_spec errors on invalid isotope_names", {
   expect_snapshot(
     error = TRUE,

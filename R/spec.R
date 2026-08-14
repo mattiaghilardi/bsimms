@@ -50,6 +50,15 @@ build_bsimms_spec <- function(formula,
 
   y <- prep_mixture_isotopes(mixture_data, isotope_names)
   N <- nrow(y)
+  if (N == 1 && error_structure != "process_only") {
+    cli::cli_abort(
+      c(
+        "With a single mixture data point, {.arg error_structure} must be {.val process_only}.",
+        "i" = "Residual (observation-level) error cannot be estimated without replication; only process error, propagated from the source/TDF data, is identifiable here."
+      ),
+      call = NULL
+    )
+  }
 
   source <- prep_iso_table(source_data, isotope_names, source_names,
                             means_sds = source_means_sds, source_col = source_col, label = "source")
@@ -76,6 +85,26 @@ build_bsimms_spec <- function(formula,
         call = NULL
       )
     }
+    if (error_structure != "process_only" && length(re$group_levels) == N) {
+      cli::cli_abort(
+        c(
+          "With one mixture data point per level of {.field {re$group}}, {.arg error_structure} must be {.val process_only}.",
+          "i" = "Residual (observation-level) error cannot be separated from the group-level variance of {.field {re$group}} when every level has exactly one mixture sample."
+        ),
+        call = NULL
+      )
+    }
+  }
+  if (error_structure != "process_only" && ncol(pf$fixed_frame) == 1 &&
+      is.factor(pf$fixed_frame[[1]]) && nlevels(pf$fixed_frame[[1]]) == N) {
+    fe_name <- names(pf$fixed_frame)
+    cli::cli_abort(
+      c(
+        "With one mixture data point per level of {.field {fe_name}}, {.arg error_structure} must be {.val process_only}.",
+        "i" = "Residual (observation-level) error cannot be separated from the effect of {.field {fe_name}} when every level has exactly one mixture sample."
+      ),
+      call = NULL
+    )
   }
 
   # The population-level baseline is `p_global` (Dirichlet-distributed
