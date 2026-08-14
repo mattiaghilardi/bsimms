@@ -1,0 +1,304 @@
+#' Specify a prior for one or more `bsimms` parameters
+#'
+#' Build up a full prior specification by combining several calls with
+#' [c()], e.g.
+#' `c(bsimms_prior("normal(0, 2)", class = "b"),
+#'    bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter"))`.
+#' More specific rows (a given `coef`/`resp`/`group`) take precedence over
+#' the general class default when the Stan code is generated.
+#'
+#' @param prior Character string: a valid Stan distribution expression,
+#'   e.g. `"normal(0, 1)"`, `"student_t(3, 0, 2.5)"`, `"lkj_corr_cholesky(2)"`,
+#'   or, for `class = "p_global"`, a single positive number (a Dirichlet
+#'   concentration, e.g. `"1"`).
+#' @param class One of `"b"` (fixed-effect slopes; the population-level
+#'   baseline is not a `"b"` coefficient but `"p_global"`, see below),
+#'   `"p_global"` (Dirichlet concentration for one source's share of the
+#'   global/population-average proportions — MixSIAR's `p_global`), `"sd"`
+#'   (group-level standard deviations), `"cor"` (group-level correlations,
+#'   LKJ prior on the Cholesky factor), `"sigma"` (residual / observation
+#'   error, only used for `error_structure` `"residual_only"`),
+#'   `"resid_prop"` (MixSIAR's `resid.prop`: a multiplicative factor scaling
+#'   the propagated source/TDF process variance, only used for
+#'   `error_structure` `"process_residual"`), `"source_mean"`,
+#'   `"source_sd"`, `"tdf_mean"`, `"tdf_sd"` (only used when the
+#'   corresponding data are supplied raw rather than as means/SDs),
+#'   `"source_cor"` (LKJ prior on the Cholesky factor of
+#'   each source's isotope correlation matrix; only used when source data
+#'   are raw and there are 2+ isotopes), `"resid_cor"` (LKJ prior on the
+#'   Cholesky factor of the shared residual-error correlation matrix; only
+#'   used for `error_structure` `"residual_only"` with 2+ isotopes).
+#' @param coef Optional: restrict to one fixed-effect coefficient name, as
+#'   it appears in the model formula's expanded design matrix (e.g.
+#'   `"SexM"` for a factor `Sex`, or `"SexM:RegionB"` for an interaction).
+#'   Only used with `class = "b"`.
+#' @param resp Optional: restrict to one isotope (response) name. Used with
+#'   `class` `"sigma"`, `"resid_prop"`, `"source_mean"`, `"source_sd"`,
+#'   `"tdf_mean"` or `"tdf_sd"`.
+#' @param group Optional: restrict a `"sd"`/`"cor"` prior to one group-level
+#'   term (the right-hand side of a `(... | group)` term, as written in the
+#'   formula), or restrict a `"p_global"`/`"source_mean"`/`"source_sd"`/
+#'   `"tdf_mean"`/`"tdf_sd"`/`"source_cor"` prior to one source (as named
+#'   in `source_data`/`tdf_data`), so that source and trophic discrimination
+#'   factor priors can be made source-specific as well as isotope-specific.
+#'   Left unset (`""`), a `"source_mean"`/`"source_sd"`/`"tdf_mean"`/
+#'   `"tdf_sd"`/`"source_cor"` prior applies to every source
+#'   (and, except for `"source_cor"`, every isotope).
+#' @return A one-row `data.frame` of class `bsimms_prior`.
+#' @export
+#' @examples
+#' bsimms_prior("normal(0, 2)", class = "b")
+#' bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter")
+#' bsimms_prior("student_t(3, 0, 1)", class = "sd", group = "Region")
+#' bsimms_prior("normal(3.4, 0.3)", class = "tdf_mean", resp = "d15N", group = "Beaver")
+#' bsimms_prior("student_t(3, 0, 0.5)", class = "source_sd", resp = "d13C", group = "Beaver")
+#' bsimms_prior("2", class = "p_global", group = "Beaver")
+#' bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
+#' bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")
+bsimms_prior <- function(prior, class = "b", coef = "", resp = "", group = "") {
+  class <- rlang::arg_match0(class, c(
+    "b", "p_global", "sd", "cor", "sigma", "resid_prop",
+    "source_mean", "source_sd", "tdf_mean", "tdf_sd", "source_cor", "resid_cor"
+  ))
+  if (!rlang::is_string(prior)) {
+    cli::cli_abort(
+      "{.arg prior} must be a single character string of Stan code, e.g. {.code \"normal(0, 1)\"}.",
+      call = NULL
+    )
+  }
+  out <- data.frame(
+    prior = prior, class = class, coef = coef, resp = resp, group = group,
+    stringsAsFactors = FALSE
+  )
+  class(out) <- c("bsimms_prior", "data.frame")
+  out
+}
+
+#' @export
+c.bsimms_prior <- function(...) {
+  out <- do.call(rbind, lapply(list(...), as.data.frame))
+  class(out) <- c("bsimms_prior", "data.frame")
+  out
+}
+
+#' Print a `bsimms_prior` specification
+#'
+#' Prints as a table with columns `prior`, `class`, `coef`, `resp` and
+#' `group` (blank where unset).
+#'
+#' @param x A `bsimms_prior` object (as returned by [bsimms_prior()] or
+#'   [bsimms_get_prior()]).
+#' @param ... Unused.
+#' @return `x`, invisibly.
+#' @export
+print.bsimms_prior <- function(x, ...) {
+  print.data.frame(as.data.frame(x), row.names = FALSE, quote = FALSE)
+  invisible(x)
+}
+
+#' Build the table of default priors for a model, as returned by
+#' [bsimms_get_prior()]: one class-level row per parameter class the model
+#' actually has (given `spec`'s dimensions, `error_structure`, and whether
+#' source/TDF data are raw or summarised), plus one `group`-specific row per
+#' source (`"p_global"`) and one `resp`-specific row per isotope
+#' (`"sigma"`/`"resid_prop"`/`"source_mean"`/`"source_sd"`/`"tdf_mean"`/
+#' `"tdf_sd"`, where applicable), each pre-filled with a weakly informative
+#' default. Where a natural data scale exists
+#' (`sigma`/`source_mean`/`source_sd`/`tdf_mean`/`tdf_sd`), the default is
+#' scaled using the sample median/MAD (median absolute deviation) of the
+#' relevant data: median and MAD are used instead of the mean and SD
+#' because they are robust to outliers and skew, which isotope data are
+#' prone to.
+#'
+#' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
+#' @return A `bsimms_prior` data frame (see [bsimms_prior()]).
+#' @noRd
+default_bsimms_prior <- function(spec) {
+  rows <- list()
+  add <- function(prior, class, coef = "", resp = "", group = "") {
+    rows[[length(rows) + 1]] <<- bsimms_prior(prior, class, coef, resp, group)
+  }
+
+  add("normal(0, 1)", "b")
+
+  for (s in spec$source_names) add("1", "p_global", group = s)
+
+  if (length(spec$re_terms) > 0) {
+    add("student_t(3, 0, 1)", "sd")
+    add("lkj_corr_cholesky(1)", "cor")
+  }
+
+  if (spec$error_structure == "residual_only") {
+    y_mad <- apply(spec$y, 2, stats::mad)
+    y_mad[!is.finite(y_mad) | y_mad <= 0] <- 1
+    add(sprintf("student_t(3, 0, %.6g)", max(y_mad)), "sigma")
+    for (j in seq_along(spec$isotope_names)) {
+      add(sprintf("student_t(3, 0, %.6g)", y_mad[j]), "sigma", resp = spec$isotope_names[j])
+    }
+    if (spec$J > 1) {
+      add("lkj_corr_cholesky(1)", "resid_cor")
+    }
+  }
+
+  if (spec$error_structure == "process_residual") {
+    add("uniform(0, 20)", "resid_prop")
+    for (j in seq_along(spec$isotope_names)) {
+      add("uniform(0, 20)", "resid_prop", resp = spec$isotope_names[j])
+    }
+  }
+
+  if (spec$source$mode == "raw") {
+    Y <- spec$source$Y
+    for (j in seq_along(spec$isotope_names)) {
+      m <- stats::median(Y[, j]); s <- max(stats::mad(Y[, j]), 1e-3)
+      add(sprintf("normal(%.6g, %.6g)", m, 10 * s), "source_mean", resp = spec$isotope_names[j])
+      add(sprintf("student_t(3, 0, %.6g)", s), "source_sd", resp = spec$isotope_names[j])
+    }
+    if (spec$J > 1) {
+      add("lkj_corr_cholesky(1)", "source_cor")
+      for (k in seq_along(spec$source_names)) {
+        add("lkj_corr_cholesky(1)", "source_cor", group = spec$source_names[k])
+      }
+    }
+  }
+  if (spec$tdf$mode == "raw") {
+    Y <- spec$tdf$Y
+    for (j in seq_along(spec$isotope_names)) {
+      m <- stats::median(Y[, j]); s <- max(stats::mad(Y[, j]), 1e-3)
+      add(sprintf("normal(%.6g, %.6g)", m, 10 * s), "tdf_mean", resp = spec$isotope_names[j])
+      add(sprintf("student_t(3, 0, %.6g)", s), "tdf_sd", resp = spec$isotope_names[j])
+    }
+  }
+
+  do.call(c, rows)
+}
+
+#' Merge a user-supplied prior specification into the model's default
+#' priors: rows matching an existing `(class, coef, resp, group)`
+#' combination overwrite that row's `prior` string in place, and rows with
+#' no match are appended (allowing new, more specific overrides, e.g. a
+#' `resp`-specific row when only a class-level default exists).
+#'
+#' @param default A `bsimms_prior` data frame (as returned by
+#'   `default_bsimms_prior()`).
+#' @param user `NULL`, or a `bsimms_prior` data frame of user overrides (as
+#'   returned by [bsimms_prior()], optionally combined with [c()]).
+#' @return A `bsimms_prior` data frame: `default` unchanged if `user` is
+#'   `NULL`, otherwise `default` with `user`'s rows merged in.
+#' @noRd
+merge_bsimms_prior <- function(default, user) {
+  if (is.null(user)) return(default)
+  if (!inherits(user, "bsimms_prior")) {
+    cli::cli_abort(
+      "{.arg prior} must be built with {.fn bsimms_prior} (optionally combined with {.fn c}).",
+      call = NULL
+    )
+  }
+  out <- default
+  for (i in seq_len(nrow(user))) {
+    match_row <- which(
+      out$class == user$class[i] & out$coef == user$coef[i] &
+        out$resp == user$resp[i] & out$group == user$group[i]
+    )
+    if (length(match_row) == 1) {
+      out$prior[match_row] <- user$prior[i]
+    } else {
+      out <- rbind(out, user[i, ])
+    }
+  }
+  class(out) <- c("bsimms_prior", "data.frame")
+  out
+}
+
+#' Look up the Stan prior expression to use for one parameter, from a
+#' (merged) prior table. Falls back from most to least specific: tries
+#' every combination of `(coef, resp, group)` as given down to the fully
+#' unrestricted class-level default, in decreasing order of how many of
+#' the three are used; ties within a specificity level are broken by
+#' taking the last matching row (so a later `merge_bsimms_prior()`
+#' override always wins over an earlier one at the same specificity).
+#'
+#' @param prior_df A `bsimms_prior` data frame (typically the merged
+#'   default + user table).
+#' @param class One of `bsimms_prior()`'s `class` values.
+#' @param coef,resp,group Optional `coef`/`resp`/`group` to match, as in
+#'   [bsimms_prior()]. `""` (default) matches the class-level default.
+#' @return A single character string: the matching Stan prior expression.
+#' @noRd
+select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
+  sub <- prior_df[prior_df$class == class, , drop = FALSE]
+  if (nrow(sub) == 0) {
+    cli::cli_abort(
+      "No prior available for class {.val {class}}; this should not happen \u2014 please report a bug.",
+      call = NULL
+    )
+  }
+  pick <- function(co, rs, gr) {
+    hit <- which(sub$coef == co & sub$resp == rs & sub$group == gr)
+    if (length(hit) >= 1) utils::tail(sub$prior[hit], 1) else NA_character_
+  }
+  candidates <- list(
+    pick(coef, resp, group),
+    pick(coef, resp, ""), pick(coef, "", group), pick("", resp, group),
+    pick(coef, "", ""), pick("", resp, ""), pick("", "", group),
+    pick("", "", "")
+  )
+  candidates <- candidates[!vapply(candidates, is.na, logical(1))]
+  if (length(candidates) == 0) {
+    cli::cli_abort(
+      "No matching prior found for class {.val {class}}, coef {.val {coef}}, resp {.val {resp}}, group {.val {group}}.",
+      call = NULL
+    )
+  }
+  candidates[[1]]
+}
+
+#' Default priors for a `bsimms` model
+#'
+#' Builds the model specification (design matrices, source/TDF data layout)
+#' without generating or fitting the Stan model, and returns the table of
+#' default priors that would be used. Edit
+#' rows of the result and pass to the `prior` argument of `make_stancode()`,
+#' `make_standata()` or `bsimm()` to override.
+#'
+#' @param formula A one-sided `lme4`-style formula for the source
+#'   proportions, e.g. `~ Sex + Season + (1 + Season | Region)`. All
+#'   variables referenced must be columns of `mixture_data`.
+#' @param mixture_data Data frame of mixture observations: one row per
+#'   individual (or per sample), with a column for each entry of
+#'   `isotope_names`, plus any covariate/grouping columns used in `formula`.
+#' @param source_data Source isotope data. If `source_means_sds = FALSE`
+#'   (default), long format with one row per raw sample and columns
+#'   `source_col`, `isotope_names`. If `source_means_sds = TRUE`, one row
+#'   per source with columns `source_col`, `<isotope>_mean`, `<isotope>_sd`
+#'   for every isotope.
+#' @param tdf_data Trophic discrimination factor (diet-tissue discrimination)
+#'   data, same layout convention as `source_data`, controlled by
+#'   `tdf_means_sds`.
+#' @param isotope_names Character vector of isotope column names shared by
+#'   `mixture_data`, `source_data` and `tdf_data`, e.g. `c("d13C", "d15N")`.
+#' @param source_means_sds Logical; is `source_data` supplied as means/SDs
+#'   (`TRUE`) or raw replicate samples (`FALSE`, default)?
+#' @param tdf_means_sds Logical; is `tdf_data` supplied as means/SDs
+#'   (`TRUE`, default) or raw replicate samples (`FALSE`)?
+#' @param conc_dep Logical; enable elemental concentration dependence
+#'   (default `FALSE`)? See `prep_conc_dep()`.
+#' @param error_structure One of `"process_residual"` (default), `"process_only"`,
+#'   or `"residual_only"`; see `build_bsimms_spec()`.
+#' @param source_col Name of the source-identifier column shared by
+#'   `source_data` and `tdf_data`. Default `"Source"`.
+#' @return A `bsimms_prior` data frame.
+#' @export
+bsimms_get_prior <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
+                              source_means_sds = FALSE, tdf_means_sds = TRUE,
+                              conc_dep = FALSE,
+                              error_structure = c("process_residual", "process_only", "residual_only"),
+                              source_col = "Source") {
+  spec <- build_bsimms_spec(
+    formula = formula, mixture_data = mixture_data,
+    source_data = source_data, tdf_data = tdf_data, isotope_names = isotope_names,
+    source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
+    conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
+  )
+  default_bsimms_prior(spec)
+}

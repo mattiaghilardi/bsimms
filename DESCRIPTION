@@ -22,7 +22,8 @@ Imports:
     cli,
     reformulas,
     rlang,
-    stats
+    stats,
+    utils
 Suggests:
     knitr,
     markdown,
