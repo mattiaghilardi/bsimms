@@ -25,6 +25,7 @@ Imports:
     stats,
     utils
 Suggests:
+    cmdstanr,
     knitr,
     markdown,
     testthat (>= 3.0.0)

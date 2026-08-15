@@ -261,34 +261,29 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
 #' rows of the result and pass to the `prior` argument of `make_stancode()`,
 #' `make_standata()` or `bsimm()` to override.
 #'
-#' @param formula A one-sided `lme4`-style formula for the source
-#'   proportions, e.g. `~ Sex + Season + (1 + Season | Region)`. All
-#'   variables referenced must be columns of `mixture_data`.
-#' @param mixture_data Data frame of mixture observations: one row per
-#'   individual (or per sample), with a column for each entry of
-#'   `isotope_names`, plus any covariate/grouping columns used in `formula`.
-#' @param source_data Source isotope data. If `source_means_sds = FALSE`
-#'   (default), long format with one row per raw sample and columns
-#'   `source_col`, `isotope_names`. If `source_means_sds = TRUE`, one row
-#'   per source with columns `source_col`, `<isotope>_mean`, `<isotope>_sd`
-#'   for every isotope.
-#' @param tdf_data Trophic discrimination factor (diet-tissue discrimination)
-#'   data, same layout convention as `source_data`, controlled by
-#'   `tdf_means_sds`.
-#' @param isotope_names Character vector of isotope column names shared by
-#'   `mixture_data`, `source_data` and `tdf_data`, e.g. `c("d13C", "d15N")`.
-#' @param source_means_sds Logical; is `source_data` supplied as means/SDs
-#'   (`TRUE`) or raw replicate samples (`FALSE`, default)?
-#' @param tdf_means_sds Logical; is `tdf_data` supplied as means/SDs
-#'   (`TRUE`, default) or raw replicate samples (`FALSE`)?
-#' @param conc_dep Logical; enable elemental concentration dependence
-#'   (default `FALSE`)? See `prep_conc_dep()`.
-#' @param error_structure One of `"process_residual"` (default), `"process_only"`,
-#'   or `"residual_only"`; see `build_bsimms_spec()`.
-#' @param source_col Name of the source-identifier column shared by
-#'   `source_data` and `tdf_data`. Default `"Source"`.
+#' @inheritParams make_stancode
 #' @return A `bsimms_prior` data frame.
 #' @export
+#' @examples
+#' mixture_data <- data.frame(
+#'   d13C = c(-20, -21, -19, -22, -20.5, -21.5),
+#'   d15N = c(10, 11, 9, 12, 10.5, 11.5),
+#'   Region = factor(rep(c("A", "B"), each = 3))
+#' )
+#' source_data <- data.frame(
+#'   Source = rep(c("Beaver", "Deer"), each = 3),
+#'   d13C = c(-25, -24, -26, -18, -17, -19),
+#'   d15N = c(5, 6, 4, 8, 9, 7)
+#' )
+#' tdf_data <- data.frame(
+#'   Source = c("Beaver", "Deer"),
+#'   d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
+#'   d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+#' )
+#' bsimms_get_prior(
+#'   ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
+#'   tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+#' )
 bsimms_get_prior <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
                               source_means_sds = FALSE, tdf_means_sds = TRUE,
                               conc_dep = FALSE,
