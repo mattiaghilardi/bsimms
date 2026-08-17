@@ -285,12 +285,12 @@ stan_functions_lines <- function(spec) {
 
 ## ---- data block -------------------------------------------------------
 
-#' Build the `data` block: mixture/design-matrix dimensions and data
-#' (`N`/`J`/`K`/`D`/`V`/`y`/`alpha_dirichlet`/`P`/`X`), one group of
-#' declarations per group-level term in `spec$re_terms`, source and TDF
-#' data (raw replicate samples or means/SDs, depending on `spec$source`/
-#' `spec$tdf`'s `mode`), and, if `spec$has_conc_dep`, the concentration
-#' matrix.
+#' Build the `data` block: mixture dimensions and data
+#' (`N`/`J`/`K`/`D`/`V`/`y`/`alpha_dirichlet`), the fixed-effect design
+#' (`P`/`X`, only if `spec$P > 0`), one group of declarations per
+#' group-level term in `spec$re_terms`, source and TDF data (raw replicate
+#' samples or means/SDs, depending on `spec$source`/`spec$tdf`'s `mode`),
+#' and, if `spec$has_conc_dep`, the concentration matrix.
 #'
 #' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
 #' @return Character vector of Stan code lines.
@@ -303,10 +303,14 @@ stan_data_lines <- function(spec) {
     "int<lower=1> D;  // K - 1, ILR dimension",
     "matrix[K, D] V;  // ILR basis matrix",
     "matrix[N, J] y;  // mixture isotope data",
-    "vector<lower=0>[K] alpha_dirichlet;  // Dirichlet concentration for p_global",
-    "int<lower=0> P;  // number of fixed-effect coefficients (no intercept)",
-    "matrix[N, P] X;  // fixed-effect design matrix (no intercept column)"
+    "vector<lower=0>[K] alpha_dirichlet;  // Dirichlet concentration for p_global"
   )
+  if (spec$P > 0) {
+    lines <- c(lines,
+      "int<lower=1> P;  // number of fixed-effect coefficients (no intercept)",
+      "matrix[N, P] X;  // fixed-effect design matrix (no intercept column)"
+    )
+  }
 
   for (re in spec$re_terms) {
     Mv <- length(re$term_names)

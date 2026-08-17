@@ -48,12 +48,23 @@ test_that("fixed-effect covariates add a beta parameter and per-coef priors", {
   expect_match(code, "beta\\[1\\] ~ normal\\(0, 1\\);  // SexM")
 })
 
-test_that("an intercept-only formula has no beta parameter", {
+test_that("an intercept-only formula has no beta parameter and no P/X in data", {
   code <- make_stancode(
     formula = ~1, mixture_data = mixture_data, source_data = source_data_raw,
     tdf_data = tdf_data_summary, isotope_names = c("d13C", "d15N")
   )
   expect_no_match(code, "matrix\\[P, D\\] beta;")
+  expect_no_match(code, "int<lower=1> P;")
+  expect_no_match(code, "matrix\\[N, P\\] X;")
+})
+
+test_that("a fixed-effect formula declares P/X in the data block", {
+  code <- make_stancode(
+    formula = ~Sex, mixture_data = mixture_data, source_data = source_data_raw,
+    tdf_data = tdf_data_summary, isotope_names = c("d13C", "d15N")
+  )
+  expect_match(code, "int<lower=1> P;")
+  expect_match(code, "matrix\\[N, P\\] X;")
 })
 
 test_that("group-level terms declare sd_re_*/z_re_* and are omitted without them", {
