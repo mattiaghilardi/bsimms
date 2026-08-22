@@ -132,20 +132,21 @@ test_that("bsimms_get_prior returns default priors for a simple model", {
   expect_equal(sort(p$group[p$class == "p_global"]), c("Beaver", "Deer"))
 })
 
-test_that("default source_mean/source_sd priors are scaled by median/MAD, not mean/SD", {
+test_that("default source_mean/source_sd priors use each source's own median/MAD, not mean/SD", {
   p <- bsimms_get_prior(
     formula = ~1, mixture_data = mixture_data, source_data = source_data,
     tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
   )
-  med <- stats::median(source_data$d13C)
-  mad <- stats::mad(source_data$d13C)
-  expect_false(isTRUE(all.equal(med, mean(source_data$d13C))))
+  beaver_d13c <- source_data$d13C[source_data$Source == "Beaver"]
+  med <- stats::median(beaver_d13c)
+  mad <- stats::mad(beaver_d13c)
+  expect_false(isTRUE(all.equal(med, mean(beaver_d13c))))
   expect_equal(
-    p$prior[p$class == "source_mean" & p$resp == "d13C"],
+    p$prior[p$class == "source_mean" & p$resp == "d13C" & p$group == "Beaver"],
     sprintf("normal(%.6g, %.6g)", med, 10 * mad)
   )
   expect_equal(
-    p$prior[p$class == "source_sd" & p$resp == "d13C"],
+    p$prior[p$class == "source_sd" & p$resp == "d13C" & p$group == "Beaver"],
     sprintf("student_t(3, 0, %.6g)", mad)
   )
 })

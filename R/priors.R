@@ -100,15 +100,19 @@ print.bsimms_prior <- function(x, ...) {
 #' [bsimms_get_prior()]: one class-level row per parameter class the model
 #' actually has (given `spec`'s dimensions, `error_structure`, and whether
 #' source/TDF data are raw or summarised), plus one `group`-specific row per
-#' source (`"p_global"`) and one `resp`-specific row per isotope
-#' (`"sigma"`/`"resid_prop"`/`"source_mean"`/`"source_sd"`/`"tdf_mean"`/
-#' `"tdf_sd"`, where applicable), each pre-filled with a weakly informative
-#' default. Where a natural data scale exists
-#' (`sigma`/`source_mean`/`source_sd`/`tdf_mean`/`tdf_sd`), the default is
-#' scaled using the sample median/MAD (median absolute deviation) of the
-#' relevant data: median and MAD are used instead of the mean and SD
-#' because they are robust to outliers and skew, which isotope data are
-#' prone to.
+#' source (`"p_global"`), one `resp`-specific row per isotope (`"sigma"`/
+#' `"resid_prop"`, where applicable), and one `resp`- and `group`-specific
+#' row per isotope/source combination (`"source_mean"`/`"source_sd"`/
+#' `"tdf_mean"`/`"tdf_sd"`, since these are estimated separately per source
+#' when the corresponding data are raw), each pre-filled with a weakly
+#' informative default. Where a natural data scale exists (`sigma`/
+#' `source_mean`/`source_sd`/`tdf_mean`/`tdf_sd`), the default is scaled
+#' using the sample median/MAD (median absolute deviation) of the relevant
+#' data -- for `source_mean`/`source_sd`/`tdf_mean`/`tdf_sd`, that source's
+#' own raw replicates only, so the prior reflects that source's actual
+#' location/dispersion rather than being diluted by other sources: median
+#' and MAD are used instead of the mean and SD because they are robust to
+#' outliers and skew, which isotope data are prone to.
 #'
 #' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
 #' @return A `bsimms_prior` data frame (see [bsimms_prior()]).
@@ -149,10 +153,20 @@ default_bsimms_prior <- function(spec) {
 
   if (spec$source$mode == "raw") {
     Y <- spec$source$Y
+    idx <- spec$source$source_idx
     for (j in seq_along(spec$isotope_names)) {
-      m <- stats::median(Y[, j]); s <- max(stats::mad(Y[, j]), 1e-3)
-      add(sprintf("normal(%.6g, %.6g)", m, 10 * s), "source_mean", resp = spec$isotope_names[j])
-      add(sprintf("student_t(3, 0, %.6g)", s), "source_sd", resp = spec$isotope_names[j])
+      for (k in seq_along(spec$source_names)) {
+        yk <- Y[idx == k, j]
+        m <- stats::median(yk); s <- max(stats::mad(yk), 1e-3)
+        add(
+          sprintf("normal(%.6g, %.6g)", m, 10 * s), "source_mean",
+          resp = spec$isotope_names[j], group = spec$source_names[k]
+        )
+        add(
+          sprintf("student_t(3, 0, %.6g)", s), "source_sd",
+          resp = spec$isotope_names[j], group = spec$source_names[k]
+        )
+      }
     }
     if (spec$J > 1) {
       add("lkj_corr_cholesky(1)", "source_cor")
@@ -163,10 +177,20 @@ default_bsimms_prior <- function(spec) {
   }
   if (spec$tdf$mode == "raw") {
     Y <- spec$tdf$Y
+    idx <- spec$tdf$source_idx
     for (j in seq_along(spec$isotope_names)) {
-      m <- stats::median(Y[, j]); s <- max(stats::mad(Y[, j]), 1e-3)
-      add(sprintf("normal(%.6g, %.6g)", m, 10 * s), "tdf_mean", resp = spec$isotope_names[j])
-      add(sprintf("student_t(3, 0, %.6g)", s), "tdf_sd", resp = spec$isotope_names[j])
+      for (k in seq_along(spec$source_names)) {
+        yk <- Y[idx == k, j]
+        m <- stats::median(yk); s <- max(stats::mad(yk), 1e-3)
+        add(
+          sprintf("normal(%.6g, %.6g)", m, 10 * s), "tdf_mean",
+          resp = spec$isotope_names[j], group = spec$source_names[k]
+        )
+        add(
+          sprintf("student_t(3, 0, %.6g)", s), "tdf_sd",
+          resp = spec$isotope_names[j], group = spec$source_names[k]
+        )
+      }
     }
   }
 
