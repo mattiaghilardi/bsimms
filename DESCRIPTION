@@ -28,6 +28,7 @@ Suggests:
     cmdstanr,
     knitr,
     markdown,
+    rstan (>= 2.26),
     testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr

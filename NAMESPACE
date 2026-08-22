@@ -3,6 +3,7 @@
 S3method(c,bsimms_prior)
 S3method(print,bsimms_prior)
 S3method(print,bsimms_stancode)
+export(bsimm)
 export(bsimms_get_prior)
 export(bsimms_prior)
 export(clr)
