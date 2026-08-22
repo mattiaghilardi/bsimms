@@ -143,6 +143,7 @@ source_data <- data.frame(
   Source = rep(c("Beaver", "Deer"), each = 3),
   d13C = c(-25, -24, -26, -18, -17, -19),
   d15N = c(5, 6, 4, 8, 9, 7)
+)
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
   d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
