@@ -433,7 +433,7 @@ stan_parameters_lines <- function(spec, needs_sigma, needs_resid_prop, needs_sou
   }
 
   if (needs_resid_prop) {
-    lines <- c(lines, "vector<lower=0, upper=20>[J] resid_prop;  // MixSIAR residual-error factor, scales process variance")
+    lines <- c(lines, "vector<lower=0>[J] resid_prop;  // MixSIAR residual-error factor, scales process variance")
   }
 
   if (spec$source$mode == "raw") {

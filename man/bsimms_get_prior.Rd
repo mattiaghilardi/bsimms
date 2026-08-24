@@ -117,3 +117,11 @@ bsimms_get_prior(
   tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
 )
 }
+\references{
+Stock, B.C., & Semmens, B.X. (2016). Unifying error
+structures in commonly used biotracer mixing models. \emph{Ecology},
+97(10), 2562-2569. \doi{10.1002/ecy.1517} Appendix S2 simulation-tests
+the default \code{"resid_prop"} prior (\code{uniform(0, 20)}) against three
+priors centred/moded at 1 (chi-square(3), gamma(2,2), log-normal(0,1))
+and finds it better-calibrated at high consumer variance.
+}

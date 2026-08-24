@@ -145,6 +145,12 @@ default_bsimms_prior <- function(spec) {
   }
 
   if (spec$error_structure == "process_residual") {
+    # uniform(0, 20), not a data-scaled default: Stock & Semmens (2016)
+    # Appendix S2 simulation-tested it against three priors centred/moded at
+    # the expected value 1 (chi-square(3), gamma(2,2), log-normal(0,1)) and
+    # found it better-calibrated at high consumer variance, so it is kept
+    # exactly as recommended rather than replaced with a more "natural"-
+    # looking peaked prior.
     add("uniform(0, 20)", "resid_prop")
     for (j in seq_along(spec$isotope_names)) {
       add("uniform(0, 20)", "resid_prop", resp = spec$isotope_names[j])
@@ -287,6 +293,12 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
 #'
 #' @inheritParams make_stancode
 #' @return A `bsimms_prior` data frame.
+#' @references Stock, B.C., & Semmens, B.X. (2016). Unifying error
+#'   structures in commonly used biotracer mixing models. *Ecology*,
+#'   97(10), 2562-2569. \doi{10.1002/ecy.1517} Appendix S2 simulation-tests
+#'   the default `"resid_prop"` prior (`uniform(0, 20)`) against three
+#'   priors centred/moded at 1 (chi-square(3), gamma(2,2), log-normal(0,1))
+#'   and finds it better-calibrated at high consumer variance.
 #' @export
 #' @examples
 #' mixture_data <- data.frame(
