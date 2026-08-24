@@ -20,12 +20,15 @@ Depends:
     R (>= 4.1.0)
 Imports:
     cli,
+    graphics,
+    grDevices,
     posterior,
     reformulas,
     rlang,
     stats,
     utils
 Suggests:
+    bayesplot,
     cmdstanr,
     knitr,
     markdown,
