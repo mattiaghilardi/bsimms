@@ -119,7 +119,7 @@ test_that("process_residual declares resid_prop and process_only does not", {
     error_structure = "process_residual"
   )
   expect_match(code_pr, "resid_prop")
-  expect_match(code_pr, "vector<lower=0>\\[J\\] resid_prop;")
+  expect_match(code_pr, "vector<lower=0, upper=20>\\[J\\] resid_prop;")
 
   code_po <- make_stancode(
     formula = ~1, mixture_data = mixture_data, source_data = source_data_summary,

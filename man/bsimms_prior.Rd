@@ -21,7 +21,11 @@ LKJ prior on the Cholesky factor), \code{"sigma"} (residual / observation
 error, only used for \code{error_structure} \code{"residual_only"}),
 \code{"resid_prop"} (MixSIAR's \code{resid.prop}: a multiplicative factor scaling
 the propagated source/TDF process variance, only used for
-\code{error_structure} \code{"process_residual"}), \code{"source_mean"},
+\code{error_structure} \code{"process_residual"}; always restricted to values
+between 0 and 20, matching the range of the recommended default prior
+(see \code{\link[=bsimms_get_prior]{bsimms_get_prior()}}), so a custom prior can reshape which values
+in that range are more likely but cannot allow values above 20),
+\code{"source_mean"},
 \code{"source_sd"}, \code{"tdf_mean"}, \code{"tdf_sd"} (only used when the
 corresponding data are supplied raw rather than as means/SDs),
 \code{"source_cor"} (LKJ prior on the Cholesky factor of

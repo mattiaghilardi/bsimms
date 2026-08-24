@@ -20,7 +20,11 @@
 #'   error, only used for `error_structure` `"residual_only"`),
 #'   `"resid_prop"` (MixSIAR's `resid.prop`: a multiplicative factor scaling
 #'   the propagated source/TDF process variance, only used for
-#'   `error_structure` `"process_residual"`), `"source_mean"`,
+#'   `error_structure` `"process_residual"`; always restricted to values
+#'   between 0 and 20, matching the range of the recommended default prior
+#'   (see [bsimms_get_prior()]), so a custom prior can reshape which values
+#'   in that range are more likely but cannot allow values above 20),
+#'   `"source_mean"`,
 #'   `"source_sd"`, `"tdf_mean"`, `"tdf_sd"` (only used when the
 #'   corresponding data are supplied raw rather than as means/SDs),
 #'   `"source_cor"` (LKJ prior on the Cholesky factor of
