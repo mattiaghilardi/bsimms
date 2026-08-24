@@ -4,9 +4,9 @@ mixture_data <- data.frame(
   Region = factor(rep(c("A", "B"), each = 3))
 )
 source_data <- data.frame(
-  Source = rep(c("Beaver", "Deer"), each = 3),
-  d13C = c(-25, -24, -26, -18, -17, -19),
-  d15N = c(5, 6, 4, 8, 9, 7)
+  Source = c("Beaver", "Deer"),
+  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
@@ -29,14 +29,16 @@ test_that("bsimm errors on an invalid error_structure or backend", {
     error = TRUE,
     bsimm(
       formula = ~1, mixture_data = mixture_data, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "banana"
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "banana",
+      source_means_sds = TRUE
     )
   )
   expect_snapshot(
     error = TRUE,
     bsimm(
       formula = ~1, mixture_data = mixture_data, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "banana"
+      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "banana",
+      source_means_sds = TRUE
     )
   )
 })
@@ -45,7 +47,7 @@ test_that("bsimm fits via cmdstanr and returns a well-formed bsimms object", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
     formula = ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
     chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
   )
   expect_s3_class(fit, "bsimms_fit")
@@ -66,7 +68,7 @@ test_that("bsimm fits via rstan when explicitly requested", {
   skip_if_not_installed("rstan")
   fit <- suppressWarnings(bsimm(
     formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "rstan",
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "rstan", source_means_sds = TRUE,
     chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
   ))
   expect_equal(fit$backend, "rstan")
@@ -77,7 +79,7 @@ test_that("a user prior override is reflected in the fitted object", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
     formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
+    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
     prior = bsimms_prior(prior = "3", class = "p_global", group = "Beaver"),
     chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
   )
