@@ -31,6 +31,7 @@ Suggests:
     bayesplot,
     cmdstanr,
     knitr,
+    loo,
     markdown,
     rstan (>= 2.26),
     rstantools,
