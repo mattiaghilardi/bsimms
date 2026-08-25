@@ -86,3 +86,15 @@ test_that("pp_check.bsimms_fit subsamples with ndraws", {
   g <- bayesplot::pp_check(fit_1iso, ndraws = 10)
   expect_s3_class(g, "ggplot")
 })
+
+test_that("pp_check.bsimms_fit defaults to 10 draws for overlay-style types", {
+  expect_message(bayesplot::pp_check(fit_1iso, type = "hist"), "Using 10 posterior draws")
+})
+
+test_that("pp_check.bsimms_fit defaults to all draws for aggregate types", {
+  expect_message(bayesplot::pp_check(fit_1iso, type = "stat"), "Using all posterior draws")
+})
+
+test_that("pp_check.bsimms_fit doesn't message when ndraws is supplied explicitly", {
+  expect_no_message(bayesplot::pp_check(fit_1iso, ndraws = 5))
+})

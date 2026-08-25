@@ -88,7 +88,12 @@ plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvar
 #'   `"intervals"` — see [bayesplot::available_ppc()] for the full list
 #'   (passed without its `"ppc_"` prefix).
 #' @param ndraws Optional integer; number of `y_rep` draws to (randomly)
-#'   subsample for the plot. `NULL` (default) uses every draw.
+#'   subsample for the plot. `NULL` (default) uses every draw for PPC types
+#'   that aggregate/summarise across draws (e.g. `"stat"`, `"intervals"`,
+#'   `"scatter_avg"`), where more draws only improve precision, or 10 draws
+#'   for types that overlay one `y_rep` dataset per draw (e.g.
+#'   `"dens_overlay"`, `"hist"`), where using every draw would overplot the
+#'   figure.
 #' @param ... Further arguments passed on to the underlying `ppc_*`
 #'   function, e.g. `group` for grouped types.
 #' @return A ggplot object, as returned by the underlying `ppc_*` function.
@@ -114,6 +119,15 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
   }
   ppc_fun <- getExportedValue("bayesplot", paste0("ppc_", type))
 
+  if (is.null(ndraws)) {
+    if (type %in% aggregate_ppc_types) {
+      cli::cli_inform("Using all posterior draws for ppc type {.val {type}} by default.")
+    } else {
+      ndraws <- 10
+      cli::cli_inform("Using {ndraws} posterior draws for ppc type {.val {type}} by default.")
+    }
+  }
+
   j <- match(resp, spec$isotope_names)
   y <- object$standata$y[, j]
   dm <- draws_matrix(object, variable = "y_rep")
@@ -126,3 +140,18 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
 
   ppc_fun(y = y, yrep = yrep, ...)
 }
+
+#' `bayesplot` PPC types (`ppc_*`, prefix stripped) that aggregate/
+#' summarise across draws rather than overlaying one `y_rep` dataset per
+#' draw, so [pp_check.bsimms_fit()] can default `ndraws` to "use every
+#' draw" only for these.
+#' @noRd
+aggregate_ppc_types <- c(
+  "error_scatter_avg", "error_scatter_avg_vs_x",
+  "intervals", "intervals_grouped", "loo_intervals",
+  "loo_pit", "loo_pit_overlay", "loo_pit_qq", "loo_ribbon",
+  "loo_pit_ecdf", "pit_ecdf", "pit_ecdf_grouped", "ribbon",
+  "ribbon_grouped", "rootogram", "scatter_avg", "scatter_avg_grouped",
+  "stat", "stat_2d", "stat_freqpoly_grouped", "stat_grouped",
+  "violin_grouped"
+)

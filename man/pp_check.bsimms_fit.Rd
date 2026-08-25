@@ -19,7 +19,12 @@ isotope otherwise.}
 (passed without its \code{"ppc_"} prefix).}
 
 \item{ndraws}{Optional integer; number of \code{y_rep} draws to (randomly)
-subsample for the plot. \code{NULL} (default) uses every draw.}
+subsample for the plot. \code{NULL} (default) uses every draw for PPC types
+that aggregate/summarise across draws (e.g. \code{"stat"}, \code{"intervals"},
+\code{"scatter_avg"}), where more draws only improve precision, or 10 draws
+for types that overlay one \code{y_rep} dataset per draw (e.g.
+\code{"dens_overlay"}, \code{"hist"}), where using every draw would overplot the
+figure.}
 
 \item{...}{Further arguments passed on to the underlying \verb{ppc_*}
 function, e.g. \code{group} for grouped types.}
