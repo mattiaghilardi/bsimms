@@ -57,3 +57,16 @@ test_that("bayes_R2 returns raw draws when summary = FALSE", {
   expect_equal(nrow(r2), 100)
   expect_true(all(r2 >= 0 & r2 <= 1))
 })
+
+test_that("bayes_R2 reuses a criterion cached via add_criterion", {
+  fitc <- add_criterion(fit, criterion = "bayes_R2")
+  r2 <- rstantools::bayes_R2(fitc, summary = FALSE)
+  expect_identical(r2, fitc$criteria$bayes_R2)
+})
+
+test_that("bayes_R2 subsets a cached criterion by resp", {
+  fitc <- add_criterion(fit, criterion = "bayes_R2")
+  r2 <- rstantools::bayes_R2(fitc, resp = "d15N", summary = FALSE)
+  expect_equal(colnames(r2), "d15N")
+  expect_equal(r2[, "d15N"], fitc$criteria$bayes_R2[, "d15N"])
+})

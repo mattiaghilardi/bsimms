@@ -1,7 +1,9 @@
 #' Bayesian R-squared
 #'
 #' Computes a Bayesian R-squared (Gelman, Goodrich, Gabry, and Vehtari 2019)
-#' for one or more isotopes.
+#' for one or more isotopes. If `object$criteria$bayes_R2` was already
+#' cached via [add_criterion()], it is reused (subset to `resp`) instead of
+#' recomputed.
 #'
 #' @param object A `bsimms_fit` object (as returned by [bsimm()]).
 #' @param resp Optional character vector of isotope names (a subset of
@@ -33,19 +35,24 @@ bayes_R2.bsimms_fit <- function(object, resp = NULL, summary = TRUE, robust = FA
     rlang::arg_match(resp, values = spec$isotope_names, multiple = TRUE)
   }
 
-  dm <- draws_matrix(object, variable = "mu")
-  mu_arr <- extract_array_draws(dm, "mu", spec$N, spec$J) # n_draws x N x J
-  y <- object$standata$y
+  cached <- object$criteria$bayes_R2
+  if (!is.null(cached)) {
+    r2 <- cached[, resp, drop = FALSE]
+  } else {
+    dm <- draws_matrix(object, variable = "mu")
+    mu_arr <- extract_array_draws(dm, "mu", spec$N, spec$J) # n_draws x N x J
+    y <- object$standata$y
 
-  j_idx <- match(resp, spec$isotope_names)
-  r2 <- matrix(NA_real_, nrow(mu_arr), length(resp))
-  colnames(r2) <- resp
-  for (k in seq_along(j_idx)) {
-    fit_j <- mu_arr[, , j_idx[k]] # n_draws x N
-    resid_j <- sweep(-fit_j, 2, y[, j_idx[k]], "+") # y[i] - fit[s, i]
-    var_fit <- apply(fit_j, 1, stats::var)
-    var_res <- apply(resid_j, 1, stats::var)
-    r2[, k] <- var_fit / (var_fit + var_res)
+    j_idx <- match(resp, spec$isotope_names)
+    r2 <- matrix(NA_real_, nrow(mu_arr), length(resp))
+    colnames(r2) <- resp
+    for (k in seq_along(j_idx)) {
+      fit_j <- mu_arr[, , j_idx[k]] # n_draws x N
+      resid_j <- sweep(-fit_j, 2, y[, j_idx[k]], "+") # y[i] - fit[s, i]
+      var_fit <- apply(fit_j, 1, stats::var)
+      var_res <- apply(resid_j, 1, stats::var)
+      r2[, k] <- var_fit / (var_fit + var_res)
+    }
   }
 
   if (!summary) return(r2)

@@ -40,7 +40,9 @@ names).
 }
 \description{
 Computes a Bayesian R-squared (Gelman, Goodrich, Gabry, and Vehtari 2019)
-for one or more isotopes.
+for one or more isotopes. If \code{object$criteria$bayes_R2} was already
+cached via \code{\link[=add_criterion]{add_criterion()}}, it is reused (subset to \code{resp}) instead of
+recomputed.
 }
 \references{
 Gelman, A., Goodrich, B., Gabry, J., & Vehtari, A. (2019).
