@@ -40,7 +40,9 @@
 #' @param ndraws Number of posterior draws to use, randomly subset from the
 #'   full posterior. `NULL` (default) uses all draws.
 #' @param ... Currently unused.
-#' @return A numeric `[n_draws, n_obs, K]` array of proportion draws.
+#' @return A numeric `[n_draws, n_obs, K]` array of proportion draws, with
+#'   source names attached as the 3rd dimension's `dimnames` (e.g.
+#'   `p_arr[, , "Deer"]`).
 #' @export
 posterior_proportions <- function(object, ...) {
   UseMethod("posterior_proportions")
@@ -53,19 +55,21 @@ posterior_proportions.bsimms_fit <- function(object, newdata = NULL, re_formula 
                                               sample_new_levels = c("uncertainty", "gaussian"),
                                               ndraws = NULL, ...) {
   spec <- object$spec
-  if (!is.null(newdata)) {
+  p_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    return(predict_p_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws))
-  }
-  if (is.null(re_formula)) {
+    predict_p_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+  } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "p")
     dm <- subset_ndraws(dm, ndraws)
-    return(extract_array_draws(dm, "p", spec$N, spec$K))
+    extract_array_draws(dm, "p", spec$N, spec$K)
+  } else {
+    dm <- draws_matrix(object)
+    dm <- subset_ndraws(dm, ndraws)
+    candidate_terms <- select_re_terms(spec$re_terms, re_formula)
+    compute_p_fitted(spec, dm, candidate_terms)
   }
-  dm <- draws_matrix(object)
-  dm <- subset_ndraws(dm, ndraws)
-  candidate_terms <- select_re_terms(spec$re_terms, re_formula)
-  compute_p_fitted(spec, dm, candidate_terms)
+  dimnames(p_arr) <- list(NULL, NULL, spec$source_names)
+  p_arr
 }
 
 #' Posterior source proportions (summarised)

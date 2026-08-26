@@ -61,7 +61,9 @@ represent a genuinely new one.}
 full posterior. \code{NULL} (default) uses all draws.}
 }
 \value{
-A numeric \verb{[n_draws, n_obs, K]} array of proportion draws.
+A numeric \verb{[n_draws, n_obs, K]} array of proportion draws, with
+source names attached as the 3rd dimension's \code{dimnames} (e.g.
+\code{p_arr[, , "Deer"]}).
 }
 \description{
 Returns raw posterior draws of source proportions \code{p}, either for the
