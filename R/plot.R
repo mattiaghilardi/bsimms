@@ -3,9 +3,7 @@
 #' Plots the posterior density and MCMC trace of the model's underlying
 #' Stan parameters (population-average source proportions `p_global`,
 #' fixed-effect coefficients, group-level standard deviations, and error
-#' term(s)), via [bayesplot::mcmc_combo()]. Use [plot_proportions()] for
-#' summaries of the source proportions themselves, or
-#' [conditional_effects()] to see how they vary with a covariate.
+#' term(s)), via [bayesplot::mcmc_combo()].
 #'
 #' @param x A `bsimms_fit` object (as returned by [bsimm()]).
 #' @param variable Optional character vector of parameter (base) names to
@@ -131,12 +129,9 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
   j <- match(resp, spec$isotope_names)
   y <- object$standata$y[, j]
   dm <- draws_matrix(object, variable = "y_rep")
+  dm <- subset_ndraws(dm, ndraws)
   yrep_arr <- extract_array_draws(dm, "y_rep", spec$N, spec$J)
   yrep <- matrix(yrep_arr[, , j], nrow = dim(yrep_arr)[1])
-
-  if (!is.null(ndraws) && ndraws < nrow(yrep)) {
-    yrep <- yrep[sample.int(nrow(yrep), ndraws), , drop = FALSE]
-  }
 
   ppc_fun(y = y, yrep = yrep, ...)
 }

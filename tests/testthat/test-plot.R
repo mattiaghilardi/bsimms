@@ -98,3 +98,7 @@ test_that("pp_check.bsimms_fit defaults to all draws for aggregate types", {
 test_that("pp_check.bsimms_fit doesn't message when ndraws is supplied explicitly", {
   expect_no_message(bayesplot::pp_check(fit_1iso, ndraws = 5))
 })
+
+test_that("pp_check.bsimms_fit errors when ndraws exceeds the number of draws available", {
+  expect_snapshot(error = TRUE, bayesplot::pp_check(fit_1iso, ndraws = 1000))
+})
