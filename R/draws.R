@@ -59,6 +59,31 @@ draws_matrix <- function(object, variable = NULL) {
   posterior::as_draws_matrix(bsimms_draws(object, variable = variable))
 }
 
+#' Randomly subset a `posterior::draws_matrix`'s rows (draws) down to
+#' `ndraws`.
+#'
+#' @param dm A `posterior::draws_matrix` (as returned by `draws_matrix()`).
+#' @param ndraws Number of draws to keep, or `NULL` (default) to keep all.
+#' @return `dm`, subset to `ndraws` randomly chosen rows, unchanged if
+#'   `ndraws` is `NULL`.
+#' @noRd
+subset_ndraws <- function(dm, ndraws) {
+  if (is.null(ndraws)) {
+    return(dm)
+  }
+  n_draws <- nrow(dm)
+  if (!is.numeric(ndraws) || length(ndraws) != 1 || ndraws < 1 || ndraws != round(ndraws)) {
+    cli::cli_abort("{.arg ndraws} must be a single positive integer.", call = NULL)
+  }
+  if (ndraws > n_draws) {
+    cli::cli_abort(
+      "{.arg ndraws} ({ndraws}) cannot exceed the number of posterior draws available ({n_draws}).",
+      call = NULL
+    )
+  }
+  dm[sample.int(n_draws, ndraws), , drop = FALSE]
+}
+
 #' Extract a rectangular `(n_draws x dim1)` or `(n_draws x dim1 x dim2)`
 #' array of draws for a Stan parameter named e.g. `beta[p,d]` or `sigma[j]`
 #' (i.e. reshapes the matching flat `prefix[i]`/`prefix[i,j]` columns of a
@@ -93,4 +118,32 @@ extract_array_draws <- function(dm, prefix, dim1, dim2 = NULL) {
     }
     arr
   }
+}
+
+#' Extract a rectangular `[n_draws, dim1, dim2, dim2]` array of draws for a
+#' Stan parameter that is an array of square matrices, e.g.
+#' `array[K] cholesky_factor_corr[J] L_source_corr`, flattened by Stan into
+#' `prefix[k,j1,j2]`-named columns (i.e. `extract_array_draws()`'s 1-/2-index
+#' extraction generalised to this 3-index case).
+#'
+#' @param dm A `posterior::draws_matrix` (as returned by `draws_matrix()`).
+#' @param prefix Stan parameter name, e.g. `"L_source_corr"`.
+#' @param dim1 Size of the parameter's array index (e.g. `K`).
+#' @param dim2 Size of each matrix's row/column index (e.g. `J`).
+#' @return A numeric array `[n_draws, dim1, dim2, dim2]`.
+#' @noRd
+extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
+  n_draws <- nrow(dm)
+  arr <- array(NA_real_, dim = c(n_draws, dim1, dim2, dim2))
+  for (a in seq_len(dim1)) {
+    for (b in seq_len(dim2)) {
+      nm <- sprintf("%s[%d,%d,%d]", prefix, a, b, seq_len(dim2))
+      missing_nm <- setdiff(nm, colnames(dm))
+      if (length(missing_nm) > 0) {
+        cli::cli_abort("Could not find draws for: {.field {missing_nm}}.", call = NULL)
+      }
+      arr[, a, b, ] <- dm[, nm, drop = FALSE]
+    }
+  }
+  arr
 }

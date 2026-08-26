@@ -137,25 +137,45 @@ print.bsimms_stancode <- function(x, ...) {
   invisible(x)
 }
 
-#' Assemble the complete Stan program text for a model: computes the
-#' `needs_*` flags that gate which optional pieces of the model are
-#' generated, then builds and concatenates each of the 7 Stan program
-#' blocks (`functions`, `data`, `transformed data`, `parameters`,
-#' `transformed parameters`, `model`, `generated quantities`) via the
-#' `stan_*_lines()` helpers below, indented one level with `indent()`.
-#'
-#' The `needs_*` flags (threaded through most `stan_*_lines()` helpers)
-#' are: `needs_sigma` (a single residual-error SD per isotope;
-#' `error_structure == "residual_only"`), `needs_resid_prop` (MixSIAR's
-#' `resid.prop` multiplicative factor; `error_structure ==
-#' "process_residual"`), `needs_proc` (source/TDF variance propagated into
-#' a per-mixture-sample process variance; `error_structure %in%
-#' c("process_only", "process_residual")`), `needs_source_cor` (raw source
-#' data with 2+ isotopes, so per-source isotope correlations are
-#' estimated), `needs_mv` (`needs_source_cor && needs_proc`: the mixture
+#' Derive which optional model components a `bsimms_spec` needs: `sigma`
+#' (a single residual-error SD per isotope; `error_structure ==
+#' "residual_only"`), `resid_prop` (MixSIAR's `resid.prop` multiplicative
+#' factor; `error_structure == "process_residual"`), `proc` (source/TDF
+#' variance propagated into a per-mixture-sample process variance;
+#' `error_structure %in% c("process_only", "process_residual")`),
+#' `source_cor` (raw source data with 2+ isotopes, so per-source isotope
+#' correlations are estimated), `mv` (`source_cor && proc`: the mixture
 #' needs a full multivariate process + residual covariance rather than
-#' per-isotope normals), and `needs_resid_cor` (`needs_sigma` with 2+
-#' isotopes: a shared residual-error correlation is estimated).
+#' per-isotope normals), and `resid_cor` (`sigma` with 2+ isotopes: a
+#' shared residual-error correlation is estimated). Shared by
+#' `bsimms_stancode_from_spec()` (which of the 7 Stan program blocks'
+#' optional pieces to generate) and `predict.R`'s new-data `mu`/`y_rep`
+#' prediction (which R computation mirrors which Stan block).
+#'
+#' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
+#' @return A named list of logicals: `sigma`, `resid_prop`, `proc`,
+#'   `source_cor`, `mv`, `resid_cor`.
+#' @noRd
+bsimms_needs_flags <- function(spec) {
+  needs_sigma      <- spec$error_structure == "residual_only"
+  needs_resid_prop <- spec$error_structure == "process_residual"
+  needs_proc       <- spec$error_structure %in% c("process_only", "process_residual")
+  needs_source_cor <- spec$source$mode == "raw" && spec$J > 1
+  needs_mv         <- needs_source_cor && needs_proc
+  needs_resid_cor  <- needs_sigma && spec$J > 1
+  list(
+    sigma = needs_sigma, resid_prop = needs_resid_prop, proc = needs_proc,
+    source_cor = needs_source_cor, mv = needs_mv, resid_cor = needs_resid_cor
+  )
+}
+
+#' Assemble the complete Stan program text for a model: computes the
+#' `needs_*` flags (see `bsimms_needs_flags()`) that gate which optional
+#' pieces of the model are generated, then builds and concatenates each of
+#' the 7 Stan program blocks (`functions`, `data`, `transformed data`,
+#' `parameters`, `transformed parameters`, `model`, `generated quantities`)
+#' via the `stan_*_lines()` helpers below, indented one level with
+#' `indent()`.
 #'
 #' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
 #' @param prior_df A merged `bsimms_prior` data frame (as returned by
@@ -164,12 +184,13 @@ print.bsimms_stancode <- function(x, ...) {
 #' @return A single character string: the complete Stan program.
 #' @noRd
 bsimms_stancode_from_spec <- function(spec, prior_df) {
-  needs_sigma      <- spec$error_structure == "residual_only"
-  needs_resid_prop <- spec$error_structure == "process_residual"
-  needs_proc       <- spec$error_structure %in% c("process_only", "process_residual")
-  needs_source_cor <- spec$source$mode == "raw" && spec$J > 1
-  needs_mv         <- needs_source_cor && needs_proc
-  needs_resid_cor  <- needs_sigma && spec$J > 1
+  needs <- bsimms_needs_flags(spec)
+  needs_sigma      <- needs$sigma
+  needs_resid_prop <- needs$resid_prop
+  needs_proc       <- needs$proc
+  needs_source_cor <- needs$source_cor
+  needs_mv         <- needs$mv
+  needs_resid_cor  <- needs$resid_cor
 
   blocks <- c(
     stan_header(spec),
