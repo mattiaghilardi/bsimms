@@ -30,3 +30,29 @@
       Error:
       ! `ndraws` (1000) cannot exceed the number of posterior draws available (100).
 
+# plot_proportions errors when p_arr lacks source-name dimnames
+
+    Code
+      plot_proportions(bare_arr)
+    Condition
+      Error:
+      ! `p_arr` must be a `[n_draws, n_obs, K]` array with source names attached as the 3rd dimension's dimnames.
+      i Use `posterior_proportions()` (or `fitted_proportions()` with `summary = FALSE`) to build it.
+
+# plot_proportions errors for density/histogram with more than one observation
+
+    Code
+      plot_proportions(p_arr, type = "density")
+    Condition
+      Error:
+      ! `p_arr` must have exactly one observation (row) for "density" plots, not 6.
+      i Use `type = "interval"` to plot proportions for multiple observations.
+
+# plot_proportions errors on invalid probs
+
+    Code
+      plot_proportions(p_arr, type = "interval", probs = c(0, 0.95))
+    Condition
+      Error:
+      ! `probs` must be one or more credible-interval masses strictly between 0 and 1.
+

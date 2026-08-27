@@ -147,3 +147,70 @@ extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
   }
   arr
 }
+
+#' Reshape a draws array into long format
+#'
+#' Reshapes a `[n_draws, n_obs, n_var]` array (as returned by
+#' [posterior_proportions()], [posterior_epred.bsimms_fit()], or
+#' [posterior_predict.bsimms_fit()]), with variable names attached as the
+#' 3rd dimension's `dimnames`, into a long-format data frame with one row
+#' per (draw, observation, variable) triple, ready for custom plots or
+#' summaries (e.g. with `ggplot2`/`ggdist`).
+#'
+#' @param arr A numeric `[n_draws, n_obs, n_var]` array, with variable
+#'   names attached as the 3rd dimension's `dimnames`.
+#' @param var_col Name to give the variable-identity column (default
+#'   `"variable"`), e.g. `"source"` for a [posterior_proportions()] array
+#'   or `"isotope"` for a [posterior_epred.bsimms_fit()] array.
+#' @param value_col Name to give the value column (default `"value"`).
+#' @return A long-format data frame with columns `draw` (posterior draw
+#'   index), `row` (observation index, into `newdata` or the fitted
+#'   mixture samples), `<var_col>`, and `<value_col>`.
+#' @export
+#' @examples
+#' \donttest{
+#' mixture_data <- data.frame(
+#'   d13C = c(-20, -21, -19, -22, -20.5, -21.5),
+#'   d15N = c(10, 11, 9, 12, 10.5, 11.5),
+#'   Region = factor(rep(c("A", "B"), each = 3))
+#' )
+#' source_data <- data.frame(
+#'   Source = rep(c("Beaver", "Deer"), each = 3),
+#'   d13C = c(-25, -24, -26, -18, -17, -19),
+#'   d15N = c(5, 6, 4, 8, 9, 7)
+#' )
+#' tdf_data <- data.frame(
+#'   Source = c("Beaver", "Deer"),
+#'   d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
+#'   d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+#' )
+#' fit <- bsimm(
+#'   ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
+#'   tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' p_arr <- posterior_proportions(fit)
+#' draws_long(p_arr, var_col = "source", value_col = "proportion")
+#' }
+draws_long <- function(arr, var_col = "variable", value_col = "value") {
+  if (length(dim(arr)) != 3 || is.null(dimnames(arr)[[3]])) {
+    cli::cli_abort(
+      "{.arg arr} must be a `[n_draws, n_obs, n_var]` array with variable names attached as the 3rd dimension's dimnames.",
+      call = NULL
+    )
+  }
+  if (identical(var_col, value_col)) {
+    cli::cli_abort("{.arg var_col} and {.arg value_col} must be different.", call = NULL)
+  }
+  n_draws <- dim(arr)[1]
+  n_obs <- dim(arr)[2]
+  var_names <- dimnames(arr)[[3]]
+
+  out <- data.frame(
+    draw = rep(seq_len(n_draws), times = n_obs * length(var_names)),
+    row = rep(rep(seq_len(n_obs), each = n_draws), times = length(var_names))
+  )
+  out[[var_col]] <- rep(var_names, each = n_draws * n_obs)
+  out[[value_col]] <- as.vector(arr)
+  out
+}

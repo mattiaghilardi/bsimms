@@ -217,6 +217,20 @@ test_that("posterior_epred respects an explicit resp", {
   expect_equal(dim(mu_arr), c(100, 6, 1))
 })
 
+test_that("posterior_epred attaches isotope names as dimnames, matching resp", {
+  mu_arr <- rstantools::posterior_epred(fit)
+  expect_equal(dimnames(mu_arr)[[3]], c("d13C", "d15N"))
+  mu_arr_d15N <- rstantools::posterior_epred(fit, resp = "d15N")
+  expect_equal(dimnames(mu_arr_d15N)[[3]], "d15N")
+})
+
+test_that("draws_long works directly on posterior_epred's output", {
+  mu_arr <- rstantools::posterior_epred(fit)
+  df <- draws_long(mu_arr, var_col = "isotope", value_col = "mu")
+  expect_equal(names(df), c("draw", "row", "isotope", "mu"))
+  expect_equal(nrow(df), 100 * 6 * 2)
+})
+
 test_that("posterior_epred errors on an invalid resp", {
   expect_snapshot(error = TRUE, rstantools::posterior_epred(fit, resp = "banana"))
 })
@@ -252,6 +266,20 @@ test_that("posterior_predict returns an [n_draws, N, J] array for every isotope 
 test_that("posterior_predict respects an explicit resp", {
   yrep_arr <- rstantools::posterior_predict(fit, resp = "d13C")
   expect_equal(dim(yrep_arr), c(100, 6, 1))
+})
+
+test_that("posterior_predict attaches isotope names as dimnames, matching resp", {
+  yrep_arr <- rstantools::posterior_predict(fit)
+  expect_equal(dimnames(yrep_arr)[[3]], c("d13C", "d15N"))
+  yrep_arr_d13C <- rstantools::posterior_predict(fit, resp = "d13C")
+  expect_equal(dimnames(yrep_arr_d13C)[[3]], "d13C")
+})
+
+test_that("draws_long works directly on posterior_predict's output", {
+  yrep_arr <- rstantools::posterior_predict(fit)
+  df <- draws_long(yrep_arr, var_col = "isotope", value_col = "y_rep")
+  expect_equal(names(df), c("draw", "row", "isotope", "y_rep"))
+  expect_equal(nrow(df), 100 * 6 * 2)
 })
 
 test_that("predict summarises y_rep by isotope", {

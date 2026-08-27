@@ -102,3 +102,53 @@ test_that("pp_check.bsimms_fit doesn't message when ndraws is supplied explicitl
 test_that("pp_check.bsimms_fit errors when ndraws exceeds the number of draws available", {
   expect_snapshot(error = TRUE, bayesplot::pp_check(fit_1iso, ndraws = 1000))
 })
+
+# plot_proportions ------------------------------------------------------------
+
+skip_if_not_installed("ggplot2")
+
+p_arr <- posterior_proportions(fit)
+
+test_that("plot_proportions errors when p_arr lacks source-name dimnames", {
+  bare_arr <- p_arr
+  dimnames(bare_arr) <- NULL
+  expect_snapshot(error = TRUE, plot_proportions(bare_arr))
+})
+
+test_that("plot_proportions builds a density plot for a single observation", {
+  g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
+  expect_s3_class(g, "ggplot")
+})
+
+test_that("plot_proportions builds a histogram for a single observation", {
+  g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "histogram")
+  expect_s3_class(g, "ggplot")
+})
+
+test_that("plot_proportions errors for density/histogram with more than one observation", {
+  expect_snapshot(error = TRUE, plot_proportions(p_arr, type = "density"))
+})
+
+test_that("plot_proportions builds an interval plot for multiple observations", {
+  g <- plot_proportions(p_arr, type = "interval")
+  expect_s3_class(g, "ggplot")
+})
+
+test_that("plot_proportions builds an interval plot for a single observation too", {
+  g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "interval")
+  expect_s3_class(g, "ggplot")
+})
+
+test_that("plot_proportions errors on invalid probs", {
+  expect_snapshot(error = TRUE, plot_proportions(p_arr, type = "interval", probs = c(0, 0.95)))
+})
+
+test_that("plot_proportions's ... is forwarded to geom_histogram", {
+  g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "histogram", bins = 10)
+  expect_equal(g$layers[[1]]$stat_params$bins, 10)
+})
+
+test_that("plot_proportions's ... is forwarded to geom_linerange", {
+  g <- plot_proportions(p_arr, type = "interval", linetype = "dashed")
+  expect_equal(g$layers[[1]]$aes_params$linetype, "dashed")
+})

@@ -118,7 +118,8 @@ fitted_proportions <- function(object, newdata = NULL, re_formula = NULL, allow_
 #' @param resp Character vector of isotope name(s) (from `isotope_names`)
 #'   to return. `NULL` (default) returns all isotopes.
 #' @param ... Currently unused.
-#' @return A numeric `[n_draws, n_obs, length(resp)]` array.
+#' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
+#'   names attached as the 3rd dimension's `dimnames`.
 #' @exportS3Method rstantools::posterior_epred
 posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                         allow_new_levels = FALSE,
@@ -131,23 +132,22 @@ posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_f
     rlang::arg_match(resp, values = spec$isotope_names, multiple = TRUE)
   }
   j_idx <- match(resp, spec$isotope_names)
-  if (!is.null(newdata)) {
+  mu_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    mu_arr <- predict_mu_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
-    return(mu_arr[, , j_idx, drop = FALSE])
-  }
-  if (is.null(re_formula)) {
+    predict_mu_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+  } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "mu")
     dm <- subset_ndraws(dm, ndraws)
-    mu_arr <- extract_array_draws(dm, "mu", spec$N, spec$J)
-    return(mu_arr[, , j_idx, drop = FALSE])
+    extract_array_draws(dm, "mu", spec$N, spec$J)
+  } else {
+    needs <- bsimms_needs_flags(spec)
+    dm <- draws_matrix(object)
+    dm <- subset_ndraws(dm, ndraws)
+    candidate_terms <- select_re_terms(spec$re_terms, re_formula)
+    p_arr <- compute_p_fitted(spec, dm, candidate_terms)
+    compute_mu_newdata(spec, dm, p_arr, needs$proc)$mu
   }
-  needs <- bsimms_needs_flags(spec)
-  dm <- draws_matrix(object)
-  dm <- subset_ndraws(dm, ndraws)
-  candidate_terms <- select_re_terms(spec$re_terms, re_formula)
-  p_arr <- compute_p_fitted(spec, dm, candidate_terms)
-  mu_arr <- compute_mu_newdata(spec, dm, p_arr, needs$proc)$mu
+  dimnames(mu_arr) <- list(NULL, NULL, spec$isotope_names)
   mu_arr[, , j_idx, drop = FALSE]
 }
 
@@ -953,7 +953,8 @@ predict_y_rep_newdata <- function(object, newdata, re_formula, allow_new_levels,
 #' instead.
 #'
 #' @inheritParams posterior_epred.bsimms_fit
-#' @return A numeric `[n_draws, n_obs, length(resp)]` array.
+#' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
+#'   names attached as the 3rd dimension's `dimnames`.
 #' @exportS3Method rstantools::posterior_predict
 posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                           allow_new_levels = FALSE,
@@ -966,24 +967,23 @@ posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re
     rlang::arg_match(resp, values = spec$isotope_names, multiple = TRUE)
   }
   j_idx <- match(resp, spec$isotope_names)
-  if (!is.null(newdata)) {
+  yrep_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    yrep_arr <- predict_y_rep_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
-    return(yrep_arr[, , j_idx, drop = FALSE])
-  }
-  if (is.null(re_formula)) {
+    predict_y_rep_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+  } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "y_rep")
     dm <- subset_ndraws(dm, ndraws)
-    yrep_arr <- extract_array_draws(dm, "y_rep", spec$N, spec$J)
-    return(yrep_arr[, , j_idx, drop = FALSE])
+    extract_array_draws(dm, "y_rep", spec$N, spec$J)
+  } else {
+    needs <- bsimms_needs_flags(spec)
+    dm <- draws_matrix(object)
+    dm <- subset_ndraws(dm, ndraws)
+    candidate_terms <- select_re_terms(spec$re_terms, re_formula)
+    p_arr <- compute_p_fitted(spec, dm, candidate_terms)
+    mu_out <- compute_mu_newdata(spec, dm, p_arr, needs$proc)
+    sample_y_rep_newdata(spec, dm, p_arr, mu_out$mu, mu_out$proc_var, mu_out$source$sd, needs)
   }
-  needs <- bsimms_needs_flags(spec)
-  dm <- draws_matrix(object)
-  dm <- subset_ndraws(dm, ndraws)
-  candidate_terms <- select_re_terms(spec$re_terms, re_formula)
-  p_arr <- compute_p_fitted(spec, dm, candidate_terms)
-  mu_out <- compute_mu_newdata(spec, dm, p_arr, needs$proc)
-  yrep_arr <- sample_y_rep_newdata(spec, dm, p_arr, mu_out$mu, mu_out$proc_var, mu_out$source$sd, needs)
+  dimnames(yrep_arr) <- list(NULL, NULL, spec$isotope_names)
   yrep_arr[, , j_idx, drop = FALSE]
 }
 

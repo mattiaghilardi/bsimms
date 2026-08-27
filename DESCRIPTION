@@ -30,6 +30,7 @@ Imports:
 Suggests:
     bayesplot,
     cmdstanr,
+    ggplot2,
     knitr,
     loo,
     markdown,

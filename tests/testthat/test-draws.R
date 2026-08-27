@@ -84,6 +84,37 @@ test_that("extract_array_draws reshapes a matrix parameter", {
   expect_equal(arr[, 1, 1], as.numeric(dm[, "source_mean[1,1]"]))
 })
 
+test_that("draws_long reshapes an array into (draw, row, variable, value)", {
+  arr <- array(1:12, dim = c(2, 3, 2), dimnames = list(NULL, NULL, c("A", "B")))
+  df <- draws_long(arr)
+  expect_equal(names(df), c("draw", "row", "variable", "value"))
+  expect_equal(nrow(df), 12)
+  expect_equal(df$draw, rep(1:2, times = 6))
+  expect_equal(df$row, rep(rep(1:3, each = 2), times = 2))
+  expect_equal(df$variable, rep(c("A", "B"), each = 6))
+  expect_equal(df$value, 1:12)
+})
+
+test_that("draws_long renames the variable/value columns via var_col/value_col", {
+  arr <- array(1:12, dim = c(2, 3, 2), dimnames = list(NULL, NULL, c("A", "B")))
+  df <- draws_long(arr, var_col = "source", value_col = "proportion")
+  expect_equal(names(df), c("draw", "row", "source", "proportion"))
+})
+
+test_that("draws_long errors when arr lacks dimnames on the 3rd dimension", {
+  arr <- array(1:12, dim = c(2, 3, 2))
+  expect_snapshot(error = TRUE, draws_long(arr))
+})
+
+test_that("draws_long errors when arr is not 3-dimensional", {
+  expect_snapshot(error = TRUE, draws_long(matrix(1:4, 2, 2)))
+})
+
+test_that("draws_long errors when var_col and value_col are identical", {
+  arr <- array(1:12, dim = c(2, 3, 2), dimnames = list(NULL, NULL, c("A", "B")))
+  expect_snapshot(error = TRUE, draws_long(arr, var_col = "x", value_col = "x"))
+})
+
 test_that("extract_array_draws errors when the requested draws are missing", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(

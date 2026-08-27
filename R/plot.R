@@ -3,7 +3,8 @@
 #' Plots the posterior density and MCMC trace of the model's underlying
 #' Stan parameters (population-average source proportions `p_global`,
 #' fixed-effect coefficients, group-level standard deviations, and error
-#' term(s)), via [bayesplot::mcmc_combo()].
+#' term(s)), via [bayesplot::mcmc_combo()]. Use [plot_proportions()] for
+#' summaries of the source proportions themselves.
 #'
 #' @param x A `bsimms_fit` object (as returned by [bsimm()]).
 #' @param variable Optional character vector of parameter (base) names to
@@ -150,3 +151,185 @@ aggregate_ppc_types <- c(
   "stat", "stat_2d", "stat_freqpoly_grouped", "stat_grouped",
   "violin_grouped"
 )
+
+#' Plot posterior source proportions
+#'
+#' Plots posterior source proportions, as returned by
+#' [posterior_proportions()] or [fitted_proportions()] (`summary =
+#' FALSE`): a density or histogram of the posterior distribution
+#' (`type = "density"`/`"histogram"`, one observation only), or nested
+#' credible intervals across one or more observations (`type =
+#' "interval"`, a forest/caterpillar plot coloured by source). Requires
+#' `ggplot2`.
+#'
+#' @param p_arr A numeric `[n_draws, n_obs, K]` array of posterior
+#'   proportion draws, with source names attached as the 3rd dimension's
+#'   `dimnames`, as returned by [posterior_proportions()].
+#' @param type Character; `"density"` (default), `"histogram"`, or
+#'   `"interval"`. `"density"`/`"histogram"` require `p_arr` to have
+#'   exactly one observation (row); use `"interval"` for more than one.
+#' @param probs One or more credible-interval masses to display when
+#'   `type = "interval"`, e.g. the default `c(0.5, 0.95)` draws both a 50%
+#'   and a 95% interval. Ignored for `"density"`/`"histogram"`.
+#' @param robust Logical; if `FALSE` (default) the point estimate (for
+#'   `type = "interval"`) is the `mean`, if `TRUE` the `median`. Ignored
+#'   for `"density"`/`"histogram"`.
+#' @param point_size Size of the point marking the central estimate, for
+#'   `type = "interval"` (default 2). Ignored otherwise.
+#' @param ... Further arguments passed to the underlying `ggplot2` geom:
+#'   [ggplot2::geom_density()], [ggplot2::geom_histogram()], or
+#'   [ggplot2::geom_linerange()] for `type` `"density"`, `"histogram"`, or
+#'   `"interval"` respectively.
+#' @return A `ggplot` object.
+#' @importFrom rlang .data
+#' @export
+plot_proportions <- function(p_arr, type = c("density", "histogram", "interval"),
+                              probs = c(0.5, 0.95), robust = FALSE, point_size = 2, ...) {
+  type <- rlang::arg_match(type)
+  rlang::check_installed("ggplot2", reason = "to use `plot_proportions()`.")
+
+  if (length(dim(p_arr)) != 3 || is.null(dimnames(p_arr)[[3]])) {
+    cli::cli_abort(
+      c(
+        "{.arg p_arr} must be a `[n_draws, n_obs, K]` array with source names attached as the 3rd dimension's dimnames.",
+        "i" = "Use {.fn posterior_proportions} (or {.fn fitted_proportions} with {.code summary = FALSE}) to build it."
+      ),
+      call = NULL
+    )
+  }
+
+  n_obs <- dim(p_arr)[2]
+  if (type %in% c("density", "histogram") && n_obs != 1) {
+    cli::cli_abort(
+      c(
+        "{.arg p_arr} must have exactly one observation (row) for {.val {type}} plots, not {n_obs}.",
+        "i" = "Use {.code type = \"interval\"} to plot proportions for multiple observations."
+      ),
+      call = NULL
+    )
+  }
+
+  if (type %in% c("density", "histogram")) {
+    plot_proportions_dist(p_arr, type, ...)
+  } else {
+    plot_proportions_interval(p_arr, probs, robust, point_size, ...)
+  }
+}
+
+#' Build the `type = "density"`/`"histogram"` plot for `plot_proportions()`:
+#' posterior proportions on the x axis, coloured/filled by source.
+#'
+#' @param p_arr Numeric `[n_draws, 1, K]` array of proportion draws
+#'   (`plot_proportions()` requires exactly one observation for these
+#'   types), with source names as the 3rd dimension's `dimnames`.
+#' @param type `"density"` or `"histogram"`.
+#' @param ... Further arguments passed to [ggplot2::geom_density()] or
+#'   [ggplot2::geom_histogram()].
+#' @return A `ggplot` object.
+#' @noRd
+plot_proportions_dist <- function(p_arr, type, ...) {
+  df <- draws_long(p_arr, var_col = "source", value_col = "proportion")
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$proportion, color = .data$source, fill = .data$source)) +
+    (if (type == "density") {
+      ggplot2::geom_density(alpha = 0.3, ...)
+    } else {
+      ggplot2::geom_histogram(alpha = 0.5, position = "identity", ...)
+    }) +
+    ggplot2::labs(
+      x = "Posterior proportion", y = if (type == "density") "Density" else "Count",
+      color = "Source", fill = "Source"
+    ) +
+    ggplot2::theme_minimal()
+}
+
+#' Validate a vector of credible-interval masses, sorted widest-first.
+#'
+#' @param probs Numeric vector of one or more credible-interval masses;
+#'   each must be strictly between 0 and 1 (e.g. `0.95` for a 95%
+#'   interval).
+#' @return `probs`, sorted decreasing (widest interval first).
+#' @noRd
+validate_ci_probs <- function(probs) {
+  if (length(probs) < 1 || any(probs <= 0 | probs >= 1)) {
+    cli::cli_abort(
+      "{.arg probs} must be one or more credible-interval masses strictly between 0 and 1.",
+      call = NULL
+    )
+  }
+  sort(probs, decreasing = TRUE)
+}
+
+#' Long-format multi-interval summary of an `[n_draws, n_obs, K]`
+#' proportions array: one row per (observation, source, interval width),
+#' with columns `row`, `source`, `estimate`, `lower`, `upper`, `width` (an
+#' ordered factor, widest first).
+#'
+#' @param p_arr Numeric `[n_draws, n_obs, K]` array of proportion draws,
+#'   with source names as the 3rd dimension's `dimnames`.
+#' @param probs One or more credible-interval masses (validated and
+#'   sorted via `validate_ci_probs()`); each produces one `lower`/`upper`
+#'   pair per (observation, source).
+#' @param robust Logical; if `FALSE` (default) `estimate` is the `mean`,
+#'   if `TRUE` the `median`.
+#' @return A long-format data frame; see above for columns.
+#' @noRd
+summarise_proportions_multi_interval <- function(p_arr, probs, robust = FALSE) {
+  probs <- validate_ci_probs(probs)
+  source_names <- dimnames(p_arr)[[3]]
+  est_measure <- if (robust) "median" else "mean"
+  n_draws <- dim(p_arr)[1]
+  n_obs <- dim(p_arr)[2]
+
+  out <- do.call(rbind, lapply(seq_len(n_obs), function(i) {
+    d <- posterior::as_draws_matrix(matrix(p_arr[, i, ], nrow = n_draws, dimnames = list(NULL, source_names)))
+    est <- as.data.frame(posterior::summarise_draws(d, est_measure))
+    do.call(rbind, lapply(probs, function(p) {
+      lo <- (1 - p) / 2
+      qs <- as.data.frame(posterior::summarise_draws(d, ~ posterior::quantile2(.x, probs = c(lo, 1 - lo))))
+      data.frame(
+        row = i, source = qs$variable, estimate = est[[est_measure]],
+        lower = qs[[2]], upper = qs[[3]], width = p
+      )
+    }))
+  }))
+  rownames(out) <- NULL
+
+  # Ordered factor (widest first) so the default linewidth scale draws
+  # narrower intervals more prominently; users can override via
+  # `+ ggplot2::scale_linewidth_ordinal(...)`.
+  width_labels <- sprintf("%g%%", probs * 100)
+  out$width <- factor(sprintf("%g%%", out$width * 100), levels = width_labels)
+  out
+}
+
+#' Build the `type = "interval"` plot for `plot_proportions()`: a
+#' forest/caterpillar plot of one or more nested credible intervals per
+#' observation, coloured by source and dodged along the x axis (rather
+#' than faceted, so it scales to many observations without exploding into
+#' tiny facets, and stays easy to further adjust with `ggplot2` calls),
+#' narrower intervals drawn with a thicker `linewidth`. `group = source` is
+#' set explicitly so both interval widths of the same source dodge
+#' together, rather than `linewidth`'s levels (also a discrete aesthetic)
+#' splitting each source into additional, separately-dodged groups.
+#'
+#' @param p_arr Numeric `[n_draws, n_obs, K]` array of proportion draws,
+#'   with source names as the 3rd dimension's `dimnames`.
+#' @param probs,robust,point_size See [plot_proportions()].
+#' @param ... Further arguments passed to [ggplot2::geom_linerange()].
+#' @return A `ggplot` object.
+#' @noRd
+plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
+  df <- summarise_proportions_multi_interval(p_arr, probs, robust)
+  df$row <- factor(df$row)
+  dodge <- ggplot2::position_dodge(width = 0.5)
+
+  ggplot2::ggplot(df, ggplot2::aes(x = .data$row, color = .data$source, group = .data$source)) +
+    ggplot2::geom_linerange(
+      ggplot2::aes(ymin = .data$lower, ymax = .data$upper, linewidth = .data$width),
+      position = dodge, ...
+    ) +
+    ggplot2::geom_point(ggplot2::aes(y = .data$estimate), size = point_size, position = dodge) +
+    ggplot2::scale_linewidth_ordinal(range = c(0.5, 1.5)) +
+    ggplot2::labs(x = "Observation", y = "Posterior proportion", color = "Source", linewidth = "Interval") +
+    ggplot2::theme_minimal()
+}

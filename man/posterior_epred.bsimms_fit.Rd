@@ -62,7 +62,8 @@ full posterior. \code{NULL} (default) uses all draws.}
 \item{...}{Currently unused.}
 }
 \value{
-A numeric \verb{[n_draws, n_obs, length(resp)]} array.
+A numeric \verb{[n_draws, n_obs, length(resp)]} array, with isotope
+names attached as the 3rd dimension's \code{dimnames}.
 }
 \description{
 Returns raw posterior draws of the model's expected mixture isotope

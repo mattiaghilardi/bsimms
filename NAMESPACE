@@ -25,6 +25,7 @@ export(bsimms_get_prior)
 export(bsimms_prior)
 export(clr)
 export(clr_inv)
+export(draws_long)
 export(fitted_proportions)
 export(ilr)
 export(ilr_basis)
@@ -32,5 +33,9 @@ export(ilr_inv)
 export(make_stancode)
 export(make_standata)
 export(parse_bsimms_formula)
+export(plot_proportions)
 export(posterior_proportions)
-importFrom(rlang,"%||%")
+importFrom(rlang,
+  "%||%",
+  .data
+)
