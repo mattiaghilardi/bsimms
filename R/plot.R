@@ -4,7 +4,8 @@
 #' Stan parameters (population-average source proportions `p_global`,
 #' fixed-effect coefficients, group-level standard deviations, and error
 #' term(s)), via [bayesplot::mcmc_combo()]. Use [plot_proportions()] for
-#' summaries of the source proportions themselves.
+#' summaries of the source proportions themselves, or
+#' [conditional_effects()] to see how they vary with a covariate.
 #'
 #' @param x A `bsimms_fit` object (as returned by [bsimm()]).
 #' @param variable Optional character vector of parameter (base) names to
@@ -259,39 +260,44 @@ validate_ci_probs <- function(probs) {
   sort(probs, decreasing = TRUE)
 }
 
-#' Long-format multi-interval summary of an `[n_draws, n_obs, K]`
-#' proportions array: one row per (observation, source, interval width),
-#' with columns `row`, `source`, `estimate`, `lower`, `upper`, `width` (an
-#' ordered factor, widest first).
+#' Long-format multi-interval summary of an `[n_draws, n_obs, n_var]`
+#' draws array (e.g. source-proportion or isotope-value draws): one row
+#' per (observation, category, interval width), with columns `row`,
+#' `<cat_col>`, `estimate`, `lower`, `upper`, `width` (an ordered factor,
+#' widest first).
 #'
-#' @param p_arr Numeric `[n_draws, n_obs, K]` array of proportion draws,
-#'   with source names as the 3rd dimension's `dimnames`.
+#' @param arr Numeric `[n_draws, n_obs, n_var]` array of draws, with
+#'   category names (e.g. source or isotope names) as the 3rd dimension's
+#'   `dimnames`.
 #' @param probs One or more credible-interval masses (validated and
 #'   sorted via `validate_ci_probs()`); each produces one `lower`/`upper`
-#'   pair per (observation, source).
+#'   pair per (observation, category).
 #' @param robust Logical; if `FALSE` (default) `estimate` is the `mean`,
 #'   if `TRUE` the `median`.
+#' @param cat_col Name to give the category-identity column (default
+#'   `"source"`).
 #' @return A long-format data frame; see above for columns.
 #' @noRd
-summarise_proportions_multi_interval <- function(p_arr, probs, robust = FALSE) {
+summarise_multi_interval <- function(arr, probs, robust = FALSE, cat_col = "source") {
   probs <- validate_ci_probs(probs)
-  source_names <- dimnames(p_arr)[[3]]
+  cat_names <- dimnames(arr)[[3]]
   est_measure <- if (robust) "median" else "mean"
-  n_draws <- dim(p_arr)[1]
-  n_obs <- dim(p_arr)[2]
+  n_draws <- dim(arr)[1]
+  n_obs <- dim(arr)[2]
 
   out <- do.call(rbind, lapply(seq_len(n_obs), function(i) {
-    d <- posterior::as_draws_matrix(matrix(p_arr[, i, ], nrow = n_draws, dimnames = list(NULL, source_names)))
+    d <- posterior::as_draws_matrix(matrix(arr[, i, ], nrow = n_draws, dimnames = list(NULL, cat_names)))
     est <- as.data.frame(posterior::summarise_draws(d, est_measure))
     do.call(rbind, lapply(probs, function(p) {
       lo <- (1 - p) / 2
       qs <- as.data.frame(posterior::summarise_draws(d, ~ posterior::quantile2(.x, probs = c(lo, 1 - lo))))
       data.frame(
-        row = i, source = qs$variable, estimate = est[[est_measure]],
+        row = i, category = qs$variable, estimate = est[[est_measure]],
         lower = qs[[2]], upper = qs[[3]], width = p
       )
     }))
   }))
+  names(out)[names(out) == "category"] <- cat_col
   rownames(out) <- NULL
 
   # Ordered factor (widest first) so the default linewidth scale draws
@@ -319,7 +325,7 @@ summarise_proportions_multi_interval <- function(p_arr, probs, robust = FALSE) {
 #' @return A `ggplot` object.
 #' @noRd
 plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
-  df <- summarise_proportions_multi_interval(p_arr, probs, robust)
+  df <- summarise_multi_interval(p_arr, probs, robust, cat_col = "source")
   df$row <- factor(df$row)
   dodge <- ggplot2::position_dodge(width = 0.5)
 

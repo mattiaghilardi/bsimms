@@ -50,5 +50,6 @@ Plots the posterior density and MCMC trace of the model's underlying
 Stan parameters (population-average source proportions \code{p_global},
 fixed-effect coefficients, group-level standard deviations, and error
 term(s)), via \code{\link[bayesplot:mcmc_combo]{bayesplot::mcmc_combo()}}. Use \code{\link[=plot_proportions]{plot_proportions()}} for
-summaries of the source proportions themselves.
+summaries of the source proportions themselves, or
+\code{\link[=conditional_effects]{conditional_effects()}} to see how they vary with a covariate.
 }
