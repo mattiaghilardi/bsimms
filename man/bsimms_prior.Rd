@@ -67,8 +67,14 @@ the general class default when the Stan code is generated.
 bsimms_prior("normal(0, 2)", class = "b")
 bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter")
 bsimms_prior("student_t(3, 0, 1)", class = "sd", group = "Region")
-bsimms_prior("normal(3.4, 0.3)", class = "tdf_mean", resp = "d15N", group = "Beaver")
-bsimms_prior("student_t(3, 0, 0.5)", class = "source_sd", resp = "d13C", group = "Beaver")
+bsimms_prior(
+  "normal(3.4, 0.3)",
+  class = "tdf_mean", resp = "d15N", group = "Beaver"
+)
+bsimms_prior(
+  "student_t(3, 0, 0.5)",
+  class = "source_sd", resp = "d13C", group = "Beaver"
+)
 bsimms_prior("2", class = "p_global", group = "Beaver")
 bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
 bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")

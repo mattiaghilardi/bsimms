@@ -182,7 +182,6 @@ aggregate_ppc_types <- c(
 #'   [ggplot2::geom_linerange()] for `type` `"density"`, `"histogram"`, or
 #'   `"interval"` respectively.
 #' @return A `ggplot` object.
-#' @importFrom rlang .data
 #' @export
 plot_proportions <- function(p_arr, type = c("density", "histogram", "interval"),
                               probs = c(0.5, 0.95), robust = FALSE, point_size = 2, ...) {
