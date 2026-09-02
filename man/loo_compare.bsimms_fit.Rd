@@ -34,3 +34,34 @@ as-is; for a \code{bsimms_fit}, a criterion already cached via
 \code{\link[=add_criterion]{add_criterion()}} is reused instead of recomputed) and ranks them with
 \code{\link[loo:loo_compare]{loo::loo_compare()}}.
 }
+\examples{
+\donttest{
+sim <- simulate_bsimms_data(
+  ~Sex,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  n_levels = list(Sex = 2),
+  seed = 1
+)
+fit1 <- bsimm(
+  ~1, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+fit2 <- bsimm(
+  ~Sex, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+loo::loo_compare(fit1, fit2)
+}
+}

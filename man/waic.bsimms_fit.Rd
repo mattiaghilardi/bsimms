@@ -22,6 +22,27 @@ additionally provides Pareto k reliability diagnostics; WAIC is provided
 mainly for comparison with WAIC values reported by other mixing-model
 software.
 }
+\examples{
+\donttest{
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+fit <- bsimm(
+  sim$formula, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+loo::waic(fit)
+}
+}
 \references{
 Watanabe, S. (2010). Asymptotic equivalence of Bayes cross
 validation and widely applicable information criterion in singular

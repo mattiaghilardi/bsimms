@@ -27,6 +27,26 @@
 #' @return A list of plot objects (one per page), invisibly; each is also
 #'   displayed as a side effect if `plot = TRUE`.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' plot(fit)
+#' }
 plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvariables = 5,
                              plot = TRUE, ask = TRUE, newpage = TRUE, ...) {
   rlang::check_installed(
@@ -98,6 +118,26 @@ plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvar
 #'   function, e.g. `group` for grouped types.
 #' @return A ggplot object, as returned by the underlying `ppc_*` function.
 #' @exportS3Method bayesplot::pp_check
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' bayesplot::pp_check(fit, resp = "d13C")
+#' }
 pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndraws = NULL, ...) {
   rlang::check_installed("bayesplot", reason = "to use `pp_check()`.")
   spec <- object$spec
@@ -183,6 +223,28 @@ aggregate_ppc_types <- c(
 #'   `"interval"` respectively.
 #' @return A `ggplot` object.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' p_arr <- posterior_proportions(fit)
+#' plot_proportions(p_arr, type = "interval")
+#' plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
+#' }
 plot_proportions <- function(p_arr, type = c("density", "histogram", "interval"),
                               probs = c(0.5, 0.95), robust = FALSE, point_size = 2, ...) {
   type <- rlang::arg_match(type)

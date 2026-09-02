@@ -44,6 +44,28 @@ for one or more isotopes. If \code{object$criteria$bayes_R2} was already
 cached via \code{\link[=add_criterion]{add_criterion()}}, it is reused (subset to \code{resp}) instead of
 recomputed.
 }
+\examples{
+\donttest{
+sim <- simulate_bsimms_data(
+  ~Sex,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  n_levels = list(Sex = 2),
+  seed = 1
+)
+fit <- bsimm(
+  sim$formula, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+rstantools::bayes_R2(fit)
+}
+}
 \references{
 Gelman, A., Goodrich, B., Gabry, J., & Vehtari, A. (2019).
 R-squared for Bayesian regression models. \emph{The American Statistician},

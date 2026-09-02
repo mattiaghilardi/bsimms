@@ -24,6 +24,27 @@ mixture sample's full isotope profile (isotopes are summed/modelled
 jointly per mixture sample, never held out individually, so the mixture
 sample is the leave-one-out unit -- see \code{\link[=make_stancode]{make_stancode()}}).
 }
+\examples{
+\donttest{
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+fit <- bsimm(
+  sim$formula, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+loo::loo(fit)
+}
+}
 \references{
 Vehtari, A., Gelman, A., & Gabry, J. (2017). Practical
 Bayesian model evaluation using leave-one-out cross-validation and WAIC.

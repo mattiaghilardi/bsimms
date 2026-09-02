@@ -16,6 +16,26 @@
 #'   *Statistics and Computing*, 27(5), 1413-1432.
 #'   \doi{10.1007/s11222-016-9696-4}
 #' @exportS3Method loo::loo
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' loo::loo(fit)
+#' }
 loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
   rlang::check_installed("loo", reason = "to use `loo()`.")
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
@@ -39,6 +59,26 @@ loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
 #'   validation and widely applicable information criterion in singular
 #'   learning theory. *Journal of Machine Learning Research*, 11, 3571-3594.
 #' @exportS3Method loo::waic
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' loo::waic(fit)
+#' }
 waic.bsimms_fit <- function(x, ...) {
   rlang::check_installed("loo", reason = "to use `waic()`.")
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
@@ -63,6 +103,27 @@ waic.bsimms_fit <- function(x, ...) {
 #' @return `x`, with `x$criteria` updated to include the newly computed
 #'   criterion/criteria.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' fit <- add_criterion(fit, "loo")
+#' fit$criteria$loo
+#' }
 add_criterion <- function(x, ...) {
   UseMethod("add_criterion")
 }
@@ -104,6 +165,36 @@ add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
 #'   `model` column, ranked by expected log pointwise predictive density
 #'   (best model first).
 #' @exportS3Method loo::loo_compare
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~Sex,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   n_levels = list(Sex = 2),
+#'   seed = 1
+#' )
+#' fit1 <- bsimm(
+#'   ~1, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' fit2 <- bsimm(
+#'   ~Sex, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' loo::loo_compare(fit1, fit2)
+#' }
 loo_compare.bsimms_fit <- function(x, ..., criterion = c("loo", "waic"), model_names = NULL) {
   criterion <- rlang::arg_match(criterion)
   rlang::check_installed("loo", reason = "to use `loo_compare()`.")

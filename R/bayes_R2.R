@@ -26,6 +26,27 @@
 #'   73(3), 307-309. \doi{10.1080/00031305.2018.1549100}.
 #'   ([Preprint](https://acris.aalto.fi/ws/portalfiles/portal/34206843/bayes_R2_v3.pdf))
 #' @exportS3Method rstantools::bayes_R2
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~Sex,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   n_levels = list(Sex = 2),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' rstantools::bayes_R2(fit)
+#' }
 bayes_R2.bsimms_fit <- function(object, resp = NULL, summary = TRUE, robust = FALSE,
                                  probs = c(0.025, 0.975), ...) {
   spec <- object$spec

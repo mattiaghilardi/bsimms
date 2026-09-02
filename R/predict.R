@@ -44,6 +44,27 @@
 #'   source names attached as the 3rd dimension's `dimnames` (e.g.
 #'   `p_arr[, , "Deer"]`).
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' p_arr <- posterior_proportions(fit)
+#' dim(p_arr)
+#' }
 posterior_proportions <- function(object, ...) {
   UseMethod("posterior_proportions")
 }
@@ -91,6 +112,26 @@ posterior_proportions.bsimms_fit <- function(object, newdata = NULL, re_formula 
 #'   `q2.5`, `q97.5`). If `summary = FALSE`, a numeric array
 #'   `[n_draws, n_obs, K]`.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' fitted_proportions(fit)
+#' }
 fitted_proportions <- function(object, newdata = NULL, re_formula = NULL, allow_new_levels = FALSE,
                                 sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,
                                 summary = TRUE, robust = FALSE, probs = c(0.025, 0.975)) {
@@ -121,6 +162,27 @@ fitted_proportions <- function(object, newdata = NULL, re_formula = NULL, allow_
 #' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
 #'   names attached as the 3rd dimension's `dimnames`.
 #' @exportS3Method rstantools::posterior_epred
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' mu_arr <- rstantools::posterior_epred(fit)
+#' dim(mu_arr)
+#' }
 posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                         allow_new_levels = FALSE,
                                         sample_new_levels = c("uncertainty", "gaussian"),
@@ -169,6 +231,26 @@ posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_f
 #'   `q2.5`, `q97.5`). If `summary = FALSE`, a numeric array
 #'   `[n_draws, n_obs, length(resp)]`.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' fitted(fit)
+#' }
 fitted.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                allow_new_levels = FALSE,
                                sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,
@@ -956,6 +1038,27 @@ predict_y_rep_newdata <- function(object, newdata, re_formula, allow_new_levels,
 #' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
 #'   names attached as the 3rd dimension's `dimnames`.
 #' @exportS3Method rstantools::posterior_predict
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' y_rep <- rstantools::posterior_predict(fit)
+#' dim(y_rep)
+#' }
 posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                           allow_new_levels = FALSE,
                                           sample_new_levels = c("uncertainty", "gaussian"),
@@ -1004,6 +1107,26 @@ posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re
 #'   [posterior::summarise_draws()]); if `FALSE`, an array
 #'   `[n_draws, n_obs, length(resp)]`.
 #' @export
+#' @examples
+#' \donttest{
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 10,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' fit <- bsimm(
+#'   sim$formula, mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_col = sim$source_col,
+#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#' )
+#' predict(fit)
+#' }
 predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
                                 allow_new_levels = FALSE,
                                 sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,

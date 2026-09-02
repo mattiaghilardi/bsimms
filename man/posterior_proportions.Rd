@@ -71,3 +71,25 @@ mixture samples in the fitted data (\code{newdata = NULL}) or for new mixture
 covariate combinations. Use \code{\link[=fitted_proportions]{fitted_proportions()}} for a summarised
 (mean/sd or median/mad, with a credible interval) version instead.
 }
+\examples{
+\donttest{
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+fit <- bsimm(
+  sim$formula, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  chains = 2, iter_warmup = 500, iter_sampling = 500
+)
+p_arr <- posterior_proportions(fit)
+dim(p_arr)
+}
+}
