@@ -38,6 +38,7 @@ export(make_standata)
 export(parse_bsimms_formula)
 export(plot_proportions)
 export(posterior_proportions)
+export(simulate_bsimms_data)
 importFrom(rlang,
   "%||%",
   .data

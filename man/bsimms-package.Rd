@@ -44,6 +44,8 @@ mixture isotope values.
 \code{\link[=add_criterion]{add_criterion()}}, \code{\link[=bayes_R2.bsimms_fit]{bayes_R2.bsimms_fit()}} — model comparison and
 evaluation.
 \item \code{\link[=draws_long]{draws_long()}} — reshape a posterior draws array to long format.
+\item \code{\link[=simulate_bsimms_data]{simulate_bsimms_data()}} — simulate data for any model
+configuration, with known true parameter values.
 \item \code{\link[=ilr]{ilr()}}, \code{\link[=ilr_inv]{ilr_inv()}}, \code{\link[=ilr_basis]{ilr_basis()}}, \code{\link[=clr]{clr()}}, \code{\link[=clr_inv]{clr_inv()}} — the
 ILR/CLR transforms used throughout, exported for independent use.
 }

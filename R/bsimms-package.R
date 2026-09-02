@@ -37,6 +37,8 @@
 #'     [add_criterion()], [bayes_R2.bsimms_fit()] — model comparison and
 #'     evaluation.
 #'   \item [draws_long()] — reshape a posterior draws array to long format.
+#'   \item [simulate_bsimms_data()] — simulate data for any model
+#'     configuration, with known true parameter values.
 #'   \item [ilr()], [ilr_inv()], [ilr_basis()], [clr()], [clr_inv()] — the
 #'     ILR/CLR transforms used throughout, exported for independent use.
 #' }
