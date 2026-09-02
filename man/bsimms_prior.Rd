@@ -14,31 +14,30 @@ concentration, e.g. \code{"1"}).}
 
 \item{class}{One of:
 \itemize{
-\item \code{"b"}: fixed-effect slopes (the population-level baseline is
-not a \code{"b"} coefficient but \code{"p_global"}, see below).
-\item \code{"p_global"}: Dirichlet concentration for one source's share
-of the global/population-average proportions (MixSIAR's
-\code{p_global}).
+\item \code{"b"}: fixed-effect slopes (the population-level baseline is not a
+\code{"b"} coefficient but \code{"p_global"}, see below).
+\item \code{"p_global"}: Dirichlet concentration for one source's share of the
+global/population-average proportions (MixSIAR's \code{p_global}).
 \item \code{"sd"}: group-level standard deviations.
 \item \code{"cor"}: group-level correlations (LKJ prior on the Cholesky
 factor).
 \item \code{"sigma"}: residual/observation error; only used for
 \code{error_structure} \code{"residual_only"}.
-\item \code{"resid_prop"}: MixSIAR's \code{resid.prop}, a multiplicative
-factor scaling the propagated source/TDF process variance; only
-used for \code{error_structure} \code{"process_residual"}; always
-restricted to values between 0 and 20, matching the range of the
-recommended default prior (see \code{\link[=bsimms_get_prior]{bsimms_get_prior()}}), so a
-custom prior can reshape which values in that range are more
-likely but cannot allow values above 20.
-\item \code{"source_mean"}, \code{"source_sd"}, \code{"tdf_mean"}, \code{"tdf_sd"}:
-only used when the corresponding data are supplied raw rather
-than as means/SDs.
-\item \code{"source_cor"}: LKJ prior on the Cholesky factor of each
-source's isotope correlation matrix; only used when source data
-are raw and there are 2+ isotopes.
-\item \code{"resid_cor"}: LKJ prior on the Cholesky factor of the
-shared residual-error correlation matrix; only used for
+\item \code{"resid_prop"}: MixSIAR's \code{resid.prop}, a multiplicative factor
+scaling the propagated source/TDF process variance; only used for
+\code{error_structure} \code{"process_residual"}; always restricted to
+values between 0 and 20, matching the range of the recommended
+default prior (see \code{\link[=bsimms_get_prior]{bsimms_get_prior()}}), so a custom prior can
+reshape which values in that range are more likely but cannot
+allow values above 20.
+\item \code{"source_mean"}, \code{"source_sd"}, \code{"tdf_mean"}, \code{"tdf_sd"}: only
+used when the corresponding data are supplied raw rather than as
+means/SDs.
+\item \code{"source_cor"}: LKJ prior on the Cholesky factor of each source's
+isotope correlation matrix; only used when source data are raw
+and there are 2+ isotopes.
+\item \code{"resid_cor"}: LKJ prior on the Cholesky factor of the shared
+residual-error correlation matrix; only used for
 \code{error_structure} \code{"residual_only"} with 2+ isotopes.
 }}
 
@@ -59,10 +58,9 @@ formula).
 \item For \code{"p_global"}/\code{"source_mean"}/\code{"source_sd"}/\code{"tdf_mean"}/
 \code{"tdf_sd"}/\code{"source_cor"}, restrict to one source (as named in
 \code{source_data}/\code{tdf_data}), so that source and trophic
-discrimination factor priors can be made source-specific as
-well as isotope-specific. Left unset (\code{""}), such a prior
-applies to every source (and, except for \code{"source_cor"}, every
-isotope).
+discrimination factor priors can be made source-specific as well
+as isotope-specific. Left unset (\code{""}), such a prior applies to
+every source (and, except for \code{"source_cor"}, every isotope).
 }}
 }
 \value{

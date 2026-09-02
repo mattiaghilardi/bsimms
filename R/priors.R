@@ -12,34 +12,31 @@
 #'   or, for `class = "p_global"`, a single positive number (a Dirichlet
 #'   concentration, e.g. `"1"`).
 #' @param class One of:
-#'   \itemize{
-#'     \item `"b"`: fixed-effect slopes (the population-level baseline is
-#'       not a `"b"` coefficient but `"p_global"`, see below).
-#'     \item `"p_global"`: Dirichlet concentration for one source's share
-#'       of the global/population-average proportions (MixSIAR's
-#'       `p_global`).
-#'     \item `"sd"`: group-level standard deviations.
-#'     \item `"cor"`: group-level correlations (LKJ prior on the Cholesky
-#'       factor).
-#'     \item `"sigma"`: residual/observation error; only used for
-#'       `error_structure` `"residual_only"`.
-#'     \item `"resid_prop"`: MixSIAR's `resid.prop`, a multiplicative
-#'       factor scaling the propagated source/TDF process variance; only
-#'       used for `error_structure` `"process_residual"`; always
-#'       restricted to values between 0 and 20, matching the range of the
-#'       recommended default prior (see [bsimms_get_prior()]), so a
-#'       custom prior can reshape which values in that range are more
-#'       likely but cannot allow values above 20.
-#'     \item `"source_mean"`, `"source_sd"`, `"tdf_mean"`, `"tdf_sd"`:
-#'       only used when the corresponding data are supplied raw rather
-#'       than as means/SDs.
-#'     \item `"source_cor"`: LKJ prior on the Cholesky factor of each
-#'       source's isotope correlation matrix; only used when source data
-#'       are raw and there are 2+ isotopes.
-#'     \item `"resid_cor"`: LKJ prior on the Cholesky factor of the
-#'       shared residual-error correlation matrix; only used for
-#'       `error_structure` `"residual_only"` with 2+ isotopes.
-#'   }
+#'   - `"b"`: fixed-effect slopes (the population-level baseline is not a
+#'     `"b"` coefficient but `"p_global"`, see below).
+#'   - `"p_global"`: Dirichlet concentration for one source's share of the
+#'     global/population-average proportions (MixSIAR's `p_global`).
+#'   - `"sd"`: group-level standard deviations.
+#'   - `"cor"`: group-level correlations (LKJ prior on the Cholesky
+#'     factor).
+#'   - `"sigma"`: residual/observation error; only used for
+#'     `error_structure` `"residual_only"`.
+#'   - `"resid_prop"`: MixSIAR's `resid.prop`, a multiplicative factor
+#'     scaling the propagated source/TDF process variance; only used for
+#'     `error_structure` `"process_residual"`; always restricted to
+#'     values between 0 and 20, matching the range of the recommended
+#'     default prior (see [bsimms_get_prior()]), so a custom prior can
+#'     reshape which values in that range are more likely but cannot
+#'     allow values above 20.
+#'   - `"source_mean"`, `"source_sd"`, `"tdf_mean"`, `"tdf_sd"`: only
+#'     used when the corresponding data are supplied raw rather than as
+#'     means/SDs.
+#'   - `"source_cor"`: LKJ prior on the Cholesky factor of each source's
+#'     isotope correlation matrix; only used when source data are raw
+#'     and there are 2+ isotopes.
+#'   - `"resid_cor"`: LKJ prior on the Cholesky factor of the shared
+#'     residual-error correlation matrix; only used for
+#'     `error_structure` `"residual_only"` with 2+ isotopes.
 #' @param coef Optional: restrict to one fixed-effect coefficient name, as
 #'   it appears in the model formula's expanded design matrix (e.g.
 #'   `"SexM"` for a factor `Sex`, or `"SexM:RegionB"` for an interaction).
@@ -48,18 +45,15 @@
 #'   `class` `"sigma"`, `"resid_prop"`, `"source_mean"`, `"source_sd"`,
 #'   `"tdf_mean"` or `"tdf_sd"`.
 #' @param group Optional, one of two uses depending on `class`:
-#'   \itemize{
-#'     \item For `"sd"`/`"cor"`, restrict to one group-level term (the
-#'       right-hand side of a `(... | group)` term, as written in the
-#'       formula).
-#'     \item For `"p_global"`/`"source_mean"`/`"source_sd"`/`"tdf_mean"`/
-#'       `"tdf_sd"`/`"source_cor"`, restrict to one source (as named in
-#'       `source_data`/`tdf_data`), so that source and trophic
-#'       discrimination factor priors can be made source-specific as
-#'       well as isotope-specific. Left unset (`""`), such a prior
-#'       applies to every source (and, except for `"source_cor"`, every
-#'       isotope).
-#'   }
+#'   - For `"sd"`/`"cor"`, restrict to one group-level term (the
+#'     right-hand side of a `(... | group)` term, as written in the
+#'     formula).
+#'   - For `"p_global"`/`"source_mean"`/`"source_sd"`/`"tdf_mean"`/
+#'     `"tdf_sd"`/`"source_cor"`, restrict to one source (as named in
+#'     `source_data`/`tdf_data`), so that source and trophic
+#'     discrimination factor priors can be made source-specific as well
+#'     as isotope-specific. Left unset (`""`), such a prior applies to
+#'     every source (and, except for `"source_cor"`, every isotope).
 #' @return A one-row `data.frame` of class `bsimms_prior`.
 #' @export
 #' @examples

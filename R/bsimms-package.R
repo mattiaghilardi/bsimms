@@ -19,29 +19,27 @@
 #' numerically stable softmax transform.
 #'
 #' Main functions:
-#' \itemize{
-#'   \item [bsimm()] — fit a model (builds + compiles + samples).
-#'   \item [make_stancode()] / [make_standata()] — inspect or hand-edit
-#'     the generated Stan program / data without fitting.
-#'   \item [bsimms_get_prior()] / [bsimms_prior()] — inspect and set priors.
-#'   \item [summary.bsimms_fit()], [print.bsimms_fit()] — summarise a
-#'     fitted model.
-#'   \item [posterior_proportions()], [fitted_proportions()] — posterior
-#'     (predictive) source proportions.
-#'   \item [posterior_epred.bsimms_fit()], [posterior_predict.bsimms_fit()],
-#'     [fitted.bsimms_fit()], [predict.bsimms_fit()] — posterior (predictive)
-#'     mixture isotope values.
-#'   \item [conditional_effects()], [plot_proportions()],
-#'     [plot.bsimms_fit()], [pp_check.bsimms_fit()] — plot a fitted model.
-#'   \item [loo.bsimms_fit()], [waic.bsimms_fit()], [loo_compare.bsimms_fit()],
-#'     [add_criterion()], [bayes_R2.bsimms_fit()] — model comparison and
-#'     evaluation.
-#'   \item [draws_long()] — reshape a posterior draws array to long format.
-#'   \item [simulate_bsimms_data()] — simulate data for any model
-#'     configuration, with known true parameter values.
-#'   \item [ilr()], [ilr_inv()], [ilr_basis()], [clr()], [clr_inv()] — the
-#'     ILR/CLR transforms used throughout, exported for independent use.
-#' }
+#' - [bsimm()] — fit a model (builds + compiles + samples).
+#' - [make_stancode()] / [make_standata()] — inspect or hand-edit
+#'   the generated Stan program / data without fitting.
+#' - [bsimms_get_prior()] / [bsimms_prior()] — inspect and set priors.
+#' - [summary.bsimms_fit()], [print.bsimms_fit()] — summarise a
+#'   fitted model.
+#' - [posterior_proportions()], [fitted_proportions()] — posterior
+#'   (predictive) source proportions.
+#' - [posterior_epred.bsimms_fit()], [posterior_predict.bsimms_fit()],
+#'   [fitted.bsimms_fit()], [predict.bsimms_fit()] — posterior (predictive)
+#'   mixture isotope values.
+#' - [conditional_effects()], [plot_proportions()],
+#'   [plot.bsimms_fit()], [pp_check.bsimms_fit()] — plot a fitted model.
+#' - [loo.bsimms_fit()], [waic.bsimms_fit()], [loo_compare.bsimms_fit()],
+#'   [add_criterion()], [bayes_R2.bsimms_fit()] — model comparison and
+#'   evaluation.
+#' - [draws_long()] — reshape a posterior draws array to long format.
+#' - [simulate_bsimms_data()] — simulate data for any model
+#'   configuration, with known true parameter values.
+#' - [ilr()], [ilr_inv()], [ilr_basis()], [clr()], [clr_inv()] — the
+#'   ILR/CLR transforms used throughout, exported for independent use.
 #'
 #' @references Carpenter, B., Gelman, A., Hoffman, M.D., Lee, D., Goodrich,
 #'   B., Betancourt, M., Brubaker, M., Guo, J., Li, P., & Riddell, A.
