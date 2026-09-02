@@ -219,20 +219,73 @@ default_bsimms_prior <- function(spec) {
   do.call(c, rows)
 }
 
+#' Validate that a user-supplied prior's `coef`/`resp`/`group` values
+#' (where meaningful for that row's `class`) are real identifiers from
+#' `spec`, rather than a typo that would otherwise be silently appended as
+#' a dead row -- never matched by `select_prior()`, so the override would
+#' never actually apply to anything and no error would ever surface it.
+#'
+#' @param user A `bsimms_prior` data frame of user overrides.
+#' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
+#' @return Invisible `NULL`; errors on an unrecognised identifier.
+#' @noRd
+validate_prior_identifiers <- function(user, spec) {
+  re_groups <- vapply(spec$re_terms, function(x) x$group, character(1))
+  check <- function(value, valid, field, class) {
+    if (!nzchar(value) || value %in% valid) {
+      return(invisible(NULL))
+    }
+    if (length(valid) == 0) {
+      cli::cli_abort(
+        "{.arg prior}: class {.val {class}} has no valid {.field {field}} in this model (no matching terms).",
+        call = NULL
+      )
+    }
+    cli::cli_abort(
+      "{.arg prior}: unrecognised {.field {field}} {.val {value}} for class {.val {class}}; must be one of {.val {valid}}.",
+      call = NULL
+    )
+  }
+  for (i in seq_len(nrow(user))) {
+    class <- user$class[i]
+    if (class == "b") check(user$coef[i], spec$fixed_names, "coef", class)
+    if (class %in% c("sigma", "resid_prop", "source_mean", "source_sd", "tdf_mean", "tdf_sd")) {
+      check(user$resp[i], spec$isotope_names, "resp", class)
+    }
+    if (class %in% c("sd", "cor")) check(user$group[i], re_groups, "group", class)
+    if (class %in% c("p_global", "source_mean", "source_sd", "tdf_mean", "tdf_sd", "source_cor")) {
+      check(user$group[i], spec$source_names, "group", class)
+    }
+  }
+  invisible(NULL)
+}
+
 #' Merge a user-supplied prior specification into the model's default
 #' priors: rows matching an existing `(class, coef, resp, group)`
 #' combination overwrite that row's `prior` string in place, and rows with
 #' no match are appended (allowing new, more specific overrides, e.g. a
-#' `resp`-specific row when only a class-level default exists).
+#' `resp`-specific row when only a class-level default exists). Finally,
+#' any user row that is *less* specific than existing rows of the same
+#' class (e.g. a class-level `"resid_prop"` override, when
+#' `default_bsimms_prior()` also pre-fills a `resp`-specific row for every
+#' isotope) is cascaded onto those more specific rows too -- but never
+#' onto one the user separately overrode themselves, which keeps its own,
+#' more specific value regardless of the two rows' order. Without this,
+#' `select_prior()`'s always-most-specific-first lookup would find the
+#' untouched, pre-filled specific row and the less specific override
+#' would silently never be used.
 #'
 #' @param default A `bsimms_prior` data frame (as returned by
 #'   `default_bsimms_prior()`).
 #' @param user `NULL`, or a `bsimms_prior` data frame of user overrides (as
 #'   returned by [bsimms_prior()], optionally combined with [c()]).
+#' @param spec A `bsimms_spec`, used to validate `user`'s `coef`/`resp`/
+#'   `group` values against the model's real identifiers (see
+#'   `validate_prior_identifiers()`).
 #' @return A `bsimms_prior` data frame: `default` unchanged if `user` is
 #'   `NULL`, otherwise `default` with `user`'s rows merged in.
 #' @noRd
-merge_bsimms_prior <- function(default, user) {
+merge_bsimms_prior <- function(default, user, spec) {
   if (is.null(user)) return(default)
   if (!inherits(user, "bsimms_prior")) {
     cli::cli_abort(
@@ -240,7 +293,9 @@ merge_bsimms_prior <- function(default, user) {
       call = NULL
     )
   }
+  validate_prior_identifiers(user, spec)
   out <- default
+  touched <- rep(FALSE, nrow(out))
   for (i in seq_len(nrow(user))) {
     match_row <- which(
       out$class == user$class[i] & out$coef == user$coef[i] &
@@ -248,12 +303,45 @@ merge_bsimms_prior <- function(default, user) {
     )
     if (length(match_row) == 1) {
       out$prior[match_row] <- user$prior[i]
+      touched[match_row] <- TRUE
     } else {
       out <- rbind(out, user[i, ])
+      touched <- c(touched, TRUE)
+    }
+  }
+  for (i in seq_len(nrow(user))) {
+    candidates <- which(out$class == user$class[i] & !touched)
+    for (r in candidates) {
+      if (is_more_specific_prior_row(out[r, ], user[i, ])) {
+        out$prior[r] <- user$prior[i]
+      }
     }
   }
   class(out) <- c("bsimms_prior", "data.frame")
   out
+}
+
+#' Is `row` a specialisation of `base` -- i.e. do they agree on every
+#' `coef`/`resp`/`group` field where `base` is non-empty, and does `row`
+#' additionally pin down at least one field `base` leaves unrestricted
+#' (`""`)? Used by `merge_bsimms_prior()` to cascade a less specific user
+#' override onto the more specific default rows it would otherwise be
+#' shadowed by, mirroring `select_prior()`'s own specificity ordering.
+#'
+#' @param row,base Single-row `bsimms_prior` data frames (same `class`).
+#' @return Logical.
+#' @noRd
+is_more_specific_prior_row <- function(row, base) {
+  fields <- c("coef", "resp", "group")
+  more_specific <- FALSE
+  for (f in fields) {
+    if (nzchar(base[[f]])) {
+      if (row[[f]] != base[[f]]) return(FALSE)
+    } else if (nzchar(row[[f]])) {
+      more_specific <- TRUE
+    }
+  }
+  more_specific
 }
 
 #' Look up the Stan prior expression to use for one parameter, from a

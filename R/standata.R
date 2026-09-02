@@ -39,7 +39,7 @@ make_standata <- function(formula, mixture_data, source_data, tdf_data, isotope_
     source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
     conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
   )
-  prior_df <- merge_bsimms_prior(default_bsimms_prior(spec), prior)
+  prior_df <- merge_bsimms_prior(default_bsimms_prior(spec), prior, spec)
   out <- standata_from_spec(spec, prior_df)
   class(out) <- c("bsimms_standata", "list")
   out

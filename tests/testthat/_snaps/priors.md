@@ -39,6 +39,42 @@
       Error:
       ! `prior` must be built with `bsimms_prior()` (optionally combined with `c()`).
 
+# merge_bsimms_prior errors on an unrecognised coef/resp/group
+
+    Code
+      merge_bsimms_prior(default, bsimms_prior("normal(0, 1)", class = "b", coef = "SexZZZ"),
+      spec_re)
+    Condition
+      Error:
+      ! `prior`: unrecognised coef "SexZZZ" for class "b"; must be one of "SexM".
+
+---
+
+    Code
+      merge_bsimms_prior(default, bsimms_prior("2", class = "p_global", group = "Beavr"),
+      spec_re)
+    Condition
+      Error:
+      ! `prior`: unrecognised group "Beavr" for class "p_global"; must be one of "Beaver" and "Deer".
+
+---
+
+    Code
+      merge_bsimms_prior(default, bsimms_prior("student_t(3, 0, 1)", class = "sd",
+        group = "Regionn"), spec_re)
+    Condition
+      Error:
+      ! `prior`: unrecognised group "Regionn" for class "sd"; must be one of "Region".
+
+# merge_bsimms_prior errors clearly when a class has no valid terms in this model
+
+    Code
+      merge_bsimms_prior(default, bsimms_prior("student_t(3, 0, 1)", class = "sd",
+        group = "Region"), spec)
+    Condition
+      Error:
+      ! `prior`: class "sd" has no valid group in this model (no matching terms).
+
 # select_prior errors when the class is entirely absent
 
     Code
