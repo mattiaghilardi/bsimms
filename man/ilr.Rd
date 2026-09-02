@@ -2,9 +2,12 @@
 % Please edit documentation in R/ilr.R
 \name{ilr}
 \alias{ilr}
-\title{Forward ILR transform: proportions to ILR coordinates}
+\alias{ilr_inv}
+\title{Forward and inverse ILR transforms}
 \usage{
 ilr(x, V = NULL)
+
+ilr_inv(z, V = NULL)
 }
 \arguments{
 \item{x}{A vector of length \code{K}, or an \verb{N x K} matrix, of strictly
@@ -13,22 +16,42 @@ simplex). Need not sum to 1: \code{ilr()} is invariant to the overall scale
 of \code{x} (only the relative proportions matter), so an unnormalised
 vector of positive weights works just as well as a closed composition.}
 
-\item{V}{Optional ILR basis from \code{\link[=ilr_basis]{ilr_basis()}}. If \code{NULL} (default), the
-default sequential basis (eq. 18) is used, via the closed-form eq. 25.}
+\item{V}{Optional ILR basis from \code{\link[=ilr_basis]{ilr_basis()}}. If \code{NULL} (default):
+for \code{ilr()}, the default sequential basis (eq. 18) is used, via the
+closed-form eq. 25; for \code{ilr_inv()}, computed automatically from
+\code{ncol(z) + 1} / \code{length(z) + 1}.}
+
+\item{z}{A vector of length \code{K - 1}, or an \verb{N x (K - 1)} matrix of ILR
+coordinates.}
 }
 \value{
-ILR coordinates: a vector of length \code{K - 1}, or an \verb{N x (K - 1)}
-matrix.
+\code{ilr()} returns ILR coordinates: a vector of length \code{K - 1}, or
+an \verb{N x (K - 1)} matrix. \code{ilr_inv()} returns proportions on the
+\code{K}-part simplex: a vector of length \code{K}, or an \verb{N x K} matrix.
 }
 \description{
-For the default sequential basis (\code{V = NULL}), each coordinate is
-computed directly from ratios of geometric means, following Egozcue
+\code{ilr()} maps compositions to isometric log-ratio (ILR) coordinates;
+\code{ilr_inv()} maps back to the simplex.
+}
+\details{
+For the default sequential basis (\code{V = NULL}), \code{ilr()} computes each
+coordinate directly from ratios of geometric means, following Egozcue
 et al. (2003, eq. 25) — the same formula used by \code{MixSIAR}:
 \deqn{y_i = \sqrt{i/(i+1)} \, \ln\!\left(\frac{g(x_1, \dots,
 x_i)}{x_{i+1}}\right), \quad i = 1, \dots, K - 1,}
 where \eqn{g(\cdot)} denotes the geometric mean. For a non-default
 basis, the general definition (eq. 23), \code{ilr(x) = crossprod(V, clr(x))},
 is used instead.
+
+\code{ilr_inv()} implements the inverse transformation (eq. 24), \eqn{x =
+\bigoplus_{i} (y_i \otimes e_i)}: each ILR coordinate \code{z[d]}
+perturbation-scales its simplex-domain basis element \code{e_d = clr_inv(V[, d])} (a power operation followed by closure/normalisation),
+and the results are combined by repeated perturbation (elementwise
+product followed by closure). This is the same construction used by
+\code{MixSIAR}'s JAGS implementation, and is what \code{bsimms}'s generated Stan
+code uses internally (the \code{inverse_ilr()} function in the \code{functions}
+block of \code{make_stancode()}'s output) to map the ILR-scale linear
+predictor back onto the source simplex.
 }
 \examples{
 p <- c(0.5, 0.3, 0.2)

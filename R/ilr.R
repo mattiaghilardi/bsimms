@@ -41,12 +41,22 @@ ilr_basis <- function(K) {
   V
 }
 
-#' Centred log-ratio transform
+#' Centred log-ratio transform and its inverse
+#'
+#' `clr()` maps compositions to the (mean-centred) log scale; `clr_inv()`
+#' (a softmax) maps back to the simplex.
 #'
 #' @param x A vector or matrix of strictly positive compositions. If a
 #'   matrix, rows are compositions.
-#' @return `clr(x)`, same shape as `x`.
+#' @param y A vector or matrix on the clr scale (rows are clr vectors if a
+#'   matrix).
+#' @return `clr(x)`, same shape as `x`. `clr_inv(y)` returns a composition
+#'   (or matrix of compositions) on the simplex.
 #' @export
+#' @examples
+#' p <- c(0.5, 0.3, 0.2)
+#' z <- clr(p)
+#' clr_inv(z)  # back to p
 clr <- function(x) {
   if (is.matrix(x)) {
     if (any(x <= 0)) cli::cli_abort("All parts of {.arg x} must be strictly positive.", call = NULL)
@@ -59,11 +69,7 @@ clr <- function(x) {
   }
 }
 
-#' Inverse centred log-ratio transform (softmax)
-#'
-#' @param y A vector or matrix on the clr scale (rows are clr vectors if a
-#'   matrix).
-#' @return A composition (or matrix of compositions) on the simplex.
+#' @rdname clr
 #' @export
 clr_inv <- function(y) {
   if (is.matrix(y)) {
@@ -75,10 +81,13 @@ clr_inv <- function(y) {
   }
 }
 
-#' Forward ILR transform: proportions to ILR coordinates
+#' Forward and inverse ILR transforms
 #'
-#' For the default sequential basis (`V = NULL`), each coordinate is
-#' computed directly from ratios of geometric means, following Egozcue
+#' `ilr()` maps compositions to isometric log-ratio (ILR) coordinates;
+#' `ilr_inv()` maps back to the simplex.
+#'
+#' For the default sequential basis (`V = NULL`), `ilr()` computes each
+#' coordinate directly from ratios of geometric means, following Egozcue
 #' et al. (2003, eq. 25) — the same formula used by `MixSIAR`:
 #' \deqn{y_i = \sqrt{i/(i+1)} \, \ln\!\left(\frac{g(x_1, \dots,
 #' x_i)}{x_{i+1}}\right), \quad i = 1, \dots, K - 1,}
@@ -86,15 +95,31 @@ clr_inv <- function(y) {
 #' basis, the general definition (eq. 23), `ilr(x) = crossprod(V, clr(x))`,
 #' is used instead.
 #'
+#' `ilr_inv()` implements the inverse transformation (eq. 24), \eqn{x =
+#' \bigoplus_{i} (y_i \otimes e_i)}: each ILR coordinate `z[d]`
+#' perturbation-scales its simplex-domain basis element `e_d =
+#' clr_inv(V[, d])` (a power operation followed by closure/normalisation),
+#' and the results are combined by repeated perturbation (elementwise
+#' product followed by closure). This is the same construction used by
+#' `MixSIAR`'s JAGS implementation, and is what `bsimms`'s generated Stan
+#' code uses internally (the `inverse_ilr()` function in the `functions`
+#' block of `make_stancode()`'s output) to map the ILR-scale linear
+#' predictor back onto the source simplex.
+#'
 #' @param x A vector of length `K`, or an `N x K` matrix, of strictly
 #'   positive parts (a composition, or set of compositions, on the `K`-part
 #'   simplex). Need not sum to 1: `ilr()` is invariant to the overall scale
 #'   of `x` (only the relative proportions matter), so an unnormalised
 #'   vector of positive weights works just as well as a closed composition.
-#' @param V Optional ILR basis from [ilr_basis()]. If `NULL` (default), the
-#'   default sequential basis (eq. 18) is used, via the closed-form eq. 25.
-#' @return ILR coordinates: a vector of length `K - 1`, or an `N x (K - 1)`
-#'   matrix.
+#' @param z A vector of length `K - 1`, or an `N x (K - 1)` matrix of ILR
+#'   coordinates.
+#' @param V Optional ILR basis from [ilr_basis()]. If `NULL` (default):
+#'   for `ilr()`, the default sequential basis (eq. 18) is used, via the
+#'   closed-form eq. 25; for `ilr_inv()`, computed automatically from
+#'   `ncol(z) + 1` / `length(z) + 1`.
+#' @return `ilr()` returns ILR coordinates: a vector of length `K - 1`, or
+#'   an `N x (K - 1)` matrix. `ilr_inv()` returns proportions on the
+#'   `K`-part simplex: a vector of length `K`, or an `N x K` matrix.
 #' @references Egozcue, J.J., Pawlowsky-Glahn, V., Mateu-Figueras, G., &
 #'   Barcelo-Vidal, C. (2003). Isometric logratio transformations for
 #'   compositional data analysis. *Mathematical Geology*, 35(3), 279-300.
@@ -134,29 +159,7 @@ ilr_default_vec <- function(x) {
   z
 }
 
-#' Inverse ILR transform: ILR coordinates to proportions
-#'
-#' Implements the inverse isometric log-ratio transformation of Egozcue
-#' et al. (2003, eq. 24), \eqn{x = \bigoplus_{i} (y_i \otimes e_i)}: each
-#' ILR coordinate `z[d]` perturbation-scales its simplex-domain basis
-#' element `e_d = clr_inv(V[, d])` (a power operation followed by
-#' closure/normalisation), and the results are combined by repeated
-#' perturbation (elementwise product followed by closure). This is the
-#' same construction used by `MixSIAR`'s JAGS implementation, and is
-#' what `bsimms`'s generated Stan code uses internally (the `inverse_ilr()`
-#' function in the `functions` block of `make_stancode()`'s output) to map
-#' the ILR-scale linear predictor back onto the source simplex.
-#'
-#' @param z A vector of length `K - 1`, or an `N x (K - 1)` matrix of ILR
-#'   coordinates.
-#' @param V Optional ILR basis from [ilr_basis()]. If `NULL`, computed
-#'   automatically from `ncol(z) + 1` / `length(z) + 1`.
-#' @return Proportions on the `K`-part simplex: a vector of length `K`, or
-#'   an `N x K` matrix.
-#' @references Egozcue, J.J., Pawlowsky-Glahn, V., Mateu-Figueras, G., &
-#'   Barcelo-Vidal, C. (2003). Isometric logratio transformations for
-#'   compositional data analysis. *Mathematical Geology*, 35(3), 279-300.
-#'   \doi{10.1023/A:1023818214614}
+#' @rdname ilr
 #' @importFrom rlang %||%
 #' @export
 ilr_inv <- function(z, V = NULL) {
