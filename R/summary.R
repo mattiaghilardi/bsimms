@@ -96,20 +96,6 @@ summary.bsimms_fit <- function(object, robust = FALSE, probs = c(0.025, 0.975), 
   out
 }
 
-#' Print a `bsimms` model summary
-#'
-#' Prints the tables computed by [summary.bsimms_fit()]: population-average
-#' source proportions, fixed effects (ILR scale, if any), group-level
-#' standard deviations (ILR scale, if any), and error term(s) (if any),
-#' each with its central tendency/spread, credible interval, and MCMC
-#' diagnostics (`rhat`, `ess_bulk`, `ess_tail`), rounded to `digits`.
-#'
-#' @param x A `summary.bsimms_fit` object (as returned by
-#'   [summary.bsimms_fit()]).
-#' @param digits Number of decimal places to round to (default 3); ESS
-#'   columns are always rounded to whole numbers.
-#' @param ... Currently unused.
-#' @return `x`, invisibly.
 #' @export
 print.summary.bsimms_fit <- function(x, digits = 3, ...) {
   cat("Bayesian stable isotope mixing model\n")

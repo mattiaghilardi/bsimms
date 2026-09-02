@@ -119,15 +119,6 @@ make_stancode <- function(formula, mixture_data, source_data, tdf_data, isotope_
   code
 }
 
-#' Print generated Stan code
-#'
-#' Prints a `bsimms_stancode` object as plain Stan program text (rather
-#' than as a quoted, escaped R character string, which is how it would
-#' print without this method).
-#'
-#' @param x A `bsimms_stancode` object (as returned by [make_stancode()]).
-#' @param ... Unused.
-#' @return `x`, invisibly.
 #' @export
 print.bsimms_stancode <- function(x, ...) {
   cat(x)
