@@ -101,24 +101,21 @@ Builds the named list of data passed to Stan, matching exactly the
 \code{data} block produced by \code{\link[=make_stancode]{make_stancode()}} for the same arguments.
 }
 \examples{
-mixture_data <- data.frame(
-  d13C = c(-20, -21, -19, -22, -20.5, -21.5),
-  d15N = c(10, 11, 9, 12, 10.5, 11.5),
-  Region = factor(rep(c("A", "B"), each = 3))
-)
-source_data <- data.frame(
-  Source = rep(c("Beaver", "Deer"), each = 3),
-  d13C = c(-25, -24, -26, -18, -17, -19),
-  d15N = c(5, 6, 4, 8, 9, 7)
-)
-tdf_data <- data.frame(
-  Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+sim <- simulate_bsimms_data(
+  ~ 1 + (1 | Region),
+  n_mixture_obs = 20,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  n_groups = list(Region = 2),
+  seed = 1
 )
 sdata <- make_standata(
-  ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+  sim$formula, mixture_data = sim$mixture_data,
+  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_col = sim$source_col
 )
 str(sdata, max.level = 1)
 }
