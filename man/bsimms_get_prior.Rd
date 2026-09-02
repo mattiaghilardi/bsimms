@@ -118,6 +118,16 @@ bsimms_get_prior(
 )
 }
 \references{
+Moore, J.W., & Semmens, B.X. (2008). Incorporating
+uncertainty and prior information into stable isotope mixing models.
+\emph{Ecology Letters}, 11(5), 470-480.
+\doi{10.1111/j.1461-0248.2008.01163.x}
+
+Parnell, A.C., Inger, R., Bearhop, S., & Jackson, A.L.
+(2010). Source partitioning using stable isotopes: coping with too
+much variation. \emph{PLoS ONE}, 5(3), e9672.
+\doi{10.1371/journal.pone.0009672}
+
 Stock, B.C., & Semmens, B.X. (2016). Unifying error
 structures in commonly used biotracer mixing models. \emph{Ecology},
 97(10), 2562-2569. \doi{10.1002/ecy.1517} Appendix S2 simulation-tests

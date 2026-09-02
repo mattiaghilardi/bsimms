@@ -22,6 +22,7 @@
 #' @return An object of class `bsimms_fit`: a list with elements `fit` (the
 #'   raw backend fit object), `backend`, `spec` (internal model
 #'   specification), `stancode`, `standata`, `prior`, and `call`.
+#' @inherit make_stancode references
 #' @export
 #' @examples
 #' \donttest{

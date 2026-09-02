@@ -4,6 +4,7 @@
 #' `data` block produced by [make_stancode()] for the same arguments.
 #'
 #' @inheritParams make_stancode
+#' @inherit make_stancode references
 #' @return A named list suitable for `cmdstanr::sample(data = ...)` or
 #'   `rstan::sampling(data = ...)`. Class `bsimms_standata`.
 #' @export
