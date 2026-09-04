@@ -237,13 +237,11 @@ stan_header <- function(spec) {
 
 ## ---- functions block ----------------------------------------------------
 
-#' Build the `functions` block: the two Stan helper functions used
-#' throughout the generated program, `gmean()` (geometric mean of a
-#' composition's leading `k` parts, for the forward ILR transform of
-#' `p_global`) and `inverse_ilr()` (maps ILR coordinates back onto the
-#' source simplex, Egozcue et al. 2003 eq. 24). Currently the same
-#' regardless of `spec` (`spec` is unused, kept only so every `stan_*_lines`
-#' helper shares a consistent `(spec, ...)` signature).
+#' Build the `functions` block: `gmean()`, the geometric mean of a
+#' composition's leading `k` parts, used for the forward ILR transform of
+#' `p_global`. Currently the same regardless of `spec` (`spec` is unused,
+#' kept only so every `stan_*_lines` helper shares a consistent
+#' `(spec, ...)` signature).
 #'
 #' @param spec A `bsimms_spec` (see `build_bsimms_spec()`); currently unused.
 #' @return Character vector of Stan code lines.
@@ -261,33 +259,6 @@ stan_functions_lines <- function(spec) {
     " */",
     "real gmean(vector p, int k) {",
     indent("return exp(mean(log(p[1:k])));"),
-    "}",
-    "",
-    "/* Inverse isometric log-ratio transform",
-    " * Maps ILR coordinates back onto the source simplex following Egozcue",
-    " * et al. (2003, eq. 24)",
-    " * Args:",
-    " *   z: ILR-scale coordinates (length K - 1)",
-    " *   E: simplex-domain ILR basis, columns e_1, ..., e_{K-1} (K x (K - 1))",
-    " * Returns:",
-    " *   a simplex of length K",
-    " */",
-    "vector inverse_ilr(vector z, matrix E) {",
-    indent("int K = rows(E);"),
-    indent("int D = cols(E);"),
-    indent("matrix[K, D] cross;"),
-    indent("vector[K] p;"),
-    indent("for (d in 1:D) {"),
-    indent(indent("vector[K] powered = pow(E[, d], z[d]);")),
-    indent(indent("cross[, d] = powered / sum(powered);")),
-    indent("}"),
-    indent("p = cross[, 1];"),
-    indent("if (D > 1) {"),
-    indent(indent("for (d in 2:D) {")),
-    indent(indent(indent("p = p .* cross[, d];"))),
-    indent(indent("}")),
-    indent("}"),
-    indent("return p / sum(p);"),
     "}"
   )
 }
@@ -367,9 +338,7 @@ stan_data_lines <- function(spec) {
 
 ## ---- transformed data --------------------------------------------------
 
-#' Build the `transformed data` block: derives `E`, the simplex-domain ILR
-#' basis (`E[, d] = softmax(V[, d])`, Egozcue et al. 2003 eq. 18), from the
-#' `V` basis matrix supplied as data; and, for source/TDF data supplied as
+#' Build the `transformed data` block: for source/TDF data supplied as
 #' means/SDs (`spec$source`/`spec$tdf`'s `mode == "summary"`), aliases the
 #' `_data`-suffixed input matrices to the plain `source_mean`/`source_sd`/
 #' `tdf_mean`/`tdf_sd` names used everywhere else in the program (mirroring
@@ -380,20 +349,15 @@ stan_data_lines <- function(spec) {
 #' @return Character vector of Stan code lines.
 #' @noRd
 stan_transformed_data_lines <- function(spec) {
-  lines <- c(
-    "matrix[K, D] E;  // simplex-domain ILR basis (Egozcue et al. 2003, eq. 18)",
-    "for (d in 1:D) {",
-    indent("E[, d] = softmax(V[, d]);"),
-    "}"
-  )
+  lines <- character(0)
   if (spec$source$mode == "summary") {
-    lines <- c(lines, "",
+    lines <- c(lines,
       "matrix[K, J] source_mean = source_mean_data;  // alias: source means as supplied",
       "matrix[K, J] source_sd = source_sd_data;  // alias: source SDs as supplied"
     )
   }
   if (spec$tdf$mode == "summary") {
-    lines <- c(lines, "",
+    lines <- c(lines, if (length(lines) > 0) "",
       "matrix[K, J] tdf_mean = tdf_mean_data;  // alias: TDF means as supplied",
       "matrix[K, J] tdf_sd = tdf_sd_data;  // alias: TDF SDs as supplied"
     )
@@ -525,7 +489,7 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
   lines <- c(lines, "",
     "array[N] simplex[K] p;  // source proportions, one simplex per mixture sample",
     "for (i in 1:N) {  // inverse-ILR each mixture sample's eta onto the source simplex",
-    indent("p[i] = inverse_ilr(to_vector(eta[i]), E);  // Egozcue et al. 2003, eq. 24"),
+    indent("p[i] = softmax(V * to_vector(eta[i]));"),
     "}"
   )
 

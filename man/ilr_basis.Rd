@@ -23,11 +23,9 @@ whose \code{clr}-inverse, \code{e_i = clr_inv(u_i)}, is the \code{i}-th element 
 Aitchison-orthonormal simplex basis (eq. 18) contrasting the (equally
 weighted) average of the first \code{i} parts against part \code{i + 1} — the
 same default sequential basis used by \code{MixSIAR}. \code{bsimms} passes this
-matrix into the generated Stan program as data (\code{V}); the Stan model
-derives \code{E}, the simplex-domain basis (\code{E[, d] = softmax(V[, d])}), in
-\verb{transformed data}, and recovers source proportions from an
-unconstrained linear predictor \code{eta} (in ILR space) via the
-\code{inverse_ilr()} Stan function, implementing eq. 24 (see \code{\link[=ilr_inv]{ilr_inv()}}).
+matrix into the generated Stan program as data (\code{V}), and recovers
+source proportions from an unconstrained linear predictor \code{eta} (in ILR
+space) via \code{softmax(V * eta)} (see \code{\link[=ilr_inv]{ilr_inv()}}).
 }
 \examples{
 V <- ilr_basis(4)

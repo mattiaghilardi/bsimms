@@ -44,14 +44,13 @@ basis, the general definition (eq. 23), \code{ilr(x) = crossprod(V, clr(x))},
 is used instead.
 
 \code{ilr_inv()} implements the inverse transformation (eq. 24), \eqn{x =
-\bigoplus_{i} (y_i \otimes e_i)}: each ILR coordinate \code{z[d]}
-perturbation-scales its simplex-domain basis element \code{e_d = clr_inv(V[, d])} (a power operation followed by closure/normalisation),
-and the results are combined by repeated perturbation (elementwise
-product followed by closure). This is the same construction used by
-\code{MixSIAR}'s JAGS implementation, and is what \code{bsimms}'s generated Stan
-code uses internally (the \code{inverse_ilr()} function in the \code{functions}
-block of \code{make_stancode()}'s output) to map the ILR-scale linear
-predictor back onto the source simplex.
+\bigoplus_{i} (y_i \otimes e_i)}, computed in its closed form
+\code{clr_inv(V \%*\% z)}: a single, numerically stable softmax, algebraically
+equivalent to the perturbation-and-closure construction but without its
+overflow/underflow risk for large \code{z}. This is what \code{bsimms}'s generated
+Stan code uses internally (via the built-in \code{softmax()} function in
+\code{make_stancode()}'s output) to map the ILR-scale linear predictor back
+onto the source simplex.
 }
 \examples{
 p <- c(0.5, 0.3, 0.2)

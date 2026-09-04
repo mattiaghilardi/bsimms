@@ -8,11 +8,9 @@
 #' Aitchison-orthonormal simplex basis (eq. 18) contrasting the (equally
 #' weighted) average of the first `i` parts against part `i + 1` — the
 #' same default sequential basis used by `MixSIAR`. `bsimms` passes this
-#' matrix into the generated Stan program as data (`V`); the Stan model
-#' derives `E`, the simplex-domain basis (`E[, d] = softmax(V[, d])`), in
-#' `transformed data`, and recovers source proportions from an
-#' unconstrained linear predictor `eta` (in ILR space) via the
-#' `inverse_ilr()` Stan function, implementing eq. 24 (see [ilr_inv()]).
+#' matrix into the generated Stan program as data (`V`), and recovers
+#' source proportions from an unconstrained linear predictor `eta` (in ILR
+#' space) via `softmax(V * eta)` (see [ilr_inv()]).
 #'
 #' @param K Integer, number of parts (sources), `K >= 2`.
 #' @return A numeric matrix with `K` rows and `K - 1` columns. Columns are
@@ -96,15 +94,13 @@ clr_inv <- function(y) {
 #' is used instead.
 #'
 #' `ilr_inv()` implements the inverse transformation (eq. 24), \eqn{x =
-#' \bigoplus_{i} (y_i \otimes e_i)}: each ILR coordinate `z[d]`
-#' perturbation-scales its simplex-domain basis element `e_d =
-#' clr_inv(V[, d])` (a power operation followed by closure/normalisation),
-#' and the results are combined by repeated perturbation (elementwise
-#' product followed by closure). This is the same construction used by
-#' `MixSIAR`'s JAGS implementation, and is what `bsimms`'s generated Stan
-#' code uses internally (the `inverse_ilr()` function in the `functions`
-#' block of `make_stancode()`'s output) to map the ILR-scale linear
-#' predictor back onto the source simplex.
+#' \bigoplus_{i} (y_i \otimes e_i)}, computed in its closed form
+#' `clr_inv(V %*% z)`: a single, numerically stable softmax, algebraically
+#' equivalent to the perturbation-and-closure construction but without its
+#' overflow/underflow risk for large `z`. This is what `bsimms`'s generated
+#' Stan code uses internally (via the built-in `softmax()` function in
+#' `make_stancode()`'s output) to map the ILR-scale linear predictor back
+#' onto the source simplex.
 #'
 #' @param x A vector of length `K`, or an `N x K` matrix, of strictly
 #'   positive parts (a composition, or set of compositions, on the `K`-part
@@ -166,34 +162,9 @@ ilr_inv <- function(z, V = NULL) {
   D <- if (is.matrix(z)) ncol(z) else length(z)
   K <- D + 1L
   V <- V %||% ilr_basis(K)
-  E <- vapply(seq_len(D), function(d) clr_inv(V[, d]), numeric(K))   # e_1, ..., e_D (eq. 18)
   if (is.matrix(z)) {
-    t(vapply(seq_len(nrow(z)), function(i) ilr_inv_vec(z[i, ], E), numeric(K)))
+    clr_inv(z %*% t(V))
   } else {
-    ilr_inv_vec(z, E)
+    clr_inv(as.numeric(V %*% z))
   }
-}
-
-#' Inverse ILR transform (eq. 24) for a single ILR coordinate vector, given
-#' a precomputed simplex-domain basis. The per-row worker behind
-#' [ilr_inv()].
-#'
-#' @param z Numeric vector of length `D` (`K - 1`), ILR coordinates.
-#' @param E Numeric `K x D` simplex-domain basis matrix (columns
-#'   `e_1, ..., e_D`, e.g. as built from `V` in [ilr_inv()]).
-#' @return Numeric vector of length `K`: a composition on the simplex.
-#' @noRd
-ilr_inv_vec <- function(z, E) {
-  K <- nrow(E)
-  D <- ncol(E)
-  cross <- matrix(0, K, D)
-  for (d in seq_len(D)) {
-    powered <- E[, d]^z[d]
-    cross[, d] <- powered / sum(powered)
-  }
-  p <- cross[, 1]
-  if (D > 1) {
-    for (d in 2:D) p <- p * cross[, d]
-  }
-  p / sum(p)
 }
