@@ -129,8 +129,8 @@ summary(fit)
 ```
 
 `rhat` close to 1 and large effective sample sizes indicate the chains
-mixed well. The population-average diet leans towards Deer and Hare over
-Beaver, though with fairly wide credible intervals given the small
+mixed well. Population-average contributions lean towards Deer and Hare
+over Beaver, though with fairly wide credible intervals given the small
 simulated sample size.
 
 Since this model has no covariates, every mixture sample shares the same
@@ -142,4 +142,4 @@ p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 ```
 
-<img src="man/figures/README-plot-proportions-1.png" alt="" width="100%" />
+<img src="man/figures/README-plot-proportions-1.png" alt="" width="70%" />
