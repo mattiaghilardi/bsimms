@@ -42,3 +42,89 @@ You can install the development version of bsimms from GitHub like so:
 # install.packages("pak")
 pak::pak("mattiaghilardi/bsimms")
 ```
+
+Fitting models also requires a working Stan backend, either
+[cmdstanr](https://mc-stan.org/cmdstanr/) (recommended) or
+[rstan](https://mc-stan.org/rstan/), neither of which is installed
+automatically:
+
+``` r
+# cmdstanr (not on CRAN)
+install.packages("cmdstanr", repos = c("https://stan-dev.r-universe.dev", getOption("repos")))
+cmdstanr::check_cmdstan_toolchain()
+cmdstanr::install_cmdstan()
+
+# or rstan (on CRAN)
+Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1) # only necessary for Linux without the nodejs library / headers
+install.packages("rstan", repos = "https://cloud.r-project.org/", dependencies = TRUE)
+```
+
+See the [CmdStanR installation
+guide](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) or the
+[RStan Getting Started
+guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started) for
+OS-specific instructions and troubleshooting.
+
+## How to use bsimms
+
+As an example, we fit a mixing model to simulated data for a 3-source,
+2-isotope model with 10 mixture samples, no covariates (`~1`), raw
+replicate source data, and summarised (mean/SD) TDF data.
+
+```{r sim-fit, message = FALSE, results = "hide"}
+library(bsimms)
+
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+
+fit <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  cores = 4,
+  seed = 1
+)
+```
+
+Printing the fit gives a quick overview of the model.
+
+```{r print-fit}
+fit
+```
+
+`summary()` reports the population-average source proportions and error
+term(s), each with a posterior mean, SD, 95% credible interval, and MCMC
+convergence diagnostics (`rhat`, bulk/tail effective sample size). With the
+default `error_structure = "process_residual"`, the error term shown per
+isotope is `resid_prop`, MixSIAR's multiplicative factor scaling the
+source/TDF variance propagated into the mixture -- not a raw residual SD.
+
+```{r summary}
+summary(fit)
+```
+
+`rhat` close to 1 and large effective sample sizes indicate the chains
+mixed well. The population-average diet leans towards Deer and Hare over
+Beaver, though with fairly wide credible intervals given the small
+simulated sample size.
+
+Since this model has no covariates, every mixture sample shares the same
+population-average proportions, so we can visualise their posterior
+distribution directly.
+  
+```{r plot-proportions}
+p_arr <- posterior_proportions(fit)
+plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
+```
