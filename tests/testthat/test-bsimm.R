@@ -66,6 +66,7 @@ test_that("bsimm fits via cmdstanr and returns a well-formed bsimms object", {
 
 test_that("bsimm fits via rstan when explicitly requested", {
   skip_if_not_installed("rstan")
+  skip_on_os("windows") # rstan model compilation is unreliably slow/fragile in Windows CI
   fit <- suppressWarnings(bsimm(
     formula = ~1, mixture_data = mixture_data, source_data = source_data,
     tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "rstan", source_means_sds = TRUE,

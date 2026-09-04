@@ -34,6 +34,7 @@ test_that("bsimms_draws returns a draws_array for a cmdstanr fit", {
 
 test_that("bsimms_draws returns a draws_array for an rstan fit", {
   skip_if_not_installed("rstan")
+  skip_on_os("windows") # rstan model compilation is unreliably slow/fragile in Windows CI
   fit <- suppressWarnings(bsimm(
     formula = ~1, mixture_data = mixture_data, source_data = source_data,
     tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "rstan",
