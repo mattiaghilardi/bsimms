@@ -30,7 +30,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -39,10 +39,29 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
 
+      # cmdstanr is not on CRAN, so let pak install only the hard
+      # dependencies (Imports) and specify the Suggests packages needed for
+      # R CMD check manually, sourcing cmdstanr from its GitHub repo.
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
-          needs: check
+          dependencies: NA
+          extra-packages: |
+            any::rcmdcheck
+            any::bayesplot
+            any::ggplot2
+            any::knitr
+            any::loo
+            any::markdown
+            any::rstan
+            any::rstantools
+            any::testthat
+            stan-dev/cmdstanr
+
+      - name: Install CmdStan
+        run: |
+          cmdstanr::check_cmdstan_toolchain(fix = TRUE)
+          cmdstanr::install_cmdstan(cores = parallel::detectCores())
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2
         with:
