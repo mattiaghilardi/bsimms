@@ -37,6 +37,8 @@ jobs:
             any::rstan
             any::rstantools
             any::testthat
+            any::BH
+            any::RcppEigen
             stan-dev/cmdstanr
 
       - name: Install CmdStan
