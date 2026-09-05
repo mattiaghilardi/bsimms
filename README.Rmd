@@ -9,7 +9,11 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  dev = "png",
+  dpi = 150,
+  fig.width = 6,
+  out.width = "70%",
+  fig.align = "center"
 )
 ```
 
@@ -121,7 +125,7 @@ of the underlying Stan parameters.
 
 ```{r plot-fit}
 #| fig.alt: "Density and trace plots of p_global and resid_prop across four MCMC chains; densities are unimodal and traces overlap with no trend, indicating good mixing."
-#| fig.width: 8
+#| fig.asp: 1.2
 plot(fit)
 ```
 
@@ -135,7 +139,7 @@ distribution directly.
   
 ```{r plot-proportions}
 #| fig.alt: "Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions."
-#| out.width: "70%"
+#| fig.asp: 0.8
 p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 ```

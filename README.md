@@ -136,7 +136,7 @@ plots of the underlying Stan parameters.
 plot(fit)
 ```
 
-<img src="man/figures/README-plot-fit-1.png" alt="Density and trace plots of p_global and resid_prop across four MCMC chains; densities are unimodal and traces overlap with no trend, indicating good mixing." width="100%" />
+<img src="man/figures/README-plot-fit-1.png" alt="Density and trace plots of p_global and resid_prop across four MCMC chains; densities are unimodal and traces overlap with no trend, indicating good mixing." width="70%" style="display: block; margin: auto;" />
 
 Population-average contributions lean towards Deer and Hare over Beaver,
 though with fairly wide credible intervals given the small simulated
@@ -151,4 +151,4 @@ p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 ```
 
-<img src="man/figures/README-plot-proportions-1.png" alt="Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions." width="70%" />
+<img src="man/figures/README-plot-proportions-1.png" alt="Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions." width="70%" style="display: block; margin: auto;" />
