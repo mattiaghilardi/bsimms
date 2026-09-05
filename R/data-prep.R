@@ -15,20 +15,32 @@ infer_source_names <- function(source_data, tdf_data, source_col = "Source") {
     cli::cli_abort("{.arg source_col} must be a single string.", call = NULL)
   }
   if (!source_col %in% names(source_data)) {
-    cli::cli_abort("Source data must have a {.field {source_col}} column.", call = NULL)
+    cli::cli_abort(
+      "Source data must have a {.field {source_col}} column.",
+      call = NULL
+    )
   }
   src_names <- sort(unique(as.character(source_data[[source_col]])))
   if (!is.null(tdf_data)) {
     if (!source_col %in% names(tdf_data)) {
-      cli::cli_abort("TDF data must have a {.field {source_col}} column.", call = NULL)
+      cli::cli_abort(
+        "TDF data must have a {.field {source_col}} column.",
+        call = NULL
+      )
     }
     tdf_names <- sort(unique(as.character(tdf_data[[source_col]])))
     if (!setequal(src_names, tdf_names)) {
-      cli::cli_abort(c(
-        "Source names in {.field source_data} and {.field tdf_data} do not match.",
-        "x" = "{.field source_data}: {.val {src_names}}",
-        "x" = "{.field tdf_data}: {.val {tdf_names}}"
-      ), call = NULL)
+      cli::cli_abort(
+        c(
+          paste0(
+            "Source names in {.field source_data} and {.field tdf_data} ",
+            "do not match."
+          ),
+          "x" = "{.field source_data}: {.val {src_names}}",
+          "x" = "{.field tdf_data}: {.val {tdf_names}}"
+        ),
+        call = NULL
+      )
     }
   }
   src_names
@@ -55,7 +67,13 @@ prep_mixture_isotopes <- function(mixture_data, isotope_names) {
   y <- as.matrix(mixture_data[, isotope_names, drop = FALSE])
   storage.mode(y) <- "double"
   if (anyNA(y)) {
-    cli::cli_abort("Mixture isotope data contain missing values; remove or impute them first.", call = NULL)
+    cli::cli_abort(
+      paste0(
+        "Mixture isotope data contain missing values; remove or impute ",
+        "them first."
+      ),
+      call = NULL
+    )
   }
   y
 }
@@ -85,17 +103,29 @@ prep_mixture_isotopes <- function(mixture_data, isotope_names) {
 #'   `mode = "summary"`, `mean` and `sd` (`length(source_names) x
 #'   length(isotope_names)` matrices, rows in `source_names` order).
 #' @noRd
-prep_iso_table <- function(data, isotope_names, source_names, means_sds,
-                            source_col = "Source", label = "source") {
+prep_iso_table <- function(
+  data,
+  isotope_names,
+  source_names,
+  means_sds,
+  source_col = "Source",
+  label = "source"
+) {
   label <- rlang::arg_match0(label, c("source", "tdf"))
   if (!source_col %in% names(data)) {
-    cli::cli_abort("{.field {label}_data} must have a {.field {source_col}} column.", call = NULL)
+    cli::cli_abort(
+      "{.field {label}_data} must have a {.field {source_col}} column.",
+      call = NULL
+    )
   }
   data[[source_col]] <- as.character(data[[source_col]])
   unknown <- setdiff(unique(data[[source_col]]), source_names)
   if (length(unknown) > 0) {
     cli::cli_abort(
-      "{.field {label}_data} contains source{?s} not present elsewhere: {.val {unknown}}.",
+      paste0(
+        "{.field {label}_data} contains source{?s} not present ",
+        "elsewhere: {.val {unknown}}."
+      ),
       call = NULL
     )
   }
@@ -104,14 +134,20 @@ prep_iso_table <- function(data, isotope_names, source_names, means_sds,
     missing_cols <- setdiff(isotope_names, names(data))
     if (length(missing_cols) > 0) {
       cli::cli_abort(
-        "Raw {.field {label}_data} is missing isotope column{?s}: {.field {missing_cols}}.",
+        paste0(
+          "Raw {.field {label}_data} is missing isotope column{?s}: ",
+          "{.field {missing_cols}}."
+        ),
         call = NULL
       )
     }
     Y <- as.matrix(data[, isotope_names, drop = FALSE])
     storage.mode(Y) <- "double"
     if (anyNA(Y)) {
-      cli::cli_abort("Raw {.field {label}_data} isotope columns contain missing values.", call = NULL)
+      cli::cli_abort(
+        "Raw {.field {label}_data} isotope columns contain missing values.",
+        call = NULL
+      )
     }
     src_idx <- match(data[[source_col]], source_names)
     list(
@@ -125,20 +161,35 @@ prep_iso_table <- function(data, isotope_names, source_names, means_sds,
     sd_cols <- paste0(isotope_names, "_sd")
     missing_cols <- setdiff(c(mean_cols, sd_cols), names(data))
     if (length(missing_cols) > 0) {
-      cli::cli_abort(c(
-        "Summarised {.field {label}_data} is missing column{?s}: {.field {missing_cols}}.",
-        "i" = "Expected one row per source, with columns {.field {mean_cols}} and {.field {sd_cols}}."
-      ), call = NULL)
+      cli::cli_abort(
+        c(
+          paste0(
+            "Summarised {.field {label}_data} is missing column{?s}: ",
+            "{.field {missing_cols}}."
+          ),
+          "i" = paste0(
+            "Expected one row per source, with columns ",
+            "{.field {mean_cols}} and {.field {sd_cols}}."
+          )
+        ),
+        call = NULL
+      )
     }
     if (anyDuplicated(data[[source_col]]) > 0) {
       cli::cli_abort(
-        "Summarised {.field {label}_data} must have exactly one row per source.",
+        paste0(
+          "Summarised {.field {label}_data} must have exactly one row ",
+          "per source."
+        ),
         call = NULL
       )
     }
     if (!setequal(data[[source_col]], source_names)) {
       cli::cli_abort(
-        "Summarised {.field {label}_data} must contain exactly the source{?s}: {.val {source_names}}.",
+        paste0(
+          "Summarised {.field {label}_data} must contain exactly the ",
+          "source{?s}: {.val {source_names}}."
+        ),
         call = NULL
       )
     }
@@ -148,10 +199,19 @@ prep_iso_table <- function(data, isotope_names, source_names, means_sds,
     storage.mode(mean_mat) <- storage.mode(sd_mat) <- "double"
     dimnames(mean_mat) <- dimnames(sd_mat) <- NULL
     if (anyNA(mean_mat) || anyNA(sd_mat)) {
-      cli::cli_abort("Summarised {.field {label}_data} mean/sd columns contain missing values.", call = NULL)
+      cli::cli_abort(
+        paste0(
+          "Summarised {.field {label}_data} mean/sd columns contain ",
+          "missing values."
+        ),
+        call = NULL
+      )
     }
     if (any(sd_mat < 0)) {
-      cli::cli_abort("Summarised {.field {label}_data} sd columns must be non-negative.", call = NULL)
+      cli::cli_abort(
+        "Summarised {.field {label}_data} sd columns must be non-negative.",
+        call = NULL
+      )
     }
     list(
       mode = "summary",
@@ -184,24 +244,39 @@ prep_iso_table <- function(data, isotope_names, source_names, means_sds,
 #' @return Numeric `length(source_names) x length(isotope_names)` matrix, or
 #'   `NULL` if `conc_dep` is `FALSE`.
 #' @noRd
-prep_conc_dep <- function(source_data, isotope_names, source_names, source_means_sds,
-                           conc_dep, source_col = "Source") {
+prep_conc_dep <- function(
+  source_data,
+  isotope_names,
+  source_names,
+  source_means_sds,
+  conc_dep,
+  source_col = "Source"
+) {
   if (!isTRUE(conc_dep) && !isFALSE(conc_dep)) {
     cli::cli_abort(
       c(
         "{.arg conc_dep} must be {.code TRUE} or {.code FALSE}.",
-        "i" = "Concentration values are read directly from {.field <isotope>_conc} column(s) in {.field source_data}, rather than a separate data frame."
+        "i" = paste0(
+          "Concentration values are read directly from ",
+          "{.field <isotope>_conc} column(s) in {.field source_data}, ",
+          "rather than a separate data frame."
+        )
       ),
       call = NULL
     )
   }
-  if (!conc_dep) return(NULL)
+  if (!conc_dep) {
+    return(NULL)
+  }
 
   conc_cols <- paste0(isotope_names, "_conc")
   missing_cols <- setdiff(conc_cols, names(source_data))
   if (length(missing_cols) > 0) {
     cli::cli_abort(
-      "{.code conc_dep = TRUE} requires concentration column{?s} in {.field source_data}: {.field {missing_cols}}.",
+      paste0(
+        "{.code conc_dep = TRUE} requires concentration column{?s} in ",
+        "{.field source_data}: {.field {missing_cols}}."
+      ),
       call = NULL
     )
   }
@@ -210,11 +285,18 @@ prep_conc_dep <- function(source_data, isotope_names, source_names, source_means
   if (source_means_sds) {
     if (anyDuplicated(src_col_chr) > 0) {
       cli::cli_abort(
-        "{.field source_data} must have exactly one row per source when {.code source_means_sds = TRUE}.",
+        paste0(
+          "{.field source_data} must have exactly one row per source ",
+          "when {.code source_means_sds = TRUE}."
+        ),
         call = NULL
       )
     }
-    m <- as.matrix(source_data[match(source_names, src_col_chr), conc_cols, drop = FALSE])
+    m <- as.matrix(source_data[
+      match(source_names, src_col_chr),
+      conc_cols,
+      drop = FALSE
+    ])
   } else {
     conc_mat <- as.matrix(source_data[, conc_cols, drop = FALSE])
     storage.mode(conc_mat) <- "double"
@@ -222,19 +304,28 @@ prep_conc_dep <- function(source_data, isotope_names, source_names, source_means
     # silently returns a plain vector, not a matrix, when FUN.VALUE has
     # length 1 (a single isotope), which t() would then turn into a 1 x K
     # row instead of the intended K x 1 column.
-    m <- do.call(rbind, lapply(source_names, function(s) {
-      colMeans(conc_mat[src_col_chr == s, , drop = FALSE])
-    }))
+    m <- do.call(
+      rbind,
+      lapply(source_names, function(s) {
+        colMeans(conc_mat[src_col_chr == s, , drop = FALSE])
+      })
+    )
   }
 
   storage.mode(m) <- "double"
   dimnames(m) <- NULL
   if (anyNA(m)) {
-    cli::cli_abort("Concentration column(s) in {.field source_data} contain missing values.", call = NULL)
+    cli::cli_abort(
+      "Concentration column(s) in {.field source_data} contain missing values.",
+      call = NULL
+    )
   }
   if (any(m <= 0 | m > 1)) {
     cli::cli_abort(
-      "{.field source_data} concentration values must be in {.val (0, 1]} (elemental concentration proportions).",
+      paste0(
+        "{.field source_data} concentration values must be in ",
+        "{.val (0, 1]} (elemental concentration proportions)."
+      ),
       call = NULL
     )
   }
@@ -242,8 +333,15 @@ prep_conc_dep <- function(source_data, isotope_names, source_names, source_means
   if (any(row_sums > 1)) {
     cli::cli_abort(
       c(
-        "{.field source_data} concentration values sum to more than 1 across isotopes for source{?s}: {.val {source_names[row_sums > 1]}}.",
-        "i" = "Each isotope's concentration is a proportion of that source's total mass, so they cannot sum to more than 1."
+        paste0(
+          "{.field source_data} concentration values sum to more than ",
+          "1 across isotopes for source{?s}: ",
+          "{.val {source_names[row_sums > 1]}}."
+        ),
+        "i" = paste0(
+          "Each isotope's concentration is a proportion of that ",
+          "source's total mass, so they cannot sum to more than 1."
+        )
       ),
       call = NULL
     )

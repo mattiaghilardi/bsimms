@@ -26,18 +26,31 @@
 #'   source_col = sim$source_col
 #' )
 #' str(sdata, max.level = 1)
-make_standata <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
-                           source_means_sds = FALSE, tdf_means_sds = TRUE,
-                           conc_dep = FALSE,
-                           error_structure = c("process_residual", "process_only", "residual_only"),
-                           prior = NULL,
-                           source_col = "Source") {
+make_standata <- function(
+  formula,
+  mixture_data,
+  source_data,
+  tdf_data,
+  isotope_names,
+  source_means_sds = FALSE,
+  tdf_means_sds = TRUE,
+  conc_dep = FALSE,
+  error_structure = c("process_residual", "process_only", "residual_only"),
+  prior = NULL,
+  source_col = "Source"
+) {
   error_structure <- rlang::arg_match(error_structure)
   spec <- build_bsimms_spec(
-    formula = formula, mixture_data = mixture_data,
-    source_data = source_data, tdf_data = tdf_data, isotope_names = isotope_names,
-    source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
-    conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
+    formula = formula,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = isotope_names,
+    source_means_sds = source_means_sds,
+    tdf_means_sds = tdf_means_sds,
+    conc_dep = conc_dep,
+    error_structure = error_structure,
+    source_col = source_col
   )
   prior_df <- merge_bsimms_prior(default_bsimms_prior(spec), prior, spec)
   out <- standata_from_spec(spec, prior_df)
@@ -67,8 +80,12 @@ standata_from_spec <- function(spec, prior_df) {
     numeric(1)
   )
   out <- list(
-    N = spec$N, J = spec$J, K = spec$K, D = spec$D,
-    V = spec$V, y = spec$y,
+    N = spec$N,
+    J = spec$J,
+    K = spec$K,
+    D = spec$D,
+    V = spec$V,
+    y = spec$y,
     alpha_dirichlet = unname(alpha_dirichlet)
   )
 

@@ -12,14 +12,19 @@ source_data <- data.frame(
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 test_that("build_bsimms_spec derives dimensions and matrices correctly", {
   spec <- build_bsimms_spec(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
   )
   expect_s3_class(spec, "bsimms_spec")
   expect_equal(spec$K, 2)
@@ -34,8 +39,11 @@ test_that("build_bsimms_spec derives dimensions and matrices correctly", {
 
 test_that("the intercept is dropped from the fixed-effect design", {
   spec <- build_bsimms_spec(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
   )
   expect_equal(spec$P, 0)
   expect_equal(ncol(spec$X), 0)
@@ -44,8 +52,11 @@ test_that("the intercept is dropped from the fixed-effect design", {
 
 test_that("fixed covariates and group-level terms are captured", {
   spec <- build_bsimms_spec(
-    formula = ~ Sex + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+    formula = ~ Sex + (1 | Region),
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
   )
   expect_true(any(grepl("^Sex", spec$fixed_names)))
   expect_equal(spec$P, ncol(spec$X))
@@ -55,12 +66,20 @@ test_that("fixed covariates and group-level terms are captured", {
 
 test_that("has_conc_dep reflects the conc_dep argument", {
   spec_off <- build_bsimms_spec(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = "d13C", conc_dep = FALSE
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = "d13C",
+    conc_dep = FALSE
   )
   spec_on <- build_bsimms_spec(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = "d13C", conc_dep = TRUE
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = "d13C",
+    conc_dep = TRUE
   )
   expect_false(spec_off$has_conc_dep)
   expect_null(spec_off$conc)
@@ -70,15 +89,22 @@ test_that("has_conc_dep reflects the conc_dep argument", {
 
 test_that("error_structure defaults to process_residual and is validated", {
   spec <- build_bsimms_spec(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
   )
   expect_equal(spec$error_structure, "process_residual")
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~1, mixture_data = mixture_data, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "banana"
+      formula = ~1,
+      mixture_data = mixture_data,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      error_structure = "banana"
     )
   )
 })
@@ -86,22 +112,34 @@ test_that("error_structure defaults to process_residual and is validated", {
 test_that("a single mixture data point requires process_only error", {
   one_mix <- mixture_data[1, ]
   spec <- build_bsimms_spec(
-    formula = ~1, mixture_data = one_mix, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+    formula = ~1,
+    mixture_data = one_mix,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    error_structure = "process_only"
   )
   expect_equal(spec$N, 1)
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~1, mixture_data = one_mix, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+      formula = ~1,
+      mixture_data = one_mix,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      error_structure = "process_residual"
     )
   )
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~1, mixture_data = one_mix, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "residual_only"
+      formula = ~1,
+      mixture_data = one_mix,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      error_structure = "residual_only"
     )
   )
 })
@@ -113,15 +151,23 @@ test_that("one mixture sample per level of a single fixed factor requires proces
     Individual = factor(c("A", "B", "C"))
   )
   spec <- build_bsimms_spec(
-    formula = ~Individual, mixture_data = ind_mix, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+    formula = ~Individual,
+    mixture_data = ind_mix,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    error_structure = "process_only"
   )
   expect_equal(spec$N, 3)
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~Individual, mixture_data = ind_mix, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+      formula = ~Individual,
+      mixture_data = ind_mix,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      error_structure = "process_residual"
     )
   )
 })
@@ -130,15 +176,23 @@ test_that("one mixture sample per level of a random-effect group requires proces
   ind_mix <- mixture_data
   ind_mix$Individual <- factor(paste0("I", seq_len(nrow(ind_mix))))
   spec <- build_bsimms_spec(
-    formula = ~ 1 + (1 | Individual), mixture_data = ind_mix, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only"
+    formula = ~ 1 + (1 | Individual),
+    mixture_data = ind_mix,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    error_structure = "process_only"
   )
   expect_equal(spec$N, 6)
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~ 1 + (1 | Individual), mixture_data = ind_mix, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_residual"
+      formula = ~ 1 + (1 | Individual),
+      mixture_data = ind_mix,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      error_structure = "process_residual"
     )
   )
 })
@@ -147,8 +201,11 @@ test_that("build_bsimms_spec errors on invalid isotope_names", {
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~1, mixture_data = mixture_data, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = character(0)
+      formula = ~1,
+      mixture_data = mixture_data,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = character(0)
     )
   )
 })
@@ -159,8 +216,11 @@ test_that("build_bsimms_spec errors with fewer than 2 sources", {
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~1, mixture_data = mixture_data, source_data = one_source,
-      tdf_data = one_tdf, isotope_names = c("d13C", "d15N")
+      formula = ~1,
+      mixture_data = mixture_data,
+      source_data = one_source,
+      tdf_data = one_tdf,
+      isotope_names = c("d13C", "d15N")
     )
   )
 })
@@ -171,8 +231,11 @@ test_that("build_bsimms_spec errors when the formula's design matrix drops rows"
   expect_snapshot(
     error = TRUE,
     build_bsimms_spec(
-      formula = ~Region, mixture_data = d, source_data = source_data,
-      tdf_data = tdf_data, isotope_names = c("d13C", "d15N")
+      formula = ~Region,
+      mixture_data = d,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N")
     )
   )
 })

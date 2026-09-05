@@ -122,19 +122,34 @@
 #' ce <- conditional_effects(fit)
 #' plot(ce)
 #' }
-conditional_effects <- function(object, effects = NULL, ref_conditions = NULL, int_conditions = NULL,
-                                 resolution = 100, re_formula = NA, robust = FALSE,
-                                 probs = c(0.5, 0.95), point_size = 2,
-                                 method = c("posterior_proportions", "posterior_epred", "posterior_predict"),
-                                 resp = NULL, ...) {
+conditional_effects <- function(
+  object,
+  effects = NULL,
+  ref_conditions = NULL,
+  int_conditions = NULL,
+  resolution = 100,
+  re_formula = NA,
+  robust = FALSE,
+  probs = c(0.5, 0.95),
+  point_size = 2,
+  method = c("posterior_proportions", "posterior_epred", "posterior_predict"),
+  resp = NULL,
+  ...
+) {
   if (!inherits(object, "bsimms_fit")) {
-    cli::cli_abort("{.arg object} must be a {.cls bsimms_fit} object.", call = NULL)
+    cli::cli_abort(
+      "{.arg object} must be a {.cls bsimms_fit} object.",
+      call = NULL
+    )
   }
   method <- rlang::arg_match(method)
   spec <- object$spec
   available <- names(spec$fixed_frame)
   if (length(available) == 0) {
-    cli::cli_abort("Model has no fixed-effect covariates to condition on.", call = NULL)
+    cli::cli_abort(
+      "Model has no fixed-effect covariates to condition on.",
+      call = NULL
+    )
   }
   check_condition_names(ref_conditions, "ref_conditions", available)
   check_condition_names(int_conditions, "int_conditions", available)
@@ -142,12 +157,18 @@ conditional_effects <- function(object, effects = NULL, ref_conditions = NULL, i
   if (method != "posterior_proportions") {
     rlang::check_installed(
       "rstantools",
-      reason = "to use `conditional_effects()` with method = \"posterior_epred\"/\"posterior_predict\"."
+      reason = paste0(
+        "to use `conditional_effects()` with method = ",
+        "\"posterior_epred\"/\"posterior_predict\"."
+      )
     )
     if (is.null(resp)) {
       if (spec$J > 1) {
         cli::cli_abort(
-          "Model has multiple isotopes ({.val {spec$isotope_names}}); specify {.arg resp} to select one.",
+          paste0(
+            "Model has multiple isotopes ({.val {spec$isotope_names}}); ",
+            "specify {.arg resp} to select one."
+          ),
           call = NULL
         )
       }
@@ -157,23 +178,53 @@ conditional_effects <- function(object, effects = NULL, ref_conditions = NULL, i
     }
   }
   cat_col <- if (method == "posterior_proportions") "source" else "isotope"
-  y_label <- if (method == "posterior_proportions") "Posterior proportion" else resp
+  y_label <- if (method == "posterior_proportions") {
+    "Posterior proportion"
+  } else {
+    resp
+  }
 
-  effects <- if (is.null(effects)) default_conditional_effects(spec$fixed_formula) else effects
-  effect_vars <- lapply(effects, parse_conditional_effect, available = available)
+  effects <- if (is.null(effects)) {
+    default_conditional_effects(spec$fixed_formula)
+  } else {
+    effects
+  }
+  effect_vars <- lapply(
+    effects,
+    parse_conditional_effect,
+    available = available
+  )
   names(effect_vars) <- effects
 
   out <- lapply(effect_vars, function(vars) {
-    cond <- build_conditional_grid(spec$fixed_frame, vars, ref_conditions, int_conditions, resolution)
-    arr <- switch(method,
-      posterior_proportions = posterior_proportions(object, newdata = cond$grid, re_formula = re_formula, ...),
+    cond <- build_conditional_grid(
+      spec$fixed_frame,
+      vars,
+      ref_conditions,
+      int_conditions,
+      resolution
+    )
+    arr <- switch(
+      method,
+      posterior_proportions = posterior_proportions(
+        object,
+        newdata = cond$grid,
+        re_formula = re_formula,
+        ...
+      ),
       posterior_epred = rstantools::posterior_epred(
         object,
-        newdata = cond$grid, resp = resp, re_formula = re_formula, ...
+        newdata = cond$grid,
+        resp = resp,
+        re_formula = re_formula,
+        ...
       ),
       posterior_predict = rstantools::posterior_predict(
         object,
-        newdata = cond$grid, resp = resp, re_formula = re_formula, ...
+        newdata = cond$grid,
+        resp = resp,
+        re_formula = re_formula,
+        ...
       )
     )
     df <- summarise_multi_interval(arr, probs, robust, cat_col = cat_col)
@@ -197,7 +248,10 @@ conditional_effects <- function(object, effects = NULL, ref_conditions = NULL, i
 #' @rdname conditional_effects
 #' @export
 plot.bsimms_conditional_effects <- function(x, plot = TRUE, ask = TRUE, ...) {
-  rlang::check_installed("ggplot2", reason = "to use `plot.bsimms_conditional_effects()`.")
+  rlang::check_installed(
+    "ggplot2",
+    reason = "to use `plot.bsimms_conditional_effects()`."
+  )
   plots <- lapply(x, plot_one_conditional_effect, ...)
   names(plots) <- names(x)
   if (plot) {
@@ -255,7 +309,10 @@ check_condition_names <- function(x, arg_name, available) {
   unknown <- setdiff(names(x), available)
   if (length(unknown) > 0) {
     cli::cli_abort(
-      "{.arg {arg_name}} names covariate{?s} not in the model: {.val {unknown}}.",
+      paste0(
+        "{.arg {arg_name}} names covariate{?s} not in the model: ",
+        "{.val {unknown}}."
+      ),
       call = NULL
     )
   }
@@ -274,19 +331,28 @@ parse_conditional_effect <- function(eff, available) {
   parts <- trimws(strsplit(eff, ":")[[1]])
   if (length(parts) > 2) {
     cli::cli_abort(
-      "{.arg effects} entry {.val {eff}} names more than two covariates; only two-way interactions are supported.",
+      paste0(
+        "{.arg effects} entry {.val {eff}} names more than two ",
+        "covariates; only two-way interactions are supported."
+      ),
       call = NULL
     )
   }
   unknown <- setdiff(parts, available)
   if (length(unknown) > 0) {
     cli::cli_abort(
-      "{.arg effects} entry {.val {eff}} refers to covariate{?s} not in the model: {.val {unknown}}.",
+      paste0(
+        "{.arg effects} entry {.val {eff}} refers to covariate{?s} not ",
+        "in the model: {.val {unknown}}."
+      ),
       call = NULL
     )
   }
   if (length(parts) == 2 && parts[1] == parts[2]) {
-    cli::cli_abort("{.arg effects} entry {.val {eff}} names the same covariate twice.", call = NULL)
+    cli::cli_abort(
+      "{.arg effects} entry {.val {eff}} names the same covariate twice.",
+      call = NULL
+    )
   }
   parts
 }
@@ -308,12 +374,22 @@ resolve_moderator_values <- function(mod_col, moderator, int_conditions) {
   values <- int_conditions[[moderator]]
 
   if (is.null(values)) {
-    return(if (is_numeric) mean(mod_col, na.rm = TRUE) + c(-1, 0, 1) * stats::sd(mod_col, na.rm = TRUE) else levels(mod_col))
+    return(
+      if (is_numeric) {
+        mean(mod_col, na.rm = TRUE) +
+          c(-1, 0, 1) * stats::sd(mod_col, na.rm = TRUE)
+      } else {
+        levels(mod_col)
+      }
+    )
   }
   if (is_numeric) {
     if (!is.numeric(values)) {
       cli::cli_abort(
-        "{.arg int_conditions} for {.field {moderator}} must be numeric, since it is a numeric covariate.",
+        paste0(
+          "{.arg int_conditions} for {.field {moderator}} must be ",
+          "numeric, since it is a numeric covariate."
+        ),
         call = NULL
       )
     }
@@ -324,8 +400,14 @@ resolve_moderator_values <- function(mod_col, moderator, int_conditions) {
   if (length(unknown) > 0) {
     cli::cli_abort(
       c(
-        "{.arg int_conditions} for {.field {moderator}} contains level{?s} not in the model: {.val {unknown}}.",
-        "i" = "Valid levels for {.field {moderator}} are: {.val {levels(mod_col)}}."
+        paste0(
+          "{.arg int_conditions} for {.field {moderator}} contains ",
+          "level{?s} not in the model: {.val {unknown}}."
+        ),
+        "i" = paste0(
+          "Valid levels for {.field {moderator}} are: ",
+          "{.val {levels(mod_col)}}."
+        )
       ),
       call = NULL
     )
@@ -351,15 +433,27 @@ resolve_reference_value <- function(col, name, ref_conditions) {
   value <- ref_conditions[[name]]
 
   if (is.null(value)) {
-    return(if (is_numeric) mean(col, na.rm = TRUE) else factor(levels(col)[1], levels = levels(col)))
+    return(
+      if (is_numeric) {
+        mean(col, na.rm = TRUE)
+      } else {
+        factor(levels(col)[1], levels = levels(col))
+      }
+    )
   }
   if (length(value) != 1) {
-    cli::cli_abort("{.arg ref_conditions} for {.field {name}} must be a single value.", call = NULL)
+    cli::cli_abort(
+      "{.arg ref_conditions} for {.field {name}} must be a single value.",
+      call = NULL
+    )
   }
   if (is_numeric) {
     if (!is.numeric(value)) {
       cli::cli_abort(
-        "{.arg ref_conditions} for {.field {name}} must be numeric, since it is a numeric covariate.",
+        paste0(
+          "{.arg ref_conditions} for {.field {name}} must be numeric, ",
+          "since it is a numeric covariate."
+        ),
         call = NULL
       )
     }
@@ -369,7 +463,10 @@ resolve_reference_value <- function(col, name, ref_conditions) {
   if (!value %in% levels(col)) {
     cli::cli_abort(
       c(
-        "{.arg ref_conditions} for {.field {name}} contains a level not in the model: {.val {value}}.",
+        paste0(
+          "{.arg ref_conditions} for {.field {name}} contains a level ",
+          "not in the model: {.val {value}}."
+        ),
         "i" = "Valid levels for {.field {name}} are: {.val {levels(col)}}."
       ),
       call = NULL
@@ -417,33 +514,57 @@ plot_one_conditional_effect <- function(df, ...) {
     } else {
       mod_label <- as.character(df[[moderator]])
     }
-    df$.moderator_label <- factor(mod_label, levels = unique(mod_label[order(df[[moderator]])]))
+    df$.moderator_label <- factor(
+      mod_label,
+      levels = unique(mod_label[order(df[[moderator]])])
+    )
     facet_layer <- ggplot2::facet_wrap(~.moderator_label)
   }
 
   if (is_numeric) {
-    line_cols <- c(effect, cat_col, "estimate", if (!is.null(moderator)) ".moderator_label")
+    line_cols <- c(
+      effect,
+      cat_col,
+      "estimate",
+      if (!is.null(moderator)) ".moderator_label"
+    )
     line_df <- unique(df[, line_cols])
     mapping <- if (show_legend) {
-      ggplot2::aes(x = .data[[effect]], color = .data[[cat_col]], fill = .data[[cat_col]])
+      ggplot2::aes(
+        x = .data[[effect]],
+        color = .data[[cat_col]],
+        fill = .data[[cat_col]]
+      )
     } else {
       ggplot2::aes(x = .data[[effect]])
     }
     g <- ggplot2::ggplot(df, mapping) +
       ggplot2::geom_ribbon(
-        ggplot2::aes(ymin = .data$lower, ymax = .data$upper, alpha = .data$width), color = NA, ...
+        ggplot2::aes(
+          ymin = .data$lower,
+          ymax = .data$upper,
+          alpha = .data$width
+        ),
+        color = NA,
+        ...
       ) +
       ggplot2::geom_line(data = line_df, ggplot2::aes(y = .data$estimate)) +
       ggplot2::scale_alpha_ordinal(range = c(0.4, 0.15)) +
       facet_layer +
       ggplot2::labs(x = effect, y = y_label, alpha = "Interval") +
       ggplot2::theme_minimal()
-    if (show_legend) g <- g + ggplot2::labs(color = legend_label, fill = legend_label)
+    if (show_legend) {
+      g <- g + ggplot2::labs(color = legend_label, fill = legend_label)
+    }
     g
   } else {
     dodge <- ggplot2::position_dodge(width = 0.5)
     mapping <- if (show_legend) {
-      ggplot2::aes(x = .data[[effect]], color = .data[[cat_col]], group = .data[[cat_col]])
+      ggplot2::aes(
+        x = .data[[effect]],
+        color = .data[[cat_col]],
+        group = .data[[cat_col]]
+      )
     } else {
       # `group` must still be set, even with a single category: without it,
       # `position_dodge()` falls back to grouping by any discrete aesthetic
@@ -454,18 +575,26 @@ plot_one_conditional_effect <- function(df, ...) {
     }
     g <- ggplot2::ggplot(df, mapping) +
       ggplot2::geom_linerange(
-        ggplot2::aes(ymin = .data$lower, ymax = .data$upper, linewidth = .data$width),
-        position = dodge, ...
+        ggplot2::aes(
+          ymin = .data$lower,
+          ymax = .data$upper,
+          linewidth = .data$width
+        ),
+        position = dodge,
+        ...
       ) +
       ggplot2::geom_point(
-        ggplot2::aes(y = .data$estimate), size = point_size,
+        ggplot2::aes(y = .data$estimate),
+        size = point_size,
         position = dodge
       ) +
       ggplot2::scale_linewidth_ordinal(range = c(0.5, 1.5)) +
       facet_layer +
       ggplot2::labs(x = effect, y = y_label, linewidth = "Interval") +
       ggplot2::theme_minimal()
-    if (show_legend) g <- g + ggplot2::labs(color = legend_label)
+    if (show_legend) {
+      g <- g + ggplot2::labs(color = legend_label)
+    }
     g
   }
 }
@@ -491,12 +620,22 @@ plot_one_conditional_effect <- function(df, ...) {
 #'   is a numeric covariate), and `moderator_is_numeric` (logical, or
 #'   `NULL` if `vars` has no moderator).
 #' @noRd
-build_conditional_grid <- function(fixed_frame, vars, ref_conditions, int_conditions, resolution) {
+build_conditional_grid <- function(
+  fixed_frame,
+  vars,
+  ref_conditions,
+  int_conditions,
+  resolution
+) {
   effect <- vars[1]
   focal <- fixed_frame[[effect]]
   is_numeric <- is.numeric(focal)
   focal_values <- if (is_numeric) {
-    seq(min(focal, na.rm = TRUE), max(focal, na.rm = TRUE), length.out = resolution)
+    seq(
+      min(focal, na.rm = TRUE),
+      max(focal, na.rm = TRUE),
+      length.out = resolution
+    )
   } else {
     levels(focal)
   }
@@ -506,8 +645,17 @@ build_conditional_grid <- function(fixed_frame, vars, ref_conditions, int_condit
     moderator <- vars[2]
     mod_col <- fixed_frame[[moderator]]
     moderator_is_numeric <- is.numeric(mod_col)
-    moderator_values <- resolve_moderator_values(mod_col, moderator, int_conditions)
-    grid <- expand.grid(focal_values, moderator_values, KEEP.OUT.ATTRS = FALSE, stringsAsFactors = FALSE)
+    moderator_values <- resolve_moderator_values(
+      mod_col,
+      moderator,
+      int_conditions
+    )
+    grid <- expand.grid(
+      focal_values,
+      moderator_values,
+      KEEP.OUT.ATTRS = FALSE,
+      stringsAsFactors = FALSE
+    )
     names(grid) <- vars
   } else {
     grid <- data.frame(x = focal_values)
@@ -518,5 +666,9 @@ build_conditional_grid <- function(fixed_frame, vars, ref_conditions, int_condit
     ref <- resolve_reference_value(fixed_frame[[v]], v, ref_conditions)
     grid[[v]] <- rep(ref, nrow(grid))
   }
-  list(grid = grid, is_numeric = is_numeric, moderator_is_numeric = moderator_is_numeric)
+  list(
+    grid = grid,
+    is_numeric = is_numeric,
+    moderator_is_numeric = moderator_is_numeric
+  )
 }

@@ -5,23 +5,36 @@ mixture_data <- data.frame(
 )
 source_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
-  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 skip_if_not_installed("cmdstanr")
 skip_if_not_installed("rstantools")
 
 fit <- bsimm(
-  formula = ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ 1 + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 test_that("bayes_R2 returns a summary data frame for every isotope by default", {

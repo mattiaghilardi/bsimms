@@ -5,13 +5,17 @@ mixture_data <- data.frame(
 )
 source_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
-  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 skip_if_not_installed("cmdstanr")
@@ -20,16 +24,34 @@ skip_if_not_installed("bayesplot")
 grDevices::pdf(nullfile())
 
 fit <- bsimm(
-  formula = ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ 1 + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 fit_1iso <- bsimm(
-  formula = ~1, mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = "d13C", source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~1,
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = "d13C",
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 # plot.bsimms_fit ---------------------------------------------------------
@@ -79,7 +101,10 @@ test_that("pp_check.bsimms_fit works with an explicit resp and type", {
 })
 
 test_that("pp_check.bsimms_fit errors on an invalid type", {
-  expect_snapshot(error = TRUE, bayesplot::pp_check(fit, resp = "d13C", type = "banana"))
+  expect_snapshot(
+    error = TRUE,
+    bayesplot::pp_check(fit, resp = "d13C", type = "banana")
+  )
 })
 
 test_that("pp_check.bsimms_fit subsamples with ndraws", {
@@ -88,11 +113,17 @@ test_that("pp_check.bsimms_fit subsamples with ndraws", {
 })
 
 test_that("pp_check.bsimms_fit defaults to 10 draws for overlay-style types", {
-  expect_message(bayesplot::pp_check(fit_1iso, type = "hist"), "Using 10 posterior draws")
+  expect_message(
+    bayesplot::pp_check(fit_1iso, type = "hist"),
+    "Using 10 posterior draws"
+  )
 })
 
 test_that("pp_check.bsimms_fit defaults to all draws for aggregate types", {
-  expect_message(bayesplot::pp_check(fit_1iso, type = "stat"), "Using all posterior draws")
+  expect_message(
+    bayesplot::pp_check(fit_1iso, type = "stat"),
+    "Using all posterior draws"
+  )
 })
 
 test_that("pp_check.bsimms_fit doesn't message when ndraws is supplied explicitly", {
@@ -140,11 +171,18 @@ test_that("plot_proportions builds an interval plot for a single observation too
 })
 
 test_that("plot_proportions errors on invalid probs", {
-  expect_snapshot(error = TRUE, plot_proportions(p_arr, type = "interval", probs = c(0, 0.95)))
+  expect_snapshot(
+    error = TRUE,
+    plot_proportions(p_arr, type = "interval", probs = c(0, 0.95))
+  )
 })
 
 test_that("plot_proportions's ... is forwarded to geom_histogram", {
-  g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "histogram", bins = 10)
+  g <- plot_proportions(
+    p_arr[, 1, , drop = FALSE],
+    type = "histogram",
+    bins = 10
+  )
   expect_equal(g$layers[[1]]$stat_params$bins, 10)
 })
 

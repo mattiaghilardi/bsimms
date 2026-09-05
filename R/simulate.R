@@ -108,36 +108,51 @@
 #'   n_groups = list(Region = 3)
 #' )
 #' str(sim, max.level = 1)
-simulate_bsimms_data <- function(formula = ~1,
-                                  n_mixture_obs,
-                                  n_sources = 3,
-                                  source_names = NULL,
-                                  n_isotopes = 2,
-                                  isotope_names = NULL,
-                                  n_levels = list(),
-                                  n_groups = list(),
-                                  balanced = TRUE,
-                                  source_means_sds = FALSE,
-                                  n_source_obs = 10,
-                                  tdf_means_sds = TRUE,
-                                  n_tdf_obs = 10,
-                                  conc_dep = FALSE,
-                                  error_structure = c("process_residual", "process_only", "residual_only"),
-                                  p_global = NULL,
-                                  sigma = NULL,
-                                  resid_prop = NULL,
-                                  source_col = "Source",
-                                  seed = NULL) {
+simulate_bsimms_data <- function(
+  formula = ~1,
+  n_mixture_obs,
+  n_sources = 3,
+  source_names = NULL,
+  n_isotopes = 2,
+  isotope_names = NULL,
+  n_levels = list(),
+  n_groups = list(),
+  balanced = TRUE,
+  source_means_sds = FALSE,
+  n_source_obs = 10,
+  tdf_means_sds = TRUE,
+  n_tdf_obs = 10,
+  conc_dep = FALSE,
+  error_structure = c("process_residual", "process_only", "residual_only"),
+  p_global = NULL,
+  sigma = NULL,
+  resid_prop = NULL,
+  source_col = "Source",
+  seed = NULL
+) {
   error_structure <- rlang::arg_match(error_structure)
   if (!inherits(formula, "formula") || length(formula) != 2) {
-    cli::cli_abort("{.arg formula} must be a one-sided formula, e.g. {.code ~ Sex + (1 | Region)}.", call = NULL)
+    cli::cli_abort(
+      paste0(
+        "{.arg formula} must be a one-sided formula, ",
+        "e.g. {.code ~ Sex + (1 | Region)}."
+      ),
+      call = NULL
+    )
   }
   if (!rlang::is_scalar_integerish(n_mixture_obs) || n_mixture_obs < 1) {
-    cli::cli_abort("{.arg n_mixture_obs} must be a positive integer.", call = NULL)
+    cli::cli_abort(
+      "{.arg n_mixture_obs} must be a positive integer.",
+      call = NULL
+    )
   }
 
   if (!is.null(seed)) {
-    old_seed <- if (exists(".Random.seed", envir = .GlobalEnv)) get(".Random.seed", envir = .GlobalEnv) else NULL
+    old_seed <- if (exists(".Random.seed", envir = .GlobalEnv)) {
+      get(".Random.seed", envir = .GlobalEnv)
+    } else {
+      NULL
+    }
     on.exit({
       if (!is.null(old_seed)) {
         assign(".Random.seed", old_seed, envir = .GlobalEnv)
@@ -148,9 +163,17 @@ simulate_bsimms_data <- function(formula = ~1,
     set.seed(seed)
   }
 
-  source_names <- if (is.null(source_names)) sim_default_names(n_sources, "source") else source_names
+  source_names <- if (is.null(source_names)) {
+    sim_default_names(n_sources, "source")
+  } else {
+    source_names
+  }
   K <- length(source_names)
-  isotope_names <- if (is.null(isotope_names)) sim_default_names(n_isotopes, "isotope") else isotope_names
+  isotope_names <- if (is.null(isotope_names)) {
+    sim_default_names(n_isotopes, "isotope")
+  } else {
+    isotope_names
+  }
   J <- length(isotope_names)
   D <- K - 1L
   n_source_obs <- sim_resolve_n_obs(n_source_obs, K, "n_source_obs")
@@ -159,8 +182,14 @@ simulate_bsimms_data <- function(formula = ~1,
   if (K > J + 1) {
     cli::cli_warn(
       c(
-        "{K} sources with only {J} isotope{?s} is an underdetermined mixing system ({.code n_sources > n_isotopes + 1}).",
-        "i" = "Source proportions will rely more heavily on the prior than the data."
+        paste0(
+          "{K} sources with only {J} isotope{?s} is an underdetermined ",
+          "mixing system ({.code n_sources > n_isotopes + 1})."
+        ),
+        "i" = paste0(
+          "Source proportions will rely more heavily on the prior than ",
+          "the data."
+        )
       )
     )
   }
@@ -183,7 +212,10 @@ simulate_bsimms_data <- function(formula = ~1,
       cli::cli_abort(
         c(
           "{.arg formula} contains a random slope ({.code {b_str}}).",
-          "i" = "{.fn simulate_bsimms_data} only supports random intercepts, e.g. {.code (1 | Group)}."
+          "i" = paste0(
+            "{.fn simulate_bsimms_data} only supports random intercepts, ",
+            "e.g. {.code (1 | Group)}."
+          )
         ),
         call = NULL
       )
@@ -197,7 +229,10 @@ simulate_bsimms_data <- function(formula = ~1,
   missing_groups <- setdiff(group_vars, names(n_groups))
   if (length(missing_groups) > 0) {
     cli::cli_abort(
-      "{.arg n_groups} must include an entry for every grouping factor in {.arg formula}: missing {.val {missing_groups}}.",
+      paste0(
+        "{.arg n_groups} must include an entry for every grouping ",
+        "factor in {.arg formula}: missing {.val {missing_groups}}."
+      ),
       call = NULL
     )
   }
@@ -205,33 +240,63 @@ simulate_bsimms_data <- function(formula = ~1,
   mixture_data <- data.frame(row.names = seq_len(n_mixture_obs))
   for (v in fixed_vars) {
     mixture_data[[v]] <- if (v %in% names(n_levels)) {
-      sim_factor_column(n_mixture_obs, n_levels[[v]], balanced, sim_level_names(n_levels[[v]]))
+      sim_factor_column(
+        n_mixture_obs,
+        n_levels[[v]],
+        balanced,
+        sim_level_names(n_levels[[v]])
+      )
     } else {
       stats::rnorm(n_mixture_obs)
     }
   }
   for (v in setdiff(group_vars, names(mixture_data))) {
-    mixture_data[[v]] <- sim_factor_column(n_mixture_obs, n_groups[[v]], balanced, sim_level_names(n_groups[[v]]))
+    mixture_data[[v]] <- sim_factor_column(
+      n_mixture_obs,
+      n_groups[[v]],
+      balanced,
+      sim_level_names(n_groups[[v]])
+    )
   }
 
   parsed <- parse_bsimms_formula(formula, data = mixture_data)
-  P <- length(parsed$fixed_names) - as.integer("(Intercept)" %in% parsed$fixed_names)
+  P <- length(parsed$fixed_names) -
+    as.integer("(Intercept)" %in% parsed$fixed_names)
   X <- parsed$X[, parsed$fixed_names != "(Intercept)", drop = FALSE]
 
   # Truth: baseline + fixed/random-effect deviations, in ILR space
   if (is.null(p_global)) {
     g <- stats::rgamma(K, shape = 2)
     p_global <- g / sum(g)
-  } else if (length(p_global) != K || !isTRUE(all.equal(sum(p_global), 1)) || any(p_global <= 0)) {
-    cli::cli_abort("{.arg p_global} must be a vector of {K} strictly positive proportions summing to 1.", call = NULL)
+  } else if (
+    length(p_global) != K ||
+      !isTRUE(all.equal(sum(p_global), 1)) ||
+      any(p_global <= 0)
+  ) {
+    cli::cli_abort(
+      paste0(
+        "{.arg p_global} must be a vector of {K} strictly positive ",
+        "proportions summing to 1."
+      ),
+      call = NULL
+    )
   }
-  eta <- matrix(rep(ilr(p_global), each = n_mixture_obs), nrow = n_mixture_obs, ncol = D)
+  eta <- matrix(
+    rep(ilr(p_global), each = n_mixture_obs),
+    nrow = n_mixture_obs,
+    ncol = D
+  )
 
   truth <- list(p_global = p_global)
 
   beta <- NULL
   if (P > 0) {
-    beta <- matrix(stats::rnorm(P * D, 0, 0.5), nrow = P, ncol = D, dimnames = list(colnames(X), NULL))
+    beta <- matrix(
+      stats::rnorm(P * D, 0, 0.5),
+      nrow = P,
+      ncol = D,
+      dimnames = list(colnames(X), NULL)
+    )
     eta <- eta + X %*% beta
     truth$fixed <- beta
   }
@@ -240,27 +305,60 @@ simulate_bsimms_data <- function(formula = ~1,
   for (re in parsed$re_terms) {
     n_grp <- length(re$group_levels)
     sd_re <- abs(stats::rnorm(D, mean = 0.3, sd = 0.1))
-    b_re <- matrix(stats::rnorm(D * n_grp, 0, rep(sd_re, times = n_grp)), nrow = D, ncol = n_grp)
+    b_re <- matrix(
+      stats::rnorm(D * n_grp, 0, rep(sd_re, times = n_grp)),
+      nrow = D,
+      ncol = n_grp
+    )
     dimnames(b_re) <- list(NULL, re$group_levels)
     eta <- eta + t(b_re[, re$group_idx, drop = FALSE])
-    truth$random[[re$label]] <- list(group = re$group, sd = sd_re, effects = b_re)
+    truth$random[[re$label]] <- list(
+      group = re$group,
+      sd = sd_re,
+      effects = b_re
+    )
   }
-  if (length(truth$random) == 0) truth$random <- NULL
+  if (length(truth$random) == 0) {
+    truth$random <- NULL
+  }
 
   p_true <- ilr_inv(eta)
 
   # Truth: source and TDF isotope means/SDs
   source_mean <- sim_separated_source_means(K, J)
   dimnames(source_mean) <- list(source_names, isotope_names)
-  source_sd <- matrix(stats::runif(K * J, 0.5, 1.5), K, J, dimnames = dimnames(source_mean))
+  source_sd <- matrix(
+    stats::runif(K * J, 0.5, 1.5),
+    K,
+    J,
+    dimnames = dimnames(source_mean)
+  )
 
-  tdf_mean <- matrix(2 + stats::rnorm(K * J, 0, 0.2), K, J, dimnames = dimnames(source_mean))
-  tdf_sd <- matrix(stats::runif(K * J, 0.3, 0.7), K, J, dimnames = dimnames(source_mean))
+  tdf_mean <- matrix(
+    2 + stats::rnorm(K * J, 0, 0.2),
+    K,
+    J,
+    dimnames = dimnames(source_mean)
+  )
+  tdf_sd <- matrix(
+    stats::runif(K * J, 0.3, 0.7),
+    K,
+    J,
+    dimnames = dimnames(source_mean)
+  )
 
-  if (!source_means_sds) truth$source_mean <- source_mean
-  if (!source_means_sds) truth$source_sd <- source_sd
-  if (!tdf_means_sds) truth$tdf_mean <- tdf_mean
-  if (!tdf_means_sds) truth$tdf_sd <- tdf_sd
+  if (!source_means_sds) {
+    truth$source_mean <- source_mean
+  }
+  if (!source_means_sds) {
+    truth$source_sd <- source_sd
+  }
+  if (!tdf_means_sds) {
+    truth$tdf_mean <- tdf_mean
+  }
+  if (!tdf_means_sds) {
+    truth$tdf_sd <- tdf_sd
+  }
 
   conc <- NULL
   if (conc_dep) {
@@ -278,14 +376,25 @@ simulate_bsimms_data <- function(formula = ~1,
     mu <- mu_var$mu
     proc_var <- mu_var$proc_var
   } else {
-    mu <- sim_mu_var(p_true, source_mean, source_sd, tdf_mean, tdf_sd, conc, need_var = FALSE)$mu
+    mu <- sim_mu_var(
+      p_true,
+      source_mean,
+      source_sd,
+      tdf_mean,
+      tdf_sd,
+      conc,
+      need_var = FALSE
+    )$mu
   }
 
   if (error_structure == "residual_only") {
     if (is.null(sigma)) {
       sigma <- stats::runif(J, 0.3, 0.6)
     } else if (length(sigma) != J) {
-      cli::cli_abort("{.arg sigma} must be a numeric vector of length {J}.", call = NULL)
+      cli::cli_abort(
+        "{.arg sigma} must be a numeric vector of length {J}.",
+        call = NULL
+      )
     }
     truth$sigma <- stats::setNames(sigma, isotope_names)
     y_sd <- matrix(rep(sigma, each = n_mixture_obs), n_mixture_obs, J)
@@ -293,7 +402,10 @@ simulate_bsimms_data <- function(formula = ~1,
     if (is.null(resid_prop)) {
       resid_prop <- stats::runif(J, 0.5, 3)
     } else if (length(resid_prop) != J) {
-      cli::cli_abort("{.arg resid_prop} must be a numeric vector of length {J}.", call = NULL)
+      cli::cli_abort(
+        "{.arg resid_prop} must be a numeric vector of length {J}.",
+        call = NULL
+      )
     }
     truth$resid_prop <- stats::setNames(resid_prop, isotope_names)
     y_sd <- sqrt(sweep(proc_var, 2, resid_prop, `*`))
@@ -304,11 +416,24 @@ simulate_bsimms_data <- function(formula = ~1,
   colnames(y) <- isotope_names
   mixture_data <- cbind(mixture_data, as.data.frame(y))
 
-  source_data <- sim_isotope_data(source_names, isotope_names, source_mean, source_sd,
-    source_means_sds, n_source_obs, source_col, conc
+  source_data <- sim_isotope_data(
+    source_names,
+    isotope_names,
+    source_mean,
+    source_sd,
+    source_means_sds,
+    n_source_obs,
+    source_col,
+    conc
   )
-  tdf_data <- sim_isotope_data(source_names, isotope_names, tdf_mean, tdf_sd,
-    tdf_means_sds, n_tdf_obs, source_col
+  tdf_data <- sim_isotope_data(
+    source_names,
+    isotope_names,
+    tdf_mean,
+    tdf_sd,
+    tdf_means_sds,
+    n_tdf_obs,
+    source_col
   )
 
   list(
@@ -361,13 +486,23 @@ sim_check_condition_names <- function(x, arg_name, available) {
   unknown <- setdiff(names(x), available)
   if (length(unknown) > 0) {
     cli::cli_abort(
-      "{.arg {arg_name}} names variable{?s} not in {.arg formula}: {.val {unknown}}.",
+      paste0(
+        "{.arg {arg_name}} names variable{?s} not in {.arg formula}: ",
+        "{.val {unknown}}."
+      ),
       call = NULL
     )
   }
-  bad <- vapply(x, function(n) !rlang::is_scalar_integerish(n) || n < 2, logical(1))
+  bad <- vapply(
+    x,
+    function(n) !rlang::is_scalar_integerish(n) || n < 2,
+    logical(1)
+  )
   if (any(bad)) {
-    cli::cli_abort("{.arg {arg_name}} entries must be single integers >= 2.", call = NULL)
+    cli::cli_abort(
+      "{.arg {arg_name}} entries must be single integers >= 2.",
+      call = NULL
+    )
   }
   invisible(NULL)
 }
@@ -384,10 +519,15 @@ sim_check_condition_names <- function(x, arg_name, available) {
 #' @noRd
 sim_resolve_n_obs <- function(n_obs, K, arg_name) {
   valid_length <- length(n_obs) %in% c(1, K)
-  valid_values <- is.numeric(n_obs) && all(n_obs == round(n_obs)) && all(n_obs >= 1)
+  valid_values <- is.numeric(n_obs) &&
+    all(n_obs == round(n_obs)) &&
+    all(n_obs >= 1)
   if (!valid_length || !valid_values) {
     cli::cli_abort(
-      "{.arg {arg_name}} must be a single positive integer or a positive integer vector of length {K} (n_sources).",
+      paste0(
+        "{.arg {arg_name}} must be a single positive integer or a ",
+        "positive integer vector of length {K} (n_sources)."
+      ),
       call = NULL
     )
   }
@@ -408,7 +548,10 @@ sim_resolve_n_obs <- function(n_obs, K, arg_name) {
 sim_level_counts <- function(n_obs, n_lvl, balanced) {
   if (n_lvl > n_obs) {
     cli::cli_abort(
-      "Cannot split {n_obs} observations across {n_lvl} levels: each level needs at least one observation.",
+      paste0(
+        "Cannot split {n_obs} observations across {n_lvl} levels: ",
+        "each level needs at least one observation."
+      ),
       call = NULL
     )
   }
@@ -416,10 +559,16 @@ sim_level_counts <- function(n_obs, n_lvl, balanced) {
     base <- n_obs %/% n_lvl
     rem <- n_obs %% n_lvl
     counts <- rep(base, n_lvl)
-    if (rem > 0) counts[seq_len(rem)] <- counts[seq_len(rem)] + 1L
+    if (rem > 0) {
+      counts[seq_len(rem)] <- counts[seq_len(rem)] + 1L
+    }
     counts
   } else {
-    extra <- as.vector(stats::rmultinom(1, n_obs - n_lvl, prob = rep(1 / n_lvl, n_lvl)))
+    extra <- as.vector(stats::rmultinom(
+      1,
+      n_obs - n_lvl,
+      prob = rep(1 / n_lvl, n_lvl)
+    ))
     rep(1L, n_lvl) + extra
   }
 }
@@ -460,13 +609,21 @@ sim_factor_column <- function(n_obs, n_lvl, balanced, level_names) {
 #'   reached in practice.
 #' @return A `K x J` numeric matrix.
 #' @noRd
-sim_separated_source_means <- function(K, J, sd_ref = 1, spacing_factor = 5, max_tries = 100) {
+sim_separated_source_means <- function(
+  K,
+  J,
+  sd_ref = 1,
+  spacing_factor = 5,
+  max_tries = 100
+) {
   spacing <- spacing_factor * sd_ref
   pool <- seq(-(K - 0.5) * spacing, (K - 0.5) * spacing, by = spacing)
 
   draw_once <- function() {
     means <- matrix(0, nrow = K, ncol = J)
-    for (j in seq_len(J)) means[, j] <- sample(pool, K, replace = FALSE)
+    for (j in seq_len(J)) {
+      means[, j] <- sample(pool, K, replace = FALSE)
+    }
     means
   }
 
@@ -484,7 +641,9 @@ sim_separated_source_means <- function(K, J, sd_ref = 1, spacing_factor = 5, max
 
   means <- draw_once()
   for (i in seq_len(max_tries)) {
-    if (!is_collinear(means)) break
+    if (!is_collinear(means)) {
+      break
+    }
     means <- draw_once()
   }
   means
@@ -506,7 +665,15 @@ sim_separated_source_means <- function(K, J, sd_ref = 1, spacing_factor = 5, max
 #' @return A list with `mu` (`n_mixture_obs x J`) and, if `need_var`,
 #'   `proc_var` (same shape).
 #' @noRd
-sim_mu_var <- function(p_true, source_mean, source_sd, tdf_mean, tdf_sd, conc = NULL, need_var = TRUE) {
+sim_mu_var <- function(
+  p_true,
+  source_mean,
+  source_sd,
+  tdf_mean,
+  tdf_sd,
+  conc = NULL,
+  need_var = TRUE
+) {
   n <- nrow(p_true)
   J <- ncol(source_mean)
   mu <- matrix(0, n, J)
@@ -541,7 +708,16 @@ sim_mu_var <- function(p_true, source_mean, source_sd, tdf_mean, tdf_sd, conc = 
 #'   `<isotope>_conc` columns (summarised layout only).
 #' @return A data frame.
 #' @noRd
-sim_isotope_data <- function(source_names, isotope_names, mean_mat, sd_mat, means_sds, n_obs, source_col, conc = NULL) {
+sim_isotope_data <- function(
+  source_names,
+  isotope_names,
+  mean_mat,
+  sd_mat,
+  means_sds,
+  n_obs,
+  source_col,
+  conc = NULL
+) {
   if (means_sds) {
     out <- data.frame(x = source_names)
     names(out) <- source_col
@@ -550,22 +726,33 @@ sim_isotope_data <- function(source_names, isotope_names, mean_mat, sd_mat, mean
       out[[paste0(isotope_names[j], "_sd")]] <- sd_mat[, j]
     }
     if (!is.null(conc)) {
-      for (j in seq_along(isotope_names)) out[[paste0(isotope_names[j], "_conc")]] <- conc[, j]
+      for (j in seq_along(isotope_names)) {
+        out[[paste0(isotope_names[j], "_conc")]] <- conc[, j]
+      }
     }
     out
   } else {
     K <- length(source_names)
-    out <- do.call(rbind, lapply(seq_len(K), function(k) {
-      row <- data.frame(x = rep(source_names[k], n_obs[k]))
-      names(row) <- source_col
-      for (j in seq_along(isotope_names)) {
-        row[[isotope_names[j]]] <- stats::rnorm(n_obs[k], mean_mat[k, j], sd_mat[k, j])
-      }
-      if (!is.null(conc)) {
-        for (j in seq_along(isotope_names)) row[[paste0(isotope_names[j], "_conc")]] <- conc[k, j]
-      }
-      row
-    }))
+    out <- do.call(
+      rbind,
+      lapply(seq_len(K), function(k) {
+        row <- data.frame(x = rep(source_names[k], n_obs[k]))
+        names(row) <- source_col
+        for (j in seq_along(isotope_names)) {
+          row[[isotope_names[j]]] <- stats::rnorm(
+            n_obs[k],
+            mean_mat[k, j],
+            sd_mat[k, j]
+          )
+        }
+        if (!is.null(conc)) {
+          for (j in seq_along(isotope_names)) {
+            row[[paste0(isotope_names[j], "_conc")]] <- conc[k, j]
+          }
+        }
+        row
+      })
+    )
     rownames(out) <- NULL
     out
   }

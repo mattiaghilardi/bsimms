@@ -41,13 +41,22 @@
 #' pf$re_terms[[1]]$group
 parse_bsimms_formula <- function(formula, data) {
   if (!inherits(formula, "formula")) {
-    cli::cli_abort("{.arg formula} must be a formula, e.g. {.code ~ Sex + (1 | Region)}.", call = NULL)
+    cli::cli_abort(
+      "{.arg formula} must be a formula, e.g. {.code ~ Sex + (1 | Region)}.",
+      call = NULL
+    )
   }
   if (length(formula) == 3) {
     cli::cli_abort(
       c(
-        "{.arg formula} must not have a left-hand side (e.g. use {.code ~ Sex}, not {.code p ~ Sex}).",
-        "i" = "Source proportions are inferred from the isotope mixture, not supplied directly."
+        paste0(
+          "{.arg formula} must not have a left-hand side (e.g. use ",
+          "{.code ~ Sex}, not {.code p ~ Sex})."
+        ),
+        "i" = paste0(
+          "Source proportions are inferred from the isotope mixture, ",
+          "not supplied directly."
+        )
       ),
       call = NULL
     )
@@ -68,7 +77,9 @@ parse_bsimms_formula <- function(formula, data) {
   X <- stats::model.matrix(fixed_formula, data = data)
   fixed_names <- colnames(X)
   fixed_frame <- stats::model.frame(fixed_formula, data = data)
-  fixed_frame[] <- lapply(fixed_frame, function(col) if (is.character(col)) factor(col) else col)
+  fixed_frame[] <- lapply(fixed_frame, function(col) {
+    if (is.character(col)) factor(col) else col
+  })
 
   # Character columns must be coerced to factor before evaluating a
   # group-level term's grouping expression: base R's `:` only computes the
@@ -79,7 +90,9 @@ parse_bsimms_formula <- function(formula, data) {
   # are stored as character (the common case, since R defaults to
   # `stringsAsFactors = FALSE`).
   data_for_groups <- data
-  data_for_groups[] <- lapply(data_for_groups, function(col) if (is.character(col)) factor(col) else col)
+  data_for_groups[] <- lapply(data_for_groups, function(col) {
+    if (is.character(col)) factor(col) else col
+  })
 
   re_terms <- list()
   if (!is.null(bars)) {
@@ -87,16 +100,26 @@ parse_bsimms_formula <- function(formula, data) {
       b_str <- rlang::expr_deparse(b)
       parts <- strsplit(b_str, "\\|")[[1]]
       if (length(parts) != 2) {
-        cli::cli_abort("Could not parse group-level term {.code {b_str}}.", call = NULL)
+        cli::cli_abort(
+          "Could not parse group-level term {.code {b_str}}.",
+          call = NULL
+        )
       }
       term_str <- trimws(parts[1])
       group_str <- trimws(parts[2])
       term_formula <- stats::as.formula(paste("~", term_str))
 
-      group_val <- rlang::eval_tidy(rlang::parse_expr(group_str), data = data_for_groups, env = parent.frame())
+      group_val <- rlang::eval_tidy(
+        rlang::parse_expr(group_str),
+        data = data_for_groups,
+        env = parent.frame()
+      )
       group_factor <- factor(group_val)
       if (any(is.na(group_factor))) {
-        cli::cli_abort("Grouping factor {.field {group_str}} contains missing values.", call = NULL)
+        cli::cli_abort(
+          "Grouping factor {.field {group_str}} contains missing values.",
+          call = NULL
+        )
       }
 
       Zg <- stats::model.matrix(term_formula, data = data)
@@ -123,7 +146,9 @@ parse_bsimms_formula <- function(formula, data) {
       make_stan_name(group_names),
       paste0(make_stan_name(group_names), "_", dup)
     )
-    for (i in seq_along(re_terms)) re_terms[[i]]$label <- labels[i]
+    for (i in seq_along(re_terms)) {
+      re_terms[[i]]$label <- labels[i]
+    }
   }
 
   list(

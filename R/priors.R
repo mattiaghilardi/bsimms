@@ -72,18 +72,38 @@
 #' bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
 #' bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")
 bsimms_prior <- function(prior, class = "b", coef = "", resp = "", group = "") {
-  class <- rlang::arg_match0(class, c(
-    "b", "p_global", "sd", "cor", "sigma", "resid_prop",
-    "source_mean", "source_sd", "tdf_mean", "tdf_sd", "source_cor", "resid_cor"
-  ))
+  class <- rlang::arg_match0(
+    class,
+    c(
+      "b",
+      "p_global",
+      "sd",
+      "cor",
+      "sigma",
+      "resid_prop",
+      "source_mean",
+      "source_sd",
+      "tdf_mean",
+      "tdf_sd",
+      "source_cor",
+      "resid_cor"
+    )
+  )
   if (!rlang::is_string(prior)) {
     cli::cli_abort(
-      "{.arg prior} must be a single character string of Stan code, e.g. {.code \"normal(0, 1)\"}.",
+      paste0(
+        "{.arg prior} must be a single character string of Stan code, ",
+        "e.g. {.code \"normal(0, 1)\"}."
+      ),
       call = NULL
     )
   }
   out <- data.frame(
-    prior = prior, class = class, coef = coef, resp = resp, group = group,
+    prior = prior,
+    class = class,
+    coef = coef,
+    resp = resp,
+    group = group,
     stringsAsFactors = FALSE
   )
   class(out) <- c("bsimms_prior", "data.frame")
@@ -141,7 +161,9 @@ default_bsimms_prior <- function(spec) {
 
   add("normal(0, 1)", "b")
 
-  for (s in spec$source_names) add("1", "p_global", group = s)
+  for (s in spec$source_names) {
+    add("1", "p_global", group = s)
+  }
 
   if (length(spec$re_terms) > 0) {
     add("student_t(3, 0, 1)", "sd")
@@ -153,7 +175,11 @@ default_bsimms_prior <- function(spec) {
     y_mad[!is.finite(y_mad) | y_mad <= 0] <- 1
     add(sprintf("student_t(3, 0, %.6g)", max(y_mad)), "sigma")
     for (j in seq_along(spec$isotope_names)) {
-      add(sprintf("student_t(3, 0, %.6g)", y_mad[j]), "sigma", resp = spec$isotope_names[j])
+      add(
+        sprintf("student_t(3, 0, %.6g)", y_mad[j]),
+        "sigma",
+        resp = spec$isotope_names[j]
+      )
     }
     if (spec$J > 1) {
       add("lkj_corr_cholesky(1)", "resid_cor")
@@ -179,14 +205,19 @@ default_bsimms_prior <- function(spec) {
     for (j in seq_along(spec$isotope_names)) {
       for (k in seq_along(spec$source_names)) {
         yk <- Y[idx == k, j]
-        m <- stats::median(yk); s <- max(stats::mad(yk), 1e-3)
+        m <- stats::median(yk)
+        s <- max(stats::mad(yk), 1e-3)
         add(
-          sprintf("normal(%.6g, %.6g)", m, 10 * s), "source_mean",
-          resp = spec$isotope_names[j], group = spec$source_names[k]
+          sprintf("normal(%.6g, %.6g)", m, 10 * s),
+          "source_mean",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
         )
         add(
-          sprintf("student_t(3, 0, %.6g)", s), "source_sd",
-          resp = spec$isotope_names[j], group = spec$source_names[k]
+          sprintf("student_t(3, 0, %.6g)", s),
+          "source_sd",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
         )
       }
     }
@@ -203,14 +234,19 @@ default_bsimms_prior <- function(spec) {
     for (j in seq_along(spec$isotope_names)) {
       for (k in seq_along(spec$source_names)) {
         yk <- Y[idx == k, j]
-        m <- stats::median(yk); s <- max(stats::mad(yk), 1e-3)
+        m <- stats::median(yk)
+        s <- max(stats::mad(yk), 1e-3)
         add(
-          sprintf("normal(%.6g, %.6g)", m, 10 * s), "tdf_mean",
-          resp = spec$isotope_names[j], group = spec$source_names[k]
+          sprintf("normal(%.6g, %.6g)", m, 10 * s),
+          "tdf_mean",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
         )
         add(
-          sprintf("student_t(3, 0, %.6g)", s), "tdf_sd",
-          resp = spec$isotope_names[j], group = spec$source_names[k]
+          sprintf("student_t(3, 0, %.6g)", s),
+          "tdf_sd",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
         )
       }
     }
@@ -237,23 +273,53 @@ validate_prior_identifiers <- function(user, spec) {
     }
     if (length(valid) == 0) {
       cli::cli_abort(
-        "{.arg prior}: class {.val {class}} has no valid {.field {field}} in this model (no matching terms).",
+        paste0(
+          "{.arg prior}: class {.val {class}} has no valid {.field ",
+          "{field}} in this model (no matching terms)."
+        ),
         call = NULL
       )
     }
     cli::cli_abort(
-      "{.arg prior}: unrecognised {.field {field}} {.val {value}} for class {.val {class}}; must be one of {.val {valid}}.",
+      paste0(
+        "{.arg prior}: unrecognised {.field {field}} {.val {value}} for ",
+        "class {.val {class}}; must be one of {.val {valid}}."
+      ),
       call = NULL
     )
   }
   for (i in seq_len(nrow(user))) {
     class <- user$class[i]
-    if (class == "b") check(user$coef[i], spec$fixed_names, "coef", class)
-    if (class %in% c("sigma", "resid_prop", "source_mean", "source_sd", "tdf_mean", "tdf_sd")) {
+    if (class == "b") {
+      check(user$coef[i], spec$fixed_names, "coef", class)
+    }
+    if (
+      class %in%
+        c(
+          "sigma",
+          "resid_prop",
+          "source_mean",
+          "source_sd",
+          "tdf_mean",
+          "tdf_sd"
+        )
+    ) {
       check(user$resp[i], spec$isotope_names, "resp", class)
     }
-    if (class %in% c("sd", "cor")) check(user$group[i], re_groups, "group", class)
-    if (class %in% c("p_global", "source_mean", "source_sd", "tdf_mean", "tdf_sd", "source_cor")) {
+    if (class %in% c("sd", "cor")) {
+      check(user$group[i], re_groups, "group", class)
+    }
+    if (
+      class %in%
+        c(
+          "p_global",
+          "source_mean",
+          "source_sd",
+          "tdf_mean",
+          "tdf_sd",
+          "source_cor"
+        )
+    ) {
       check(user$group[i], spec$source_names, "group", class)
     }
   }
@@ -286,10 +352,15 @@ validate_prior_identifiers <- function(user, spec) {
 #'   `NULL`, otherwise `default` with `user`'s rows merged in.
 #' @noRd
 merge_bsimms_prior <- function(default, user, spec) {
-  if (is.null(user)) return(default)
+  if (is.null(user)) {
+    return(default)
+  }
   if (!inherits(user, "bsimms_prior")) {
     cli::cli_abort(
-      "{.arg prior} must be built with {.fn bsimms_prior} (optionally combined with {.fn c}).",
+      paste0(
+        "{.arg prior} must be built with {.fn bsimms_prior} ",
+        "(optionally combined with {.fn c})."
+      ),
       call = NULL
     )
   }
@@ -298,8 +369,10 @@ merge_bsimms_prior <- function(default, user, spec) {
   touched <- rep(FALSE, nrow(out))
   for (i in seq_len(nrow(user))) {
     match_row <- which(
-      out$class == user$class[i] & out$coef == user$coef[i] &
-        out$resp == user$resp[i] & out$group == user$group[i]
+      out$class == user$class[i] &
+        out$coef == user$coef[i] &
+        out$resp == user$resp[i] &
+        out$group == user$group[i]
     )
     if (length(match_row) == 1) {
       out$prior[match_row] <- user$prior[i]
@@ -363,7 +436,10 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
   sub <- prior_df[prior_df$class == class, , drop = FALSE]
   if (nrow(sub) == 0) {
     cli::cli_abort(
-      "No prior available for class {.val {class}}; this should not happen \u2014 please report a bug.",
+      paste0(
+        "No prior available for class {.val {class}}; this should not ",
+        "happen \u2014 please report a bug."
+      ),
       call = NULL
     )
   }
@@ -373,14 +449,21 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
   }
   candidates <- list(
     pick(coef, resp, group),
-    pick(coef, resp, ""), pick(coef, "", group), pick("", resp, group),
-    pick(coef, "", ""), pick("", resp, ""), pick("", "", group),
+    pick(coef, resp, ""),
+    pick(coef, "", group),
+    pick("", resp, group),
+    pick(coef, "", ""),
+    pick("", resp, ""),
+    pick("", "", group),
     pick("", "", "")
   )
   candidates <- candidates[!vapply(candidates, is.na, logical(1))]
   if (length(candidates) == 0) {
     cli::cli_abort(
-      "No matching prior found for class {.val {class}}, coef {.val {coef}}, resp {.val {resp}}, group {.val {group}}.",
+      paste0(
+        "No matching prior found for class {.val {class}}, coef ",
+        "{.val {coef}}, resp {.val {resp}}, group {.val {group}}."
+      ),
       call = NULL
     )
   }
@@ -429,16 +512,29 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
 #'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
 #'   source_col = sim$source_col
 #' )
-bsimms_get_prior <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
-                              source_means_sds = FALSE, tdf_means_sds = TRUE,
-                              conc_dep = FALSE,
-                              error_structure = c("process_residual", "process_only", "residual_only"),
-                              source_col = "Source") {
+bsimms_get_prior <- function(
+  formula,
+  mixture_data,
+  source_data,
+  tdf_data,
+  isotope_names,
+  source_means_sds = FALSE,
+  tdf_means_sds = TRUE,
+  conc_dep = FALSE,
+  error_structure = c("process_residual", "process_only", "residual_only"),
+  source_col = "Source"
+) {
   spec <- build_bsimms_spec(
-    formula = formula, mixture_data = mixture_data,
-    source_data = source_data, tdf_data = tdf_data, isotope_names = isotope_names,
-    source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
-    conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
+    formula = formula,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = isotope_names,
+    source_means_sds = source_means_sds,
+    tdf_means_sds = tdf_means_sds,
+    conc_dep = conc_dep,
+    error_structure = error_structure,
+    source_col = source_col
   )
   default_bsimms_prior(spec)
 }

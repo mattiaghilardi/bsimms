@@ -6,23 +6,36 @@ mixture_data <- data.frame(
 )
 source_data <- data.frame(
   Source = c("Beaver", "Deer", "Otter"),
-  d13C_mean = c(-26, -14, -20), d13C_sd = c(1, 1, 1),
-  d15N_mean = c(4, 6, 3), d15N_sd = c(1, 1, 1)
+  d13C_mean = c(-26, -14, -20),
+  d13C_sd = c(1, 1, 1),
+  d15N_mean = c(4, 6, 3),
+  d15N_sd = c(1, 1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer", "Otter"),
-  d13C_mean = c(0.8, 0.9, 1.0), d13C_sd = c(0.2, 0.2, 0.2),
-  d15N_mean = c(3.2, 3.3, 3.4), d15N_sd = c(0.3, 0.3, 0.3)
+  d13C_mean = c(0.8, 0.9, 1.0),
+  d13C_sd = c(0.2, 0.2, 0.2),
+  d15N_mean = c(3.2, 3.3, 3.4),
+  d15N_sd = c(0.3, 0.3, 0.3)
 )
 
 skip_if_not_installed("cmdstanr")
 skip_if_not_installed("rstantools")
 
 fit <- bsimm(
-  formula = ~ elevation + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ elevation + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 raw_source_data <- data.frame(
@@ -32,10 +45,19 @@ raw_source_data <- data.frame(
 )
 raw_tdf_data <- tdf_data[tdf_data$Source %in% c("Beaver", "Deer"), ]
 raw_fit <- bsimm(
-  formula = ~ elevation + (1 | Region), mixture_data = mixture_data, source_data = raw_source_data,
-  tdf_data = raw_tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = FALSE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ elevation + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = raw_source_data,
+  tdf_data = raw_tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = FALSE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 # posterior_proportions / fitted_proportions ---------------------------------
@@ -55,7 +77,10 @@ test_that("fitted_proportions summarises proportions by source", {
 })
 
 test_that("fitted_proportions with summary = FALSE matches posterior_proportions", {
-  expect_equal(fitted_proportions(fit, summary = FALSE), posterior_proportions(fit))
+  expect_equal(
+    fitted_proportions(fit, summary = FALSE),
+    posterior_proportions(fit)
+  )
 })
 
 test_that("fitted_proportions's robust argument switches mean/sd for median/mad", {
@@ -113,7 +138,10 @@ test_that("posterior_proportions errors on unseen group levels in newdata", {
 })
 
 test_that("posterior_proportions treats NA in a grouping column as a new level", {
-  newdata <- data.frame(elevation = 100, Region = factor(NA, levels = c("A", "B")))
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor(NA, levels = c("A", "B"))
+  )
   expect_snapshot(error = TRUE, posterior_proportions(fit, newdata = newdata))
 })
 
@@ -124,26 +152,48 @@ test_that("posterior_proportions errors when newdata is missing a fixed-effect c
 
 test_that("posterior_proportions errors when re_formula names a term not in the model", {
   newdata <- data.frame(elevation = 100, Region = factor("A"))
-  expect_snapshot(error = TRUE, posterior_proportions(fit, newdata = newdata, re_formula = ~ (1 | Foo)))
+  expect_snapshot(
+    error = TRUE,
+    posterior_proportions(fit, newdata = newdata, re_formula = ~ (1 | Foo))
+  )
 })
 
 test_that("posterior_proportions errors when re_formula is not NULL/NA/a formula", {
   newdata <- data.frame(elevation = 100, Region = factor("A"))
-  expect_snapshot(error = TRUE, posterior_proportions(fit, newdata = newdata, re_formula = "banana"))
+  expect_snapshot(
+    error = TRUE,
+    posterior_proportions(fit, newdata = newdata, re_formula = "banana")
+  )
 })
 
 # posterior_proportions with allow_new_levels / sample_new_levels -----------
 
 test_that("posterior_proportions samples new levels when allow_new_levels = TRUE (uncertainty)", {
-  newdata <- data.frame(elevation = 100, Region = factor("C", levels = c("A", "B", "C")))
-  p_arr <- posterior_proportions(fit, newdata = newdata, allow_new_levels = TRUE, sample_new_levels = "uncertainty")
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor("C", levels = c("A", "B", "C"))
+  )
+  p_arr <- posterior_proportions(
+    fit,
+    newdata = newdata,
+    allow_new_levels = TRUE,
+    sample_new_levels = "uncertainty"
+  )
   expect_equal(dim(p_arr), c(100, 1, 3))
   expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
 })
 
 test_that("posterior_proportions samples new levels when allow_new_levels = TRUE (gaussian)", {
-  newdata <- data.frame(elevation = 100, Region = factor("C", levels = c("A", "B", "C")))
-  p_arr <- posterior_proportions(fit, newdata = newdata, allow_new_levels = TRUE, sample_new_levels = "gaussian")
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor("C", levels = c("A", "B", "C"))
+  )
+  p_arr <- posterior_proportions(
+    fit,
+    newdata = newdata,
+    allow_new_levels = TRUE,
+    sample_new_levels = "gaussian"
+  )
   expect_equal(dim(p_arr), c(100, 1, 3))
   expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
 })
@@ -153,7 +203,11 @@ test_that("rows sharing the same new, non-NA level get identical sampled draws",
     elevation = c(100, 100),
     Region = factor(c("C", "C"), levels = c("A", "B", "C"))
   )
-  p_arr <- posterior_proportions(fit, newdata = newdata, allow_new_levels = TRUE)
+  p_arr <- posterior_proportions(
+    fit,
+    newdata = newdata,
+    allow_new_levels = TRUE
+  )
   expect_equal(p_arr[, 1, ], p_arr[, 2, ])
 })
 
@@ -162,12 +216,20 @@ test_that("distinct NA rows get independently sampled draws", {
     elevation = c(100, 100),
     Region = factor(c(NA, NA), levels = c("A", "B"))
   )
-  p_arr <- posterior_proportions(fit, newdata = newdata, allow_new_levels = TRUE, sample_new_levels = "gaussian")
+  p_arr <- posterior_proportions(
+    fit,
+    newdata = newdata,
+    allow_new_levels = TRUE,
+    sample_new_levels = "gaussian"
+  )
   expect_false(isTRUE(all.equal(p_arr[, 1, ], p_arr[, 2, ])))
 })
 
 test_that("re_formula = NA ignores allow_new_levels entirely (term not conditioned on)", {
-  newdata <- data.frame(elevation = 100, Region = factor("C", levels = c("A", "B", "C")))
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor("C", levels = c("A", "B", "C"))
+  )
   p_arr <- posterior_proportions(fit, newdata = newdata, re_formula = NA)
   expect_equal(dim(p_arr), c(100, 1, 3))
 })
@@ -189,19 +251,28 @@ test_that("re_formula = ~0 matches re_formula = NA for the fitted mixture data",
 })
 
 test_that("re_formula = NULL matches omitting re_formula for the fitted mixture data", {
-  expect_equal(posterior_proportions(fit, re_formula = NULL), posterior_proportions(fit))
+  expect_equal(
+    posterior_proportions(fit, re_formula = NULL),
+    posterior_proportions(fit)
+  )
 })
 
 test_that("re_formula selecting all group-level terms matches the default for the fitted mixture data", {
   expect_equal(
-    posterior_proportions(fit, re_formula = ~ (1 | Region)), posterior_proportions(fit),
+    posterior_proportions(fit, re_formula = ~ (1 | Region)),
+    posterior_proportions(fit),
     tolerance = 1e-6
   )
 })
 
 test_that("re_formula ignores allow_new_levels/sample_new_levels when newdata is NULL", {
   p1 <- posterior_proportions(fit, re_formula = NA, allow_new_levels = FALSE)
-  p2 <- posterior_proportions(fit, re_formula = NA, allow_new_levels = TRUE, sample_new_levels = "gaussian")
+  p2 <- posterior_proportions(
+    fit,
+    re_formula = NA,
+    allow_new_levels = TRUE,
+    sample_new_levels = "gaussian"
+  )
   expect_equal(p1, p2)
 })
 
@@ -232,7 +303,10 @@ test_that("draws_long works directly on posterior_epred's output", {
 })
 
 test_that("posterior_epred errors on an invalid resp", {
-  expect_snapshot(error = TRUE, rstantools::posterior_epred(fit, resp = "banana"))
+  expect_snapshot(
+    error = TRUE,
+    rstantools::posterior_epred(fit, resp = "banana")
+  )
 })
 
 test_that("fitted summarises mu by isotope", {
@@ -290,7 +364,10 @@ test_that("predict summarises y_rep by isotope", {
 })
 
 test_that("predict with summary = FALSE matches posterior_predict", {
-  expect_equal(predict(fit, summary = FALSE), rstantools::posterior_predict(fit))
+  expect_equal(
+    predict(fit, summary = FALSE),
+    rstantools::posterior_predict(fit)
+  )
 })
 
 test_that("predict's probs argument controls the quantile columns", {
@@ -338,17 +415,26 @@ test_that("posterior_epred reproduces fitted mu for raw source data too (mv-elig
 })
 
 test_that("posterior_epred's newdata prediction respects resp/re_formula/allow_new_levels/ndraws", {
-  newdata <- data.frame(elevation = 100, Region = factor("C", levels = c("A", "B", "C")))
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor("C", levels = c("A", "B", "C"))
+  )
   mu_new <- rstantools::posterior_epred(
     fit,
-    newdata = newdata, resp = "d15N", allow_new_levels = TRUE, ndraws = 10
+    newdata = newdata,
+    resp = "d15N",
+    allow_new_levels = TRUE,
+    ndraws = 10
   )
   expect_equal(dim(mu_new), c(10, 1, 1))
 })
 
 test_that("posterior_epred propagates posterior_proportions's newdata validation errors", {
   newdata <- data.frame(elevation = c(100, 200))
-  expect_snapshot(error = TRUE, rstantools::posterior_epred(fit, newdata = newdata))
+  expect_snapshot(
+    error = TRUE,
+    rstantools::posterior_epred(fit, newdata = newdata)
+  )
 })
 
 test_that("posterior_predict for new data adds observation noise (not just point predictions)", {
@@ -391,27 +477,43 @@ nested_mixture_data <- data.frame(
 )
 nested_source_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
-  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 1)
 )
 nested_tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 nested_fit <- bsimm(
-  formula = ~ 1 + (1 | Site / Individual), mixture_data = nested_mixture_data,
-  source_data = nested_source_data, tdf_data = nested_tdf_data,
-  isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ 1 + (1 | Site / Individual),
+  mixture_data = nested_mixture_data,
+  source_data = nested_source_data,
+  tdf_data = nested_tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 test_that("posterior_proportions correctly handles a nested group term with character newdata", {
   # row 1 of nested_mixture_data is Site = "S1", Individual = "I1"
   newdata_factor <- data.frame(Site = factor("S1"), Individual = factor("I1"))
-  newdata_character <- data.frame(Site = "S1", Individual = "I1", stringsAsFactors = FALSE)
+  newdata_character <- data.frame(
+    Site = "S1",
+    Individual = "I1",
+    stringsAsFactors = FALSE
+  )
   p_fitted <- posterior_proportions(nested_fit)
   p_factor <- posterior_proportions(nested_fit, newdata = newdata_factor)
   p_character <- posterior_proportions(nested_fit, newdata = newdata_character)
@@ -427,19 +529,30 @@ test_that("posterior_proportions errors by default when the inner nesting term's
 })
 
 test_that("re_formula selects the outer nesting term alone (site average over individuals)", {
-  p <- posterior_proportions(nested_fit, newdata = data.frame(Site = factor("S1")), re_formula = ~ (1 | Site))
+  p <- posterior_proportions(
+    nested_fit,
+    newdata = data.frame(Site = factor("S1")),
+    re_formula = ~ (1 | Site)
+  )
   expect_equal(dim(p), c(100, 1, 2))
 })
 
 test_that("re_formula = NA gives the pure population-average (neither nesting level)", {
-  p <- posterior_proportions(nested_fit, newdata = data.frame(dummy = 1), re_formula = NA)
+  p <- posterior_proportions(
+    nested_fit,
+    newdata = data.frame(dummy = 1),
+    re_formula = NA
+  )
   expect_equal(dim(p), c(100, 1, 2))
 })
 
 test_that("posterior_proportions errors when the inner nesting level is supplied without the outer one", {
   expect_snapshot(
     error = TRUE,
-    posterior_proportions(nested_fit, newdata = data.frame(Individual = factor("I1")))
+    posterior_proportions(
+      nested_fit,
+      newdata = data.frame(Individual = factor("I1"))
+    )
   )
 })
 
@@ -447,37 +560,64 @@ test_that("posterior_proportions errors on an unseen Individual/Site combination
   # Individual "I3" only ever occurs with Site "S2" in nested_mixture_data
   expect_snapshot(
     error = TRUE,
-    posterior_proportions(nested_fit, newdata = data.frame(Site = factor("S1"), Individual = factor("I3")))
+    posterior_proportions(
+      nested_fit,
+      newdata = data.frame(Site = factor("S1"), Individual = factor("I3"))
+    )
   )
 })
 
 # posterior_proportions with a factor fixed effect ---------------------------
 
 factor_fit <- bsimm(
-  formula = ~Region, mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~Region,
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 test_that("posterior_proportions handles a single-row newdata for a factor fixed effect", {
   # mixture_data row 1 is Region = "A"
   p_fitted <- posterior_proportions(factor_fit)
-  p_factor <- posterior_proportions(factor_fit, newdata = data.frame(Region = factor("A", levels = c("A", "B"))))
-  p_character <- posterior_proportions(factor_fit, newdata = data.frame(Region = "A"))
-  p_underlevelled <- posterior_proportions(factor_fit, newdata = data.frame(Region = factor("A")))
+  p_factor <- posterior_proportions(
+    factor_fit,
+    newdata = data.frame(Region = factor("A", levels = c("A", "B")))
+  )
+  p_character <- posterior_proportions(
+    factor_fit,
+    newdata = data.frame(Region = "A")
+  )
+  p_underlevelled <- posterior_proportions(
+    factor_fit,
+    newdata = data.frame(Region = factor("A"))
+  )
   expect_equal(p_factor[, 1, ], p_fitted[, 1, ], tolerance = 1e-4)
   expect_equal(p_character[, 1, ], p_fitted[, 1, ], tolerance = 1e-4)
   expect_equal(p_underlevelled[, 1, ], p_fitted[, 1, ], tolerance = 1e-4)
 })
 
 test_that("posterior_proportions errors on a non-factor newdata column for a factor fixed effect", {
-  expect_snapshot(error = TRUE, posterior_proportions(factor_fit, newdata = data.frame(Region = 1)))
+  expect_snapshot(
+    error = TRUE,
+    posterior_proportions(factor_fit, newdata = data.frame(Region = 1))
+  )
 })
 
 test_that("posterior_proportions errors on an unseen factor level for a fixed effect", {
   expect_snapshot(
     error = TRUE,
-    posterior_proportions(factor_fit, newdata = data.frame(Region = factor("C", levels = c("A", "B", "C"))))
+    posterior_proportions(
+      factor_fit,
+      newdata = data.frame(Region = factor("C", levels = c("A", "B", "C")))
+    )
   )
 })

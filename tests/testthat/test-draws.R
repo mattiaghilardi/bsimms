@@ -10,8 +10,10 @@ source_data <- data.frame(
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 test_that("bsimms_draws errors on a non-bsimms_fit object", {
@@ -21,9 +23,16 @@ test_that("bsimms_draws errors on a non-bsimms_fit object", {
 test_that("bsimms_draws returns a draws_array for a cmdstanr fit", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   )
   draws <- bsimms_draws(fit)
   expect_s3_class(draws, "draws_array")
@@ -36,9 +45,17 @@ test_that("bsimms_draws returns a draws_array for an rstan fit", {
   skip_if_not_installed("rstan")
   skip_on_os("windows") # rstan model compilation is unreliably slow/fragile in Windows CI
   fit <- suppressWarnings(bsimm(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), backend = "rstan",
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    backend = "rstan",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   ))
   draws <- bsimms_draws(fit)
   expect_s3_class(draws, "draws_array")
@@ -50,9 +67,16 @@ test_that("bsimms_draws returns a draws_array for an rstan fit", {
 test_that("draws_matrix collapses chains into the draws dimension", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-    chains = 2, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 2,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   )
   dm <- draws_matrix(fit, variable = "p_global")
   expect_s3_class(dm, "draws_matrix")
@@ -62,9 +86,16 @@ test_that("draws_matrix collapses chains into the draws dimension", {
 test_that("extract_array_draws reshapes a vector parameter", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   )
   dm <- draws_matrix(fit, variable = "p_global")
   arr <- extract_array_draws(dm, "p_global", dim1 = 2)
@@ -75,9 +106,16 @@ test_that("extract_array_draws reshapes a vector parameter", {
 test_that("extract_array_draws reshapes a matrix parameter", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
-    formula = ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~ 1 + (1 | Region),
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   )
   dm <- draws_matrix(fit, variable = "source_mean")
   arr <- extract_array_draws(dm, "source_mean", dim1 = 2, dim2 = 2)
@@ -119,9 +157,16 @@ test_that("draws_long errors when var_col and value_col are identical", {
 test_that("extract_array_draws errors when the requested draws are missing", {
   skip_if_not_installed("cmdstanr")
   fit <- bsimm(
-    formula = ~1, mixture_data = mixture_data, source_data = source_data,
-    tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
   )
   dm <- draws_matrix(fit, variable = "p_global")
   expect_snapshot(error = TRUE, extract_array_draws(dm, "p_global", dim1 = 5))

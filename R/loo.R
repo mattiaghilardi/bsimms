@@ -131,9 +131,14 @@ add_criterion <- function(x, ...) {
 #' @rdname add_criterion
 #' @export
 add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
-  criterion <- rlang::arg_match(criterion, c("loo", "waic", "bayes_R2"), multiple = TRUE)
+  criterion <- rlang::arg_match(
+    criterion,
+    c("loo", "waic", "bayes_R2"),
+    multiple = TRUE
+  )
   for (crit in criterion) {
-    x$criteria[[crit]] <- switch(crit,
+    x$criteria[[crit]] <- switch(
+      crit,
       loo = loo.bsimms_fit(x, ...),
       waic = waic.bsimms_fit(x, ...),
       bayes_R2 = bayes_R2.bsimms_fit(x, summary = FALSE, ...)
@@ -195,7 +200,12 @@ add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
 #' )
 #' loo::loo_compare(fit1, fit2)
 #' }
-loo_compare.bsimms_fit <- function(x, ..., criterion = c("loo", "waic"), model_names = NULL) {
+loo_compare.bsimms_fit <- function(
+  x,
+  ...,
+  criterion = c("loo", "waic"),
+  model_names = NULL
+) {
   criterion <- rlang::arg_match(criterion)
   rlang::check_installed("loo", reason = "to use `loo_compare()`.")
   models <- c(list(x), list(...))
@@ -205,26 +215,45 @@ loo_compare.bsimms_fit <- function(x, ..., criterion = c("loo", "waic"), model_n
     model_names <- vapply(call_args, rlang::expr_deparse, character(1))
   }
 
-  matches_criterion <- if (criterion == "waic") loo::is.waic else loo::is.psis_loo
+  matches_criterion <- if (criterion == "waic") {
+    loo::is.waic
+  } else {
+    loo::is.psis_loo
+  }
   precomputed <- !vapply(models, inherits, logical(1), "bsimms_fit")
   mismatched <- precomputed & !vapply(models, matches_criterion, logical(1))
   if (any(mismatched)) {
     cli::cli_abort(
-      "Cannot compare models evaluated with different criteria: {.val {model_names[mismatched]}} must be {.cls {criterion}} object{?s} to match {.code criterion = '{criterion}'}.",
+      paste0(
+        "Cannot compare models evaluated with different criteria: ",
+        "{.val {model_names[mismatched]}} must be {.cls {criterion}} ",
+        "object{?s} to match {.code criterion = '{criterion}'}."
+      ),
       call = NULL
     )
   }
 
   compute <- if (criterion == "loo") loo.bsimms_fit else waic.bsimms_fit
-  crits <- Map(function(m, nm) {
-    if (!inherits(m, "bsimms_fit")) return(m)
-    cached <- m$criteria[[criterion]]
-    if (!is.null(cached)) return(cached)
-    cli::cli_inform(
-      "Computing {.val {criterion}} for model {.val {nm}} (not cached; use {.fn add_criterion} to cache it for reuse)."
-    )
-    compute(m)
-  }, models, model_names)
+  crits <- Map(
+    function(m, nm) {
+      if (!inherits(m, "bsimms_fit")) {
+        return(m)
+      }
+      cached <- m$criteria[[criterion]]
+      if (!is.null(cached)) {
+        return(cached)
+      }
+      cli::cli_inform(
+        paste0(
+          "Computing {.val {criterion}} for model {.val {nm}} (not cached; ",
+          "use {.fn add_criterion} to cache it for reuse)."
+        )
+      )
+      compute(m)
+    },
+    models,
+    model_names
+  )
   names(crits) <- model_names
   loo::loo_compare(crits)
 }

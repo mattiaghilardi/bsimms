@@ -21,7 +21,10 @@ test_that("double-bar terms expand into uncorrelated single-bar terms", {
 
 test_that("a two-sided formula is rejected", {
   d <- data.frame(y = 1:3, x = 1:3)
-  expect_error(parse_bsimms_formula(formula = y ~ x, data = d), "left-hand side")
+  expect_error(
+    parse_bsimms_formula(formula = y ~ x, data = d),
+    "left-hand side"
+  )
 })
 
 test_that("fixed-effect interaction terms are captured correctly", {
@@ -50,7 +53,10 @@ test_that("nested group-level terms (site + site:individual) are captured correc
     site = rep(c("A", "B"), each = 4),
     individual = rep(rep(c("1", "2"), each = 2), 2)
   )
-  pf <- parse_bsimms_formula(formula = ~ 1 + (1 | site) + (1 | site:individual), data = d)
+  pf <- parse_bsimms_formula(
+    formula = ~ 1 + (1 | site) + (1 | site:individual),
+    data = d
+  )
   expect_length(pf$re_terms, 2)
   expect_equal(pf$re_terms[[1]]$group, "site")
   expect_length(pf$re_terms[[1]]$group_levels, 2)

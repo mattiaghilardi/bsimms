@@ -30,13 +30,18 @@
 #' }
 bsimms_draws <- function(object, variable = NULL) {
   if (!inherits(object, "bsimms_fit")) {
-    cli::cli_abort("{.arg object} must be a {.cls bsimms_fit} object.", call = NULL)
+    cli::cli_abort(
+      "{.arg object} must be a {.cls bsimms_fit} object.",
+      call = NULL
+    )
   }
   if (object$backend == "cmdstanr") {
     object$fit$draws(variables = variable)
   } else {
     d <- posterior::as_draws_array(object$fit)
-    if (!is.null(variable)) d <- posterior::subset_draws(d, variable = variable)
+    if (!is.null(variable)) {
+      d <- posterior::subset_draws(d, variable = variable)
+    }
     d
   }
 }
@@ -68,12 +73,22 @@ subset_ndraws <- function(dm, ndraws) {
     return(dm)
   }
   n_draws <- nrow(dm)
-  if (!is.numeric(ndraws) || length(ndraws) != 1 || ndraws < 1 || ndraws != round(ndraws)) {
-    cli::cli_abort("{.arg ndraws} must be a single positive integer.", call = NULL)
+  invalid_ndraws <- !is.numeric(ndraws) ||
+    length(ndraws) != 1 ||
+    ndraws < 1 ||
+    ndraws != round(ndraws)
+  if (invalid_ndraws) {
+    cli::cli_abort(
+      "{.arg ndraws} must be a single positive integer.",
+      call = NULL
+    )
   }
   if (ndraws > n_draws) {
     cli::cli_abort(
-      "{.arg ndraws} ({ndraws}) cannot exceed the number of posterior draws available ({n_draws}).",
+      paste0(
+        "{.arg ndraws} ({ndraws}) cannot exceed the number of posterior ",
+        "draws available ({n_draws})."
+      ),
       call = NULL
     )
   }
@@ -99,7 +114,10 @@ extract_array_draws <- function(dm, prefix, dim1, dim2 = NULL) {
     nm <- sprintf("%s[%d]", prefix, seq_len(dim1))
     missing_nm <- setdiff(nm, colnames(dm))
     if (length(missing_nm) > 0) {
-      cli::cli_abort("Could not find draws for: {.field {missing_nm}}.", call = NULL)
+      cli::cli_abort(
+        "Could not find draws for: {.field {missing_nm}}.",
+        call = NULL
+      )
     }
     matrix(as.numeric(dm[, nm, drop = FALSE]), nrow = n_draws)
   } else {
@@ -108,7 +126,10 @@ extract_array_draws <- function(dm, prefix, dim1, dim2 = NULL) {
       nm <- sprintf("%s[%d,%d]", prefix, a, seq_len(dim2))
       missing_nm <- setdiff(nm, colnames(dm))
       if (length(missing_nm) > 0) {
-        cli::cli_abort("Could not find draws for: {.field {missing_nm}}.", call = NULL)
+        cli::cli_abort(
+          "Could not find draws for: {.field {missing_nm}}.",
+          call = NULL
+        )
       }
       arr[, a, ] <- dm[, nm, drop = FALSE]
     }
@@ -136,7 +157,10 @@ extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
       nm <- sprintf("%s[%d,%d,%d]", prefix, a, b, seq_len(dim2))
       missing_nm <- setdiff(nm, colnames(dm))
       if (length(missing_nm) > 0) {
-        cli::cli_abort("Could not find draws for: {.field {missing_nm}}.", call = NULL)
+        cli::cli_abort(
+          "Could not find draws for: {.field {missing_nm}}.",
+          call = NULL
+        )
       }
       arr[, a, b, ] <- dm[, nm, drop = FALSE]
     }
@@ -187,12 +211,18 @@ extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
 draws_long <- function(arr, var_col = "variable", value_col = "value") {
   if (length(dim(arr)) != 3 || is.null(dimnames(arr)[[3]])) {
     cli::cli_abort(
-      "{.arg arr} must be a `[n_draws, n_obs, n_var]` array with variable names attached as the 3rd dimension's dimnames.",
+      paste0(
+        "{.arg arr} must be a `[n_draws, n_obs, n_var]` array with ",
+        "variable names attached as the 3rd dimension's dimnames."
+      ),
       call = NULL
     )
   }
   if (identical(var_col, value_col)) {
-    cli::cli_abort("{.arg var_col} and {.arg value_col} must be different.", call = NULL)
+    cli::cli_abort(
+      "{.arg var_col} and {.arg value_col} must be different.",
+      call = NULL
+    )
   }
   n_draws <- dim(arr)[1]
   n_obs <- dim(arr)[2]

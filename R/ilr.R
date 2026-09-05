@@ -57,11 +57,21 @@ ilr_basis <- function(K) {
 #' clr_inv(z)  # back to p
 clr <- function(x) {
   if (is.matrix(x)) {
-    if (any(x <= 0)) cli::cli_abort("All parts of {.arg x} must be strictly positive.", call = NULL)
+    if (any(x <= 0)) {
+      cli::cli_abort(
+        "All parts of {.arg x} must be strictly positive.",
+        call = NULL
+      )
+    }
     lx <- log(x)
     lx - rowMeans(lx)
   } else {
-    if (any(x <= 0)) cli::cli_abort("All parts of {.arg x} must be strictly positive.", call = NULL)
+    if (any(x <= 0)) {
+      cli::cli_abort(
+        "All parts of {.arg x} must be strictly positive.",
+        call = NULL
+      )
+    }
     lx <- log(x)
     lx - mean(lx)
   }
@@ -132,7 +142,11 @@ ilr <- function(x, V = NULL) {
   }
   if (is.matrix(x)) {
     K <- ncol(x)
-    t(vapply(seq_len(nrow(x)), function(i) ilr_default_vec(x[i, ]), numeric(K - 1L)))
+    t(vapply(
+      seq_len(nrow(x)),
+      function(i) ilr_default_vec(x[i, ]),
+      numeric(K - 1L)
+    ))
   } else {
     ilr_default_vec(x)
   }
@@ -145,7 +159,12 @@ ilr <- function(x, V = NULL) {
 #' @return Numeric vector of length `K - 1`: ILR coordinates of `x`.
 #' @noRd
 ilr_default_vec <- function(x) {
-  if (any(x <= 0)) cli::cli_abort("All parts of {.arg x} must be strictly positive.", call = NULL)
+  if (any(x <= 0)) {
+    cli::cli_abort(
+      "All parts of {.arg x} must be strictly positive.",
+      call = NULL
+    )
+  }
   K <- length(x)
   z <- numeric(K - 1L)
   for (i in seq_len(K - 1L)) {

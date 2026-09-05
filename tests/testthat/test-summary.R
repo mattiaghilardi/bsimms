@@ -11,21 +11,38 @@ source_data <- data.frame(
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer", "Otter"),
-  d13C_mean = c(1, 1.2, 1.1), d13C_sd = c(0.2, 0.3, 0.25),
-  d15N_mean = c(3, 3.1, 3.05), d15N_sd = c(0.4, 0.5, 0.45)
+  d13C_mean = c(1, 1.2, 1.1),
+  d13C_sd = c(0.2, 0.3, 0.25),
+  d15N_mean = c(3, 3.1, 3.05),
+  d15N_sd = c(0.4, 0.5, 0.45)
 )
 
 skip_if_not_installed("cmdstanr")
 
 fit_full <- bsimm(
-  formula = ~ elevation + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"),
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+  formula = ~ elevation + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0
 )
 fit_min <- bsimm(
-  formula = ~1, mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), error_structure = "process_only",
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0
+  formula = ~1,
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  error_structure = "process_only",
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0
 )
 
 test_that("print.bsimms_fit prints a one-screen model overview", {
@@ -57,7 +74,9 @@ test_that("summary.bsimms_fit's robust argument switches mean/sd for median/mad"
   s_mean <- summary(fit_full, robust = FALSE)
   s_median <- summary(fit_full, robust = TRUE)
   expect_true(all(c("mean", "sd") %in% names(s_mean$population_proportions)))
-  expect_true(all(c("median", "mad") %in% names(s_median$population_proportions)))
+  expect_true(all(
+    c("median", "mad") %in% names(s_median$population_proportions)
+  ))
 })
 
 test_that("summary.bsimms_fit's probs argument controls the quantile columns", {
@@ -89,6 +108,10 @@ test_that("print.summary.bsimms_fit rounds to the requested number of digits", {
   out <- capture.output(print(summary(fit_full), digits = 1))
   pp_line <- out[grepl("^ Beaver|^ Deer|^ Otter", out)]
   nums <- regmatches(pp_line, gregexpr("-?[0-9]+\\.[0-9]+", pp_line))
-  decimals <- vapply(unlist(nums), function(n) nchar(strsplit(n, "\\.")[[1]][2]), integer(1))
+  decimals <- vapply(
+    unlist(nums),
+    function(n) nchar(strsplit(n, "\\.")[[1]][2]),
+    integer(1)
+  )
   expect_true(all(decimals <= 1))
 })

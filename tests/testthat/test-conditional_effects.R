@@ -9,13 +9,17 @@ mixture_data <- data.frame(
 )
 source_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
-  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 skip_if_not_installed("cmdstanr")
@@ -24,22 +28,49 @@ skip_if_not_installed("ggplot2")
 grDevices::pdf(nullfile())
 
 fit <- bsimm(
-  formula = ~ elevation + rainfall + Region + Sex + (1 | Pack), mixture_data = mixture_data,
-  source_data = source_data, tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ elevation + rainfall + Region + Sex + (1 | Pack),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 fit_interaction <- bsimm(
-  formula = ~ elevation * Region + (1 | Pack), mixture_data = mixture_data,
-  source_data = source_data, tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ elevation * Region + (1 | Pack),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 fit_no_fixed <- bsimm(
-  formula = ~ 1 + (1 | Pack), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ 1 + (1 | Pack),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 test_that("conditional_effects errors on a non-bsimms_fit object", {
@@ -69,15 +100,31 @@ test_that("conditional_effects's default includes a two-way interaction present 
 
 test_that("conditional_effects's default drops (rather than errors on) a three-way+ interaction", {
   fit_3way <- bsimm(
-    formula = ~ elevation * Region * Sex + (1 | Pack), mixture_data = mixture_data,
-    source_data = source_data, tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-    chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-    show_messages = FALSE, show_exceptions = FALSE
+    formula = ~ elevation * Region * Sex + (1 | Pack),
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
   )
   ce <- conditional_effects(fit_3way)
   expect_setequal(
     names(ce),
-    c("elevation", "Region", "Sex", "elevation:Region", "elevation:Sex", "Region:Sex")
+    c(
+      "elevation",
+      "Region",
+      "Sex",
+      "elevation:Region",
+      "elevation:Sex",
+      "Region:Sex"
+    )
   )
 })
 
@@ -90,7 +137,10 @@ test_that("conditional_effects builds a resolution-point grid for a numeric cova
   ce <- conditional_effects(fit, effects = "elevation", resolution = 10)
   expect_equal(length(unique(ce$elevation$row)), 10)
   expect_true(attr(ce$elevation, "is_numeric"))
-  expect_equal(names(ce$elevation), c("row", "source", "estimate", "lower", "upper", "width", "elevation"))
+  expect_equal(
+    names(ce$elevation),
+    c("row", "source", "estimate", "lower", "upper", "width", "elevation")
+  )
 })
 
 test_that("conditional_effects uses observed levels for a factor covariate", {
@@ -105,25 +155,41 @@ test_that("build_conditional_grid holds a factor's reference at its first level,
     elevation = c(100, 200, 300),
     Region = factor(c("A", "A", "B"), levels = c("B", "A"))
   )
-  cond <- build_conditional_grid(fixed_frame, "elevation", resolution = 5, int_conditions = NULL, ref_conditions = NULL)
+  cond <- build_conditional_grid(
+    fixed_frame,
+    "elevation",
+    resolution = 5,
+    int_conditions = NULL,
+    ref_conditions = NULL
+  )
   expect_equal(as.character(unique(cond$grid$Region)), "B")
 })
 
 test_that("ref_conditions overrides the default reference value for a numeric covariate", {
-  ce <- conditional_effects(fit, effects = "Region", ref_conditions = list(elevation = 500))
+  ce <- conditional_effects(
+    fit,
+    effects = "Region",
+    ref_conditions = list(elevation = 500)
+  )
   # can't read elevation off ce$Region directly (it's held constant, not attached to the
   # output), so check indirectly via build_conditional_grid instead
   cond <- build_conditional_grid(
-    fit$spec$fixed_frame, "Region", resolution = 5,
-    int_conditions = NULL, ref_conditions = list(elevation = 500)
+    fit$spec$fixed_frame,
+    "Region",
+    resolution = 5,
+    int_conditions = NULL,
+    ref_conditions = list(elevation = 500)
   )
   expect_equal(unique(cond$grid$elevation), 500)
 })
 
 test_that("ref_conditions overrides the default reference level for a factor covariate", {
   cond <- build_conditional_grid(
-    fit$spec$fixed_frame, "elevation", resolution = 5,
-    int_conditions = NULL, ref_conditions = list(Region = "B")
+    fit$spec$fixed_frame,
+    "elevation",
+    resolution = 5,
+    int_conditions = NULL,
+    ref_conditions = list(Region = "B")
   )
   expect_equal(as.character(unique(cond$grid$Region)), "B")
 })
@@ -131,44 +197,70 @@ test_that("ref_conditions overrides the default reference level for a factor cov
 test_that("ref_conditions errors on non-numeric values for a numeric covariate", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "Region", ref_conditions = list(elevation = "high"))
+    conditional_effects(
+      fit,
+      effects = "Region",
+      ref_conditions = list(elevation = "high")
+    )
   )
 })
 
 test_that("ref_conditions errors on an unseen level for a factor covariate", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "elevation", ref_conditions = list(Region = "X"))
+    conditional_effects(
+      fit,
+      effects = "elevation",
+      ref_conditions = list(Region = "X")
+    )
   )
 })
 
 test_that("ref_conditions errors on more than one value for a covariate", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "Region", ref_conditions = list(elevation = c(100, 200)))
+    conditional_effects(
+      fit,
+      effects = "Region",
+      ref_conditions = list(elevation = c(100, 200))
+    )
   )
 })
 
 test_that("ref_conditions errors on a misspelled covariate name instead of falling back to the default", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "Region", ref_conditions = list(elevaton = 500))
+    conditional_effects(
+      fit,
+      effects = "Region",
+      ref_conditions = list(elevaton = 500)
+    )
   )
 })
 
 test_that("int_conditions errors on a misspelled covariate name instead of falling back to the default", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "elevation:Region", int_conditions = list(Regoin = "A"))
+    conditional_effects(
+      fit,
+      effects = "elevation:Region",
+      int_conditions = list(Regoin = "A")
+    )
   )
 })
 
 test_that("conditional_effects's ... is forwarded to posterior_proportions", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation", ndraws = 1000))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation", ndraws = 1000)
+  )
 })
 
 test_that("conditional_effects errors when re_formula names a term absent from the grid", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation", re_formula = ~ (1 | Pack)))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation", re_formula = ~ (1 | Pack))
+  )
 })
 
 test_that("plot.bsimms_conditional_effects returns one ggplot per covariate", {
@@ -214,15 +306,24 @@ test_that("a plot built with plot = FALSE can be further customised before print
 # two-way interactions --------------------------------------------------------
 
 test_that("conditional_effects errors when an interaction names more than two covariates", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation:Region:Sex"))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation:Region:Sex")
+  )
 })
 
 test_that("conditional_effects errors when an interaction names the same covariate twice", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation:elevation"))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation:elevation")
+  )
 })
 
 test_that("conditional_effects errors when an interaction names an unknown covariate", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation:banana"))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation:banana")
+  )
 })
 
 test_that("conditional_effects builds a continuous:factor interaction grid, faceted by the factor moderator", {
@@ -258,26 +359,43 @@ test_that("conditional_effects builds a continuous:continuous interaction with m
 test_that("int_conditions overrides the default representative values for a numeric moderator", {
   ce <- conditional_effects(
     fit,
-    effects = "elevation:rainfall", resolution = 5, int_conditions = list(rainfall = c(50, 80))
+    effects = "elevation:rainfall",
+    resolution = 5,
+    int_conditions = list(rainfall = c(50, 80))
   )
   df <- ce[["elevation:rainfall"]]
   expect_setequal(unique(df$rainfall), c(50, 80))
 })
 
 test_that("int_conditions overrides the default levels for a factor moderator", {
-  ce <- conditional_effects(fit, effects = "Region:Sex", int_conditions = list(Sex = "F"))
+  ce <- conditional_effects(
+    fit,
+    effects = "Region:Sex",
+    int_conditions = list(Sex = "F")
+  )
   df <- ce[["Region:Sex"]]
   expect_setequal(unique(df$Sex), "F")
 })
 
 test_that("int_conditions errors on an unseen level for a factor moderator", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "Region:Sex", int_conditions = list(Sex = "X")))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(
+      fit,
+      effects = "Region:Sex",
+      int_conditions = list(Sex = "X")
+    )
+  )
 })
 
 test_that("int_conditions errors on non-numeric values for a numeric moderator", {
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "elevation:rainfall", int_conditions = list(rainfall = "high"))
+    conditional_effects(
+      fit,
+      effects = "elevation:rainfall",
+      int_conditions = list(rainfall = "high")
+    )
   )
 })
 
@@ -291,25 +409,41 @@ test_that("plot facets by the moderator for a two-way interaction", {
 # method = posterior_epred / posterior_predict -------------------------------
 
 test_that("conditional_effects errors on an invalid method", {
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation", method = "banana"))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation", method = "banana")
+  )
 })
 
 test_that("conditional_effects requires resp for a multi-isotope model with method = posterior_epred", {
   skip_if_not_installed("rstantools")
-  expect_snapshot(error = TRUE, conditional_effects(fit, effects = "elevation", method = "posterior_epred"))
+  expect_snapshot(
+    error = TRUE,
+    conditional_effects(fit, effects = "elevation", method = "posterior_epred")
+  )
 })
 
 test_that("conditional_effects errors on an unknown resp", {
   skip_if_not_installed("rstantools")
   expect_snapshot(
     error = TRUE,
-    conditional_effects(fit, effects = "elevation", method = "posterior_epred", resp = "banana")
+    conditional_effects(
+      fit,
+      effects = "elevation",
+      method = "posterior_epred",
+      resp = "banana"
+    )
   )
 })
 
 test_that("method = posterior_epred computes an isotope-labelled conditional effect", {
   skip_if_not_installed("rstantools")
-  ce <- conditional_effects(fit, effects = "elevation", method = "posterior_epred", resp = "d13C")
+  ce <- conditional_effects(
+    fit,
+    effects = "elevation",
+    method = "posterior_epred",
+    resp = "d13C"
+  )
   df <- ce$elevation
   expect_equal(attr(df, "cat_col"), "isotope")
   expect_equal(attr(df, "y_label"), "d13C")
@@ -320,11 +454,17 @@ test_that("method = posterior_predict has wider intervals than posterior_epred",
   skip_if_not_installed("rstantools")
   ce_epred <- conditional_effects(
     fit,
-    effects = "elevation", method = "posterior_epred", resp = "d13C", probs = 0.95
+    effects = "elevation",
+    method = "posterior_epred",
+    resp = "d13C",
+    probs = 0.95
   )
   ce_predict <- conditional_effects(
     fit,
-    effects = "elevation", method = "posterior_predict", resp = "d13C", probs = 0.95
+    effects = "elevation",
+    method = "posterior_predict",
+    resp = "d13C",
+    probs = 0.95
   )
   width_epred <- mean(ce_epred$elevation$upper - ce_epred$elevation$lower)
   width_predict <- mean(ce_predict$elevation$upper - ce_predict$elevation$lower)
@@ -333,7 +473,12 @@ test_that("method = posterior_predict has wider intervals than posterior_epred",
 
 test_that("plot has no colour legend for method = posterior_epred/posterior_predict (single isotope)", {
   skip_if_not_installed("rstantools")
-  ce <- conditional_effects(fit, effects = "elevation", method = "posterior_epred", resp = "d13C")
+  ce <- conditional_effects(
+    fit,
+    effects = "elevation",
+    method = "posterior_epred",
+    resp = "d13C"
+  )
   g <- plot(ce, plot = FALSE)$elevation
   expect_null(g$labels$colour)
 })
@@ -346,7 +491,12 @@ test_that("plot still has a colour legend for the default method = posterior_pro
 
 test_that("interval dodging doesn't split nested widths apart when there's no legend", {
   skip_if_not_installed("rstantools")
-  ce <- conditional_effects(fit, effects = "Region", method = "posterior_epred", resp = "d13C")
+  ce <- conditional_effects(
+    fit,
+    effects = "Region",
+    method = "posterior_epred",
+    resp = "d13C"
+  )
   g <- plot(ce, plot = FALSE)$Region
   built <- ggplot2::ggplot_build(g)
   expect_equal(length(unique(built$data[[1]]$x)), 2)

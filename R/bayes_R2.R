@@ -47,8 +47,14 @@
 #' )
 #' rstantools::bayes_R2(fit)
 #' }
-bayes_R2.bsimms_fit <- function(object, resp = NULL, summary = TRUE, robust = FALSE,
-                                 probs = c(0.025, 0.975), ...) {
+bayes_R2.bsimms_fit <- function(
+  object,
+  resp = NULL,
+  summary = TRUE,
+  robust = FALSE,
+  probs = c(0.025, 0.975),
+  ...
+) {
   spec <- object$spec
   resp <- if (is.null(resp)) {
     spec$isotope_names
@@ -68,7 +74,7 @@ bayes_R2.bsimms_fit <- function(object, resp = NULL, summary = TRUE, robust = FA
     r2 <- matrix(NA_real_, nrow(mu_arr), length(resp))
     colnames(r2) <- resp
     for (k in seq_along(j_idx)) {
-      fit_j <- mu_arr[, , j_idx[k]] # n_draws x N
+      fit_j <- mu_arr[,, j_idx[k]] # n_draws x N
       resid_j <- sweep(-fit_j, 2, y[, j_idx[k]], "+") # y[i] - fit[s, i]
       var_fit <- apply(fit_j, 1, stats::var)
       var_res <- apply(resid_j, 1, stats::var)
@@ -76,13 +82,23 @@ bayes_R2.bsimms_fit <- function(object, resp = NULL, summary = TRUE, robust = FA
     }
   }
 
-  if (!summary) return(r2)
+  if (!summary) {
+    return(r2)
+  }
   measures <- c(
-    if (robust) list("median", "mad") else list("mean", "sd"),
+    if (robust) {
+      list("median", "mad")
+    } else {
+      list("mean", "sd")
+    },
     list(~ posterior::quantile2(.x, probs = probs))
   )
   out <- as.data.frame(do.call(
-    posterior::summarise_draws, c(list(posterior::as_draws_matrix(r2)), measures)
+    posterior::summarise_draws,
+    c(
+      list(posterior::as_draws_matrix(r2)),
+      measures
+    )
   ))
   names(out)[names(out) == "variable"] <- "isotope"
   rownames(out) <- NULL

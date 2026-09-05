@@ -71,14 +71,26 @@ posterior_proportions <- function(object, ...) {
 
 #' @rdname posterior_proportions
 #' @export
-posterior_proportions.bsimms_fit <- function(object, newdata = NULL, re_formula = NULL,
-                                              allow_new_levels = FALSE,
-                                              sample_new_levels = c("uncertainty", "gaussian"),
-                                              ndraws = NULL, ...) {
+posterior_proportions.bsimms_fit <- function(
+  object,
+  newdata = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  ...
+) {
   spec <- object$spec
   p_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    predict_p_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+    predict_p_newdata(
+      object,
+      newdata,
+      re_formula,
+      allow_new_levels,
+      sample_new_levels,
+      ndraws
+    )
   } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "p")
     dm <- subset_ndraws(dm, ndraws)
@@ -132,16 +144,29 @@ posterior_proportions.bsimms_fit <- function(object, newdata = NULL, re_formula 
 #' )
 #' fitted_proportions(fit)
 #' }
-fitted_proportions <- function(object, newdata = NULL, re_formula = NULL, allow_new_levels = FALSE,
-                                sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,
-                                summary = TRUE, robust = FALSE, probs = c(0.025, 0.975)) {
+fitted_proportions <- function(
+  object,
+  newdata = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  summary = TRUE,
+  robust = FALSE,
+  probs = c(0.025, 0.975)
+) {
   spec <- object$spec
   p_arr <- posterior_proportions(
     object,
-    newdata = newdata, re_formula = re_formula, allow_new_levels = allow_new_levels,
-    sample_new_levels = sample_new_levels, ndraws = ndraws
+    newdata = newdata,
+    re_formula = re_formula,
+    allow_new_levels = allow_new_levels,
+    sample_new_levels = sample_new_levels,
+    ndraws = ndraws
   )
-  if (!summary) return(p_arr)
+  if (!summary) {
+    return(p_arr)
+  }
   summarise_draws_by_row(p_arr, spec$source_names, probs, "source", robust)
 }
 
@@ -183,10 +208,16 @@ fitted_proportions <- function(object, newdata = NULL, re_formula = NULL, allow_
 #' mu_arr <- rstantools::posterior_epred(fit)
 #' dim(mu_arr)
 #' }
-posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
-                                        allow_new_levels = FALSE,
-                                        sample_new_levels = c("uncertainty", "gaussian"),
-                                        ndraws = NULL, ...) {
+posterior_epred.bsimms_fit <- function(
+  object,
+  newdata = NULL,
+  resp = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  ...
+) {
   spec <- object$spec
   resp <- if (is.null(resp)) {
     spec$isotope_names
@@ -196,7 +227,14 @@ posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_f
   j_idx <- match(resp, spec$isotope_names)
   mu_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    predict_mu_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+    predict_mu_newdata(
+      object,
+      newdata,
+      re_formula,
+      allow_new_levels,
+      sample_new_levels,
+      ndraws
+    )
   } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "mu")
     dm <- subset_ndraws(dm, ndraws)
@@ -210,7 +248,7 @@ posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_f
     compute_mu_newdata(spec, dm, p_arr, needs$proc)$mu
   }
   dimnames(mu_arr) <- list(NULL, NULL, spec$isotope_names)
-  mu_arr[, , j_idx, drop = FALSE]
+  mu_arr[,, j_idx, drop = FALSE]
 }
 
 #' Fitted mixture isotope values (summarised)
@@ -251,10 +289,19 @@ posterior_epred.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_f
 #' )
 #' fitted(fit)
 #' }
-fitted.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
-                               allow_new_levels = FALSE,
-                               sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,
-                               summary = TRUE, robust = FALSE, probs = c(0.025, 0.975), ...) {
+fitted.bsimms_fit <- function(
+  object,
+  newdata = NULL,
+  resp = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  summary = TRUE,
+  robust = FALSE,
+  probs = c(0.025, 0.975),
+  ...
+) {
   spec <- object$spec
   resp <- if (is.null(resp)) {
     spec$isotope_names
@@ -263,10 +310,16 @@ fitted.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = 
   }
   mu_arr <- posterior_epred.bsimms_fit(
     object,
-    newdata = newdata, resp = resp, re_formula = re_formula, allow_new_levels = allow_new_levels,
-    sample_new_levels = sample_new_levels, ndraws = ndraws
+    newdata = newdata,
+    resp = resp,
+    re_formula = re_formula,
+    allow_new_levels = allow_new_levels,
+    sample_new_levels = sample_new_levels,
+    ndraws = ndraws
   )
-  if (!summary) return(mu_arr)
+  if (!summary) {
+    return(mu_arr)
+  }
   summarise_draws_by_row(mu_arr, resp, probs, "isotope", robust)
 }
 
@@ -285,21 +338,31 @@ fitted.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = 
 #'   columns `row`, `<var_col>`, and one column per summary measure, named
 #'   as in [posterior::summarise_draws()].
 #' @noRd
-summarise_draws_by_row <- function(arr, var_names, probs, var_col, robust = FALSE) {
+summarise_draws_by_row <- function(
+  arr,
+  var_names,
+  probs,
+  var_col,
+  robust = FALSE
+) {
   n_draws <- dim(arr)[1]
   n_obs <- dim(arr)[2]
   measures <- c(
     if (robust) list("median", "mad") else list("mean", "sd"),
     list(~ posterior::quantile2(.x, probs = probs))
   )
-  out <- do.call(rbind, lapply(seq_len(n_obs), function(i) {
-    d <- matrix(arr[, i, ], nrow = n_draws, dimnames = list(NULL, var_names))
-    summ <- as.data.frame(do.call(
-      posterior::summarise_draws, c(list(posterior::as_draws_matrix(d)), measures)
-    ))
-    names(summ)[names(summ) == "variable"] <- var_col
-    cbind(data.frame(row = i), summ)
-  }))
+  out <- do.call(
+    rbind,
+    lapply(seq_len(n_obs), function(i) {
+      d <- matrix(arr[, i, ], nrow = n_draws, dimnames = list(NULL, var_names))
+      summ <- as.data.frame(do.call(
+        posterior::summarise_draws,
+        c(list(posterior::as_draws_matrix(d)), measures)
+      ))
+      names(summ)[names(summ) == "variable"] <- var_col
+      cbind(data.frame(row = i), summ)
+    })
+  )
   rownames(out) <- NULL
   out
 }
@@ -350,7 +413,10 @@ select_re_terms <- function(re_terms, re_formula) {
       return(list())
     }
     cli::cli_abort(
-      "{.arg re_formula} must be `NULL`, `NA`, `~0`, or a formula naming group-level term(s), e.g. {.code ~ (1 | Region)}.",
+      paste0(
+        "{.arg re_formula} must be `NULL`, `NA`, `~0`, or a formula ",
+        "naming group-level term(s), e.g. {.code ~ (1 | Region)}."
+      ),
       call = NULL
     )
   }
@@ -361,12 +427,19 @@ select_re_terms <- function(re_terms, re_formula) {
   if (is.null(bars)) {
     return(list())
   }
-  wanted <- vapply(bars, function(b) trimws(strsplit(rlang::expr_deparse(b), "\\|")[[1]][2]), character(1))
+  wanted <- vapply(
+    bars,
+    function(b) trimws(strsplit(rlang::expr_deparse(b), "\\|")[[1]][2]),
+    character(1)
+  )
   known <- vapply(re_terms, function(re) re$group, character(1))
   unknown <- setdiff(wanted, known)
   if (length(unknown) > 0) {
     cli::cli_abort(
-      "{.arg re_formula} refers to group-level term{?s} not in the fitted model: {.field {unknown}}.",
+      paste0(
+        "{.arg re_formula} refers to group-level term{?s} not in the ",
+        "fitted model: {.field {unknown}}."
+      ),
       call = NULL
     )
   }
@@ -389,16 +462,24 @@ check_re_newdata_vars <- function(candidate_terms, newdata) {
   for (re in candidate_terms) {
     vars <- strsplit(re$group, ":")[[1]]
     missing_vars <- setdiff(vars, names(newdata))
-    if (length(missing_vars) == 0) next
+    if (length(missing_vars) == 0) {
+      next
+    }
     if (length(vars) == 1) {
       cli::cli_abort(
-        "{.arg newdata} is missing column {.field {re$group}}, needed for its group-level term.",
+        paste0(
+          "{.arg newdata} is missing column {.field {re$group}}, ",
+          "needed for its group-level term."
+        ),
         call = NULL
       )
     }
     cli::cli_abort(
       c(
-        "{.arg newdata} is missing {cli::qty(missing_vars)} column{?s} needed for group-level term {.val {re$group}}:",
+        paste0(
+          "{.arg newdata} is missing {cli::qty(missing_vars)} ",
+          "column{?s} needed for group-level term {.val {re$group}}:"
+        ),
         "x" = "{.field {missing_vars}}."
       ),
       call = NULL
@@ -427,15 +508,30 @@ check_re_newdata_vars <- function(candidate_terms, newdata) {
 #' @return Numeric `[n_draws, size, nrow(newdata)]` array, `size =
 #'   length(re$term_names) * D`.
 #' @noRd
-resolve_re_b <- function(re, gvar, dm, n_draws, D, allow_new_levels, sample_new_levels) {
+resolve_re_b <- function(
+  re,
+  gvar,
+  dm,
+  n_draws,
+  D,
+  allow_new_levels,
+  sample_new_levels
+) {
   size <- length(re$term_names) * D
   n_group_levels <- length(re$group_levels)
-  b_arr <- extract_array_draws(dm, paste0("b_re_", re$label), size, n_group_levels) # n_draws x size x G
+  b_arr <- extract_array_draws(
+    dm,
+    paste0("b_re_", re$label),
+    size,
+    n_group_levels
+  ) # n_draws x size x G
   lvl <- match(gvar, re$group_levels)
   is_new <- is.na(lvl)
 
   b_use <- array(NA_real_, dim = c(n_draws, size, length(gvar)))
-  for (i in which(!is_new)) b_use[, , i] <- b_arr[, , lvl[i]]
+  for (i in which(!is_new)) {
+    b_use[,, i] <- b_arr[,, lvl[i]]
+  }
   if (!any(is_new)) {
     return(b_use)
   }
@@ -446,16 +542,28 @@ resolve_re_b <- function(re, gvar, dm, n_draws, D, allow_new_levels, sample_new_
     if (length(vars) == 1) {
       cli::cli_abort(
         c(
-          "{.arg newdata} contains levels of {.field {re$group}} not seen when fitting the model: {.val {unseen}}.",
-          "i" = "Set {.code allow_new_levels = TRUE} to predict for new levels, or use {.arg re_formula} to exclude this term."
+          paste0(
+            "{.arg newdata} contains levels of {.field {re$group}} not ",
+            "seen when fitting the model: {.val {unseen}}."
+          ),
+          "i" = paste0(
+            "Set {.code allow_new_levels = TRUE} to predict for new ",
+            "levels, or use {.arg re_formula} to exclude this term."
+          )
         ),
         call = NULL
       )
     }
     cli::cli_abort(
       c(
-        "{.arg newdata} contains a combination of {.field {vars}} not seen when fitting the model: {.val {unseen}}.",
-        "i" = "Set {.code allow_new_levels = TRUE} to predict for new levels, or use {.arg re_formula} to exclude this term."
+        paste0(
+          "{.arg newdata} contains a combination of {.field {vars}} ",
+          "not seen when fitting the model: {.val {unseen}}."
+        ),
+        "i" = paste0(
+          "Set {.code allow_new_levels = TRUE} to predict for new ",
+          "levels, or use {.arg re_formula} to exclude this term."
+        )
       ),
       call = NULL
     )
@@ -471,8 +579,13 @@ resolve_re_b <- function(re, gvar, dm, n_draws, D, allow_new_levels, sample_new_
   unseen_ids <- unique(sampling_id[new_rows])
 
   if (sample_new_levels == "gaussian") {
-    sd_re_arr <- extract_array_draws(dm, paste0("sd_re_", re$label), size) # n_draws x size
-    Lcorr_arr <- if (size >= 2) extract_array_draws(dm, paste0("Lcorr_re_", re$label), size, size) else NULL
+    # n_draws x size
+    sd_re_arr <- extract_array_draws(dm, paste0("sd_re_", re$label), size)
+    Lcorr_arr <- if (size >= 2) {
+      extract_array_draws(dm, paste0("Lcorr_re_", re$label), size, size)
+    } else {
+      NULL
+    }
   }
 
   for (u in unseen_ids) {
@@ -482,16 +595,24 @@ resolve_re_b <- function(re, gvar, dm, n_draws, D, allow_new_levels, sample_new_
       for (s in seq_len(n_draws)) {
         z <- stats::rnorm(size)
         new_b_u[s, ] <- if (size >= 2) {
-          as.vector(diag(sd_re_arr[s, ], nrow = size, ncol = size) %*% matrix(Lcorr_arr[s, , ], size, size) %*% z)
+          as.vector(
+            diag(sd_re_arr[s, ], nrow = size, ncol = size) %*%
+              matrix(Lcorr_arr[s, , ], size, size) %*%
+              z
+          )
         } else {
           sd_re_arr[s, ] * z
         }
       }
     } else {
       chosen_g <- sample.int(n_group_levels, n_draws, replace = TRUE)
-      for (s in seq_len(n_draws)) new_b_u[s, ] <- b_arr[s, , chosen_g[s]]
+      for (s in seq_len(n_draws)) {
+        new_b_u[s, ] <- b_arr[s, , chosen_g[s]]
+      }
     }
-    for (i in rows_u) b_use[, , i] <- new_b_u
+    for (i in rows_u) {
+      b_use[,, i] <- new_b_u
+    }
   }
   b_use
 }
@@ -516,7 +637,14 @@ resolve_re_b <- function(re, gvar, dm, n_draws, D, allow_new_levels, sample_new_
 #' @return Numeric `[nrow(dm), nrow(newdata), K]` array of proportion
 #'   draws.
 #' @noRd
-compute_p_newdata <- function(spec, dm, newdata, re_formula, allow_new_levels, sample_new_levels) {
+compute_p_newdata <- function(
+  spec,
+  dm,
+  newdata,
+  re_formula,
+  allow_new_levels,
+  sample_new_levels
+) {
   candidate_terms <- select_re_terms(spec$re_terms, re_formula)
   check_re_newdata_vars(candidate_terms, newdata)
   n_draws <- nrow(dm)
@@ -528,20 +656,39 @@ compute_p_newdata <- function(spec, dm, newdata, re_formula, allow_new_levels, s
 
   eta_arr <- array(0, dim = c(n_draws, nrow(newdata), spec$D))
   for (s in seq_len(n_draws)) {
-    eta_arr[s, , ] <- matrix(ilr_global_arr[s, ], nrow = nrow(newdata), ncol = spec$D, byrow = TRUE)
+    eta_arr[s, , ] <- matrix(
+      ilr_global_arr[s, ],
+      nrow = nrow(newdata),
+      ncol = spec$D,
+      byrow = TRUE
+    )
   }
 
   if (spec$P > 0) {
     check_newdata_vars(spec$fixed_formula, newdata)
-    X_new <- stats::model.matrix(spec$fixed_formula, data = newdata_model_frame(spec$fixed_formula, spec$fixed_frame, newdata))
+    X_new <- stats::model.matrix(
+      spec$fixed_formula,
+      data = newdata_model_frame(spec$fixed_formula, spec$fixed_frame, newdata)
+    )
     X_new <- align_columns(X_new, spec$fixed_names)
-    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D) # n_draws x P x D
-    for (s in seq_len(n_draws)) eta_arr[s, , ] <- eta_arr[s, , ] + X_new %*% beta_arr[s, , ]
+    # n_draws x P x D
+    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D)
+    for (s in seq_len(n_draws)) {
+      eta_arr[s, , ] <- eta_arr[s, , ] + X_new %*% beta_arr[s, , ]
+    }
   }
 
   for (re in candidate_terms) {
     gvar <- combine_group_var(re$group, newdata)
-    b_use <- resolve_re_b(re, gvar, dm, n_draws, spec$D, allow_new_levels, sample_new_levels) # n_draws x size x nrow(newdata)
+    b_use <- resolve_re_b(
+      re,
+      gvar,
+      dm,
+      n_draws,
+      spec$D,
+      allow_new_levels,
+      sample_new_levels
+    ) # n_draws x size x nrow(newdata)
     check_newdata_vars(re$term_formula, newdata)
     Zg_new <- stats::model.matrix(re$term_formula, data = newdata)
     Zg_new <- align_columns(Zg_new, re$term_names)
@@ -549,7 +696,8 @@ compute_p_newdata <- function(spec, dm, newdata, re_formula, allow_new_levels, s
       for (i in seq_len(nrow(newdata))) {
         for (m in seq_along(re$term_names)) {
           for (d in seq_len(spec$D)) {
-            eta_arr[s, i, d] <- eta_arr[s, i, d] + Zg_new[i, m] * b_use[s, (m - 1) * spec$D + d, i]
+            eta_arr[s, i, d] <- eta_arr[s, i, d] +
+              Zg_new[i, m] * b_use[s, (m - 1) * spec$D + d, i]
           }
         }
       }
@@ -557,7 +705,9 @@ compute_p_newdata <- function(spec, dm, newdata, re_formula, allow_new_levels, s
   }
 
   p_arr <- array(0, dim = c(n_draws, nrow(newdata), spec$K))
-  for (s in seq_len(n_draws)) p_arr[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
+  for (s in seq_len(n_draws)) {
+    p_arr[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
+  }
   p_arr
 }
 
@@ -573,11 +723,25 @@ compute_p_newdata <- function(spec, dm, newdata, re_formula, allow_new_levels, s
 #'   [posterior_proportions()].
 #' @return Numeric `[n_draws, nrow(newdata), K]` array of proportion draws.
 #' @noRd
-predict_p_newdata <- function(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws = NULL) {
+predict_p_newdata <- function(
+  object,
+  newdata,
+  re_formula,
+  allow_new_levels,
+  sample_new_levels,
+  ndraws = NULL
+) {
   spec <- object$spec
   dm <- draws_matrix(object)
   dm <- subset_ndraws(dm, ndraws)
-  compute_p_newdata(spec, dm, newdata, re_formula, allow_new_levels, sample_new_levels)
+  compute_p_newdata(
+    spec,
+    dm,
+    newdata,
+    re_formula,
+    allow_new_levels,
+    sample_new_levels
+  )
 }
 
 #' Compute posterior source-proportion draws for the fitted mixture
@@ -601,23 +765,37 @@ compute_p_fitted <- function(spec, dm, candidate_terms) {
 
   eta_arr <- array(0, dim = c(n_draws, spec$N, spec$D))
   for (s in seq_len(n_draws)) {
-    eta_arr[s, , ] <- matrix(ilr_global_arr[s, ], nrow = spec$N, ncol = spec$D, byrow = TRUE)
+    eta_arr[s, , ] <- matrix(
+      ilr_global_arr[s, ],
+      nrow = spec$N,
+      ncol = spec$D,
+      byrow = TRUE
+    )
   }
 
   if (spec$P > 0) {
-    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D) # n_draws x P x D
-    for (s in seq_len(n_draws)) eta_arr[s, , ] <- eta_arr[s, , ] + spec$X %*% beta_arr[s, , ]
+    # n_draws x P x D
+    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D)
+    for (s in seq_len(n_draws)) {
+      eta_arr[s, , ] <- eta_arr[s, , ] + spec$X %*% beta_arr[s, , ]
+    }
   }
 
   for (re in candidate_terms) {
     size <- length(re$term_names) * spec$D
-    b_arr <- extract_array_draws(dm, paste0("b_re_", re$label), size, length(re$group_levels)) # n_draws x size x G
+    b_arr <- extract_array_draws(
+      dm,
+      paste0("b_re_", re$label),
+      size,
+      length(re$group_levels)
+    ) # n_draws x size x G
     for (s in seq_len(n_draws)) {
       for (i in seq_len(spec$N)) {
         g <- re$group_idx[i]
         for (m in seq_along(re$term_names)) {
           for (d in seq_len(spec$D)) {
-            eta_arr[s, i, d] <- eta_arr[s, i, d] + re$Z[i, m] * b_arr[s, (m - 1) * spec$D + d, g]
+            eta_arr[s, i, d] <- eta_arr[s, i, d] +
+              re$Z[i, m] * b_arr[s, (m - 1) * spec$D + d, g]
           }
         }
       }
@@ -625,7 +803,9 @@ compute_p_fitted <- function(spec, dm, candidate_terms) {
   }
 
   p_arr <- array(0, dim = c(n_draws, spec$N, spec$K))
-  for (s in seq_len(n_draws)) p_arr[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
+  for (s in seq_len(n_draws)) {
+    p_arr[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
+  }
   p_arr
 }
 
@@ -654,10 +834,19 @@ compute_p_fitted <- function(spec, dm, candidate_terms) {
 newdata_model_frame <- function(formula, fitted_frame, newdata) {
   is_factor <- vapply(fitted_frame, is.factor, logical(1))
   factor_vars <- intersect(names(fitted_frame)[is_factor], names(newdata))
-  bad_type <- factor_vars[!vapply(newdata[factor_vars], function(x) is.factor(x) || is.character(x), logical(1))]
+  bad_type <- factor_vars[
+    !vapply(
+      newdata[factor_vars],
+      function(x) is.factor(x) || is.character(x),
+      logical(1)
+    )
+  ]
   if (length(bad_type) > 0) {
     cli::cli_abort(
-      "{.field {bad_type}} must be a factor or character in {.arg newdata}, as it was when fitting the model.",
+      paste0(
+        "{.field {bad_type}} must be a factor or character in ",
+        "{.arg newdata}, as it was when fitting the model."
+      ),
       call = NULL
     )
   }
@@ -667,7 +856,10 @@ newdata_model_frame <- function(formula, fitted_frame, newdata) {
     if (length(unseen) > 0) {
       cli::cli_abort(
         c(
-          "{.arg newdata} contains levels of {.field {v}} not seen when fitting the model: {.val {unseen}}.",
+          paste0(
+            "{.arg newdata} contains levels of {.field {v}} not seen ",
+            "when fitting the model: {.val {unseen}}."
+          ),
           "i" = "Valid levels for {.field {v}} are: {.val {xlev[[v]]}}."
         ),
         call = NULL
@@ -695,7 +887,10 @@ check_newdata_vars <- function(formula, newdata) {
   missing_vars <- setdiff(all.vars(formula), names(newdata))
   if (length(missing_vars) > 0) {
     cli::cli_abort(
-      "{.arg newdata} is missing column{?s} needed to build the design matrix: {.field {missing_vars}}.",
+      paste0(
+        "{.arg newdata} is missing column{?s} needed to build the ",
+        "design matrix: {.field {missing_vars}}."
+      ),
       call = NULL
     )
   }
@@ -716,7 +911,10 @@ align_columns <- function(X, names_ref) {
   missing_cols <- setdiff(names_ref, colnames(X))
   if (length(missing_cols) > 0) {
     cli::cli_abort(
-      "{.arg newdata} is missing column{?s} needed to build the design matrix: {.field {missing_cols}}.",
+      paste0(
+        "{.arg newdata} is missing column{?s} needed to build the ",
+        "design matrix: {.field {missing_cols}}."
+      ),
       call = NULL
     )
   }
@@ -735,7 +933,9 @@ align_columns <- function(X, names_ref) {
 #' @noRd
 broadcast_fixed_matrix <- function(mat, n_draws) {
   arr <- array(0, dim = c(n_draws, nrow(mat), ncol(mat)))
-  for (s in seq_len(n_draws)) arr[s, , ] <- mat
+  for (s in seq_len(n_draws)) {
+    arr[s, , ] <- mat
+  }
   arr
 }
 
@@ -810,24 +1010,36 @@ compute_mu_newdata <- function(spec, dm, p_arr, needs_proc) {
   tdf <- get_tdf_moments(spec, dm, n_draws)
 
   mu_arr <- array(0, dim = c(n_draws, n_new, spec$J))
-  proc_var_arr <- if (needs_proc) array(1e-8, dim = c(n_draws, n_new, spec$J)) else NULL
+  proc_var_arr <- if (needs_proc) {
+    array(1e-8, dim = c(n_draws, n_new, spec$J))
+  } else {
+    NULL
+  }
 
   for (s in seq_len(n_draws)) {
     pmat <- matrix(p_arr[s, , ], nrow = n_new, ncol = spec$K)
-    msum <- matrix(source$mean[s, , ], nrow = spec$K, ncol = spec$J) + matrix(tdf$mean[s, , ], nrow = spec$K, ncol = spec$J)
+    msum <- matrix(source$mean[s, , ], nrow = spec$K, ncol = spec$J) +
+      matrix(tdf$mean[s, , ], nrow = spec$K, ncol = spec$J)
     if (needs_proc) {
-      vsum <- matrix(source$sd[s, , ], nrow = spec$K, ncol = spec$J)^2 + matrix(tdf$sd[s, , ], nrow = spec$K, ncol = spec$J)^2
+      vsum <- matrix(source$sd[s, , ], nrow = spec$K, ncol = spec$J)^2 +
+        matrix(tdf$sd[s, , ], nrow = spec$K, ncol = spec$J)^2
     }
     if (spec$has_conc_dep) {
       for (j in seq_len(spec$J)) {
         denom <- as.vector(pmat %*% spec$conc[, j])
-        pk <- (pmat * matrix(spec$conc[, j], n_new, spec$K, byrow = TRUE)) / denom
+        pk <- (pmat * matrix(spec$conc[, j], n_new, spec$K, byrow = TRUE)) /
+          denom
         mu_arr[s, , j] <- pk %*% msum[, j]
-        if (needs_proc) proc_var_arr[s, , j] <- proc_var_arr[s, , j] + as.vector((pk^2) %*% vsum[, j])
+        if (needs_proc) {
+          proc_var_arr[s, , j] <- proc_var_arr[s, , j] +
+            as.vector((pk^2) %*% vsum[, j])
+        }
       }
     } else {
       mu_arr[s, , ] <- pmat %*% msum
-      if (needs_proc) proc_var_arr[s, , ] <- proc_var_arr[s, , ] + (pmat^2) %*% vsum
+      if (needs_proc) {
+        proc_var_arr[s, , ] <- proc_var_arr[s, , ] + (pmat^2) %*% vsum
+      }
     }
   }
 
@@ -854,7 +1066,8 @@ compute_source_cov_newdata <- function(spec, dm, source_sd_arr, n_draws) {
   cov_arr <- array(0, dim = c(n_draws, spec$K, spec$J, spec$J))
   for (s in seq_len(n_draws)) {
     for (k in seq_len(spec$K)) {
-      L <- diag(source_sd_arr[s, k, ], nrow = spec$J, ncol = spec$J) %*% matrix(Lcorr_arr[s, k, , ], spec$J, spec$J)
+      L <- diag(source_sd_arr[s, k, ], nrow = spec$J, ncol = spec$J) %*%
+        matrix(Lcorr_arr[s, k, , ], spec$J, spec$J)
       cov_arr[s, k, , ] <- L %*% t(L)
     }
   }
@@ -929,15 +1142,32 @@ compute_omega_newdata <- function(spec, p_arr, proc_var_arr, source_cov_arr) {
 #' @return Numeric `[n_draws, n_new, J]` array of posterior predictive
 #'   draws.
 #' @noRd
-sample_y_rep_newdata <- function(spec, dm, p_arr, mu_arr, proc_var_arr, source_sd_arr, needs) {
+sample_y_rep_newdata <- function(
+  spec,
+  dm,
+  p_arr,
+  mu_arr,
+  proc_var_arr,
+  source_sd_arr,
+  needs
+) {
   n_draws <- dim(mu_arr)[1]
   n_new <- dim(mu_arr)[2]
   yrep <- array(0, dim = c(n_draws, n_new, spec$J))
 
   if (needs$mv) {
-    source_cov_arr <- compute_source_cov_newdata(spec, dm, source_sd_arr, n_draws)
+    source_cov_arr <- compute_source_cov_newdata(
+      spec,
+      dm,
+      source_sd_arr,
+      n_draws
+    )
     omega <- compute_omega_newdata(spec, p_arr, proc_var_arr, source_cov_arr)
-    resid_prop_arr <- if (needs$resid_prop) extract_array_draws(dm, "resid_prop", spec$J) else NULL
+    resid_prop_arr <- if (needs$resid_prop) {
+      extract_array_draws(dm, "resid_prop", spec$J)
+    } else {
+      NULL
+    }
     for (s in seq_len(n_draws)) {
       for (i in seq_len(n_new)) {
         Sigma <- matrix(omega[s, i, , ], spec$J, spec$J)
@@ -956,7 +1186,8 @@ sample_y_rep_newdata <- function(spec, dm, p_arr, mu_arr, proc_var_arr, source_s
     sigma_arr <- extract_array_draws(dm, "sigma", spec$J)
     Lcorr_resid_arr <- extract_array_draws(dm, "Lcorr_resid", spec$J, spec$J)
     for (s in seq_len(n_draws)) {
-      L <- diag(sigma_arr[s, ], nrow = spec$J, ncol = spec$J) %*% matrix(Lcorr_resid_arr[s, , ], spec$J, spec$J)
+      L <- diag(sigma_arr[s, ], nrow = spec$J, ncol = spec$J) %*%
+        matrix(Lcorr_resid_arr[s, , ], spec$J, spec$J)
       for (i in seq_len(n_new)) {
         yrep[s, i, ] <- mu_arr[s, i, ] + as.vector(L %*% stats::rnorm(spec$J))
       }
@@ -965,13 +1196,23 @@ sample_y_rep_newdata <- function(spec, dm, p_arr, mu_arr, proc_var_arr, source_s
   }
 
   if (needs$proc) {
-    resid_prop_arr <- if (needs$resid_prop) extract_array_draws(dm, "resid_prop", spec$J) else NULL
+    resid_prop_arr <- if (needs$resid_prop) {
+      extract_array_draws(dm, "resid_prop", spec$J)
+    } else {
+      NULL
+    }
     for (s in seq_len(n_draws)) {
       var_mat <- matrix(proc_var_arr[s, , ], n_new, spec$J)
-      if (needs$resid_prop) var_mat <- sweep(var_mat, 2, resid_prop_arr[s, ], `*`)
+      if (needs$resid_prop) {
+        var_mat <- sweep(var_mat, 2, resid_prop_arr[s, ], `*`)
+      }
       mu_vec <- as.vector(matrix(mu_arr[s, , ], n_new, spec$J))
       sd_vec <- as.vector(sqrt(var_mat))
-      yrep[s, , ] <- matrix(stats::rnorm(n_new * spec$J, mean = mu_vec, sd = sd_vec), n_new, spec$J)
+      yrep[s, , ] <- matrix(
+        stats::rnorm(n_new * spec$J, mean = mu_vec, sd = sd_vec),
+        n_new,
+        spec$J
+      )
     }
     return(yrep)
   }
@@ -980,7 +1221,11 @@ sample_y_rep_newdata <- function(spec, dm, p_arr, mu_arr, proc_var_arr, source_s
   for (s in seq_len(n_draws)) {
     mu_vec <- as.vector(matrix(mu_arr[s, , ], n_new, spec$J))
     sd_vec <- rep(sigma_arr[s, ], each = n_new)
-    yrep[s, , ] <- matrix(stats::rnorm(n_new * spec$J, mean = mu_vec, sd = sd_vec), n_new, spec$J)
+    yrep[s, , ] <- matrix(
+      stats::rnorm(n_new * spec$J, mean = mu_vec, sd = sd_vec),
+      n_new,
+      spec$J
+    )
   }
   yrep
 }
@@ -997,12 +1242,26 @@ sample_y_rep_newdata <- function(spec, dm, p_arr, mu_arr, proc_var_arr, source_s
 #'   [posterior_proportions()].
 #' @return Numeric `[n_draws, nrow(newdata), J]` array.
 #' @noRd
-predict_mu_newdata <- function(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws = NULL) {
+predict_mu_newdata <- function(
+  object,
+  newdata,
+  re_formula,
+  allow_new_levels,
+  sample_new_levels,
+  ndraws = NULL
+) {
   spec <- object$spec
   needs <- bsimms_needs_flags(spec)
   dm <- draws_matrix(object)
   dm <- subset_ndraws(dm, ndraws)
-  p_arr <- compute_p_newdata(spec, dm, newdata, re_formula, allow_new_levels, sample_new_levels)
+  p_arr <- compute_p_newdata(
+    spec,
+    dm,
+    newdata,
+    re_formula,
+    allow_new_levels,
+    sample_new_levels
+  )
   compute_mu_newdata(spec, dm, p_arr, needs$proc)$mu
 }
 
@@ -1016,14 +1275,36 @@ predict_mu_newdata <- function(object, newdata, re_formula, allow_new_levels, sa
 #' @inheritParams predict_mu_newdata
 #' @return Numeric `[n_draws, nrow(newdata), J]` array.
 #' @noRd
-predict_y_rep_newdata <- function(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws = NULL) {
+predict_y_rep_newdata <- function(
+  object,
+  newdata,
+  re_formula,
+  allow_new_levels,
+  sample_new_levels,
+  ndraws = NULL
+) {
   spec <- object$spec
   needs <- bsimms_needs_flags(spec)
   dm <- draws_matrix(object)
   dm <- subset_ndraws(dm, ndraws)
-  p_arr <- compute_p_newdata(spec, dm, newdata, re_formula, allow_new_levels, sample_new_levels)
+  p_arr <- compute_p_newdata(
+    spec,
+    dm,
+    newdata,
+    re_formula,
+    allow_new_levels,
+    sample_new_levels
+  )
   mu_out <- compute_mu_newdata(spec, dm, p_arr, needs$proc)
-  sample_y_rep_newdata(spec, dm, p_arr, mu_out$mu, mu_out$proc_var, mu_out$source$sd, needs)
+  sample_y_rep_newdata(
+    spec,
+    dm,
+    p_arr,
+    mu_out$mu,
+    mu_out$proc_var,
+    mu_out$source$sd,
+    needs
+  )
 }
 
 #' Posterior predictive draws of mixture isotope values
@@ -1059,10 +1340,16 @@ predict_y_rep_newdata <- function(object, newdata, re_formula, allow_new_levels,
 #' y_rep <- rstantools::posterior_predict(fit)
 #' dim(y_rep)
 #' }
-posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
-                                          allow_new_levels = FALSE,
-                                          sample_new_levels = c("uncertainty", "gaussian"),
-                                          ndraws = NULL, ...) {
+posterior_predict.bsimms_fit <- function(
+  object,
+  newdata = NULL,
+  resp = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  ...
+) {
   spec <- object$spec
   resp <- if (is.null(resp)) {
     spec$isotope_names
@@ -1072,7 +1359,14 @@ posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re
   j_idx <- match(resp, spec$isotope_names)
   yrep_arr <- if (!is.null(newdata)) {
     sample_new_levels <- rlang::arg_match(sample_new_levels)
-    predict_y_rep_newdata(object, newdata, re_formula, allow_new_levels, sample_new_levels, ndraws)
+    predict_y_rep_newdata(
+      object,
+      newdata,
+      re_formula,
+      allow_new_levels,
+      sample_new_levels,
+      ndraws
+    )
   } else if (is.null(re_formula)) {
     dm <- draws_matrix(object, variable = "y_rep")
     dm <- subset_ndraws(dm, ndraws)
@@ -1084,10 +1378,18 @@ posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re
     candidate_terms <- select_re_terms(spec$re_terms, re_formula)
     p_arr <- compute_p_fitted(spec, dm, candidate_terms)
     mu_out <- compute_mu_newdata(spec, dm, p_arr, needs$proc)
-    sample_y_rep_newdata(spec, dm, p_arr, mu_out$mu, mu_out$proc_var, mu_out$source$sd, needs)
+    sample_y_rep_newdata(
+      spec,
+      dm,
+      p_arr,
+      mu_out$mu,
+      mu_out$proc_var,
+      mu_out$source$sd,
+      needs
+    )
   }
   dimnames(yrep_arr) <- list(NULL, NULL, spec$isotope_names)
-  yrep_arr[, , j_idx, drop = FALSE]
+  yrep_arr[,, j_idx, drop = FALSE]
 }
 
 #' Posterior predictive draws of mixture isotope values (summarised)
@@ -1127,10 +1429,19 @@ posterior_predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re
 #' )
 #' predict(fit)
 #' }
-predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula = NULL,
-                                allow_new_levels = FALSE,
-                                sample_new_levels = c("uncertainty", "gaussian"), ndraws = NULL,
-                                summary = TRUE, robust = FALSE, probs = c(0.025, 0.975), ...) {
+predict.bsimms_fit <- function(
+  object,
+  newdata = NULL,
+  resp = NULL,
+  re_formula = NULL,
+  allow_new_levels = FALSE,
+  sample_new_levels = c("uncertainty", "gaussian"),
+  ndraws = NULL,
+  summary = TRUE,
+  robust = FALSE,
+  probs = c(0.025, 0.975),
+  ...
+) {
   spec <- object$spec
   resp <- if (is.null(resp)) {
     spec$isotope_names
@@ -1139,9 +1450,15 @@ predict.bsimms_fit <- function(object, newdata = NULL, resp = NULL, re_formula =
   }
   yrep_arr <- posterior_predict.bsimms_fit(
     object,
-    newdata = newdata, resp = resp, re_formula = re_formula, allow_new_levels = allow_new_levels,
-    sample_new_levels = sample_new_levels, ndraws = ndraws
+    newdata = newdata,
+    resp = resp,
+    re_formula = re_formula,
+    allow_new_levels = allow_new_levels,
+    sample_new_levels = sample_new_levels,
+    ndraws = ndraws
   )
-  if (!summary) return(yrep_arr)
+  if (!summary) {
+    return(yrep_arr)
+  }
   summarise_draws_by_row(yrep_arr, resp, probs, "isotope", robust)
 }

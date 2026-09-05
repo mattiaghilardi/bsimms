@@ -5,29 +5,51 @@ mixture_data <- data.frame(
 )
 source_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(-25, -18), d13C_sd = c(1, 1),
-  d15N_mean = c(5, 8), d15N_sd = c(1, 1)
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 1)
 )
 tdf_data <- data.frame(
   Source = c("Beaver", "Deer"),
-  d13C_mean = c(1, 1.2), d13C_sd = c(0.2, 0.3),
-  d15N_mean = c(3, 3.1), d15N_sd = c(0.4, 0.5)
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5)
 )
 
 skip_if_not_installed("cmdstanr")
 skip_if_not_installed("loo")
 
 fit1 <- bsimm(
-  formula = ~1, mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~1,
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 fit2 <- bsimm(
-  formula = ~ 1 + (1 | Region), mixture_data = mixture_data, source_data = source_data,
-  tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), source_means_sds = TRUE,
-  chains = 1, iter_warmup = 200, iter_sampling = 100, seed = 1, refresh = 0,
-  show_messages = FALSE, show_exceptions = FALSE
+  formula = ~ 1 + (1 | Region),
+  mixture_data = mixture_data,
+  source_data = source_data,
+  tdf_data = tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
 )
 
 test_that("loo returns a psis_loo object", {
@@ -53,7 +75,12 @@ test_that("loo_compare ranks bsimms_fit objects by waic", {
 test_that("loo_compare accepts precomputed loo/waic objects", {
   l2 <- suppressWarnings(loo::loo(fit2))
   cmp <- suppressWarnings(
-    loo::loo_compare(fit1, l2, criterion = "loo", model_names = c("fit1", "precomputed"))
+    loo::loo_compare(
+      fit1,
+      l2,
+      criterion = "loo",
+      model_names = c("fit1", "precomputed")
+    )
   )
   expect_setequal(cmp$model, c("fit1", "precomputed"))
 })
@@ -64,7 +91,11 @@ test_that("loo_compare errors when a precomputed object doesn't match criterion"
 })
 
 test_that("loo_compare respects custom model_names", {
-  cmp <- suppressWarnings(loo::loo_compare(fit1, fit2, model_names = c("intercept_only", "region_re")))
+  cmp <- suppressWarnings(loo::loo_compare(
+    fit1,
+    fit2,
+    model_names = c("intercept_only", "region_re")
+  ))
   expect_setequal(cmp$model, c("intercept_only", "region_re"))
 })
 

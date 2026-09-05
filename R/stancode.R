@@ -100,18 +100,31 @@
 #'   source_col = sim$source_col
 #' )
 #' cat(code)
-make_stancode <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
-                           source_means_sds = FALSE, tdf_means_sds = TRUE,
-                           conc_dep = FALSE,
-                           error_structure = c("process_residual", "process_only", "residual_only"),
-                           prior = NULL,
-                           source_col = "Source") {
+make_stancode <- function(
+  formula,
+  mixture_data,
+  source_data,
+  tdf_data,
+  isotope_names,
+  source_means_sds = FALSE,
+  tdf_means_sds = TRUE,
+  conc_dep = FALSE,
+  error_structure = c("process_residual", "process_only", "residual_only"),
+  prior = NULL,
+  source_col = "Source"
+) {
   error_structure <- rlang::arg_match(error_structure)
   spec <- build_bsimms_spec(
-    formula = formula, mixture_data = mixture_data,
-    source_data = source_data, tdf_data = tdf_data, isotope_names = isotope_names,
-    source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
-    conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
+    formula = formula,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = isotope_names,
+    source_means_sds = source_means_sds,
+    tdf_means_sds = tdf_means_sds,
+    conc_dep = conc_dep,
+    error_structure = error_structure,
+    source_col = source_col
   )
   prior_df <- merge_bsimms_prior(default_bsimms_prior(spec), prior, spec)
   code <- bsimms_stancode_from_spec(spec, prior_df)
@@ -145,15 +158,19 @@ print.bsimms_stancode <- function(x, ...) {
 #'   `source_cor`, `mv`, `resid_cor`.
 #' @noRd
 bsimms_needs_flags <- function(spec) {
-  needs_sigma      <- spec$error_structure == "residual_only"
+  needs_sigma <- spec$error_structure == "residual_only"
   needs_resid_prop <- spec$error_structure == "process_residual"
-  needs_proc       <- spec$error_structure %in% c("process_only", "process_residual")
+  needs_proc <- spec$error_structure %in% c("process_only", "process_residual")
   needs_source_cor <- spec$source$mode == "raw" && spec$J > 1
-  needs_mv         <- needs_source_cor && needs_proc
-  needs_resid_cor  <- needs_sigma && spec$J > 1
+  needs_mv <- needs_source_cor && needs_proc
+  needs_resid_cor <- needs_sigma && spec$J > 1
   list(
-    sigma = needs_sigma, resid_prop = needs_resid_prop, proc = needs_proc,
-    source_cor = needs_source_cor, mv = needs_mv, resid_cor = needs_resid_cor
+    sigma = needs_sigma,
+    resid_prop = needs_resid_prop,
+    proc = needs_proc,
+    source_cor = needs_source_cor,
+    mv = needs_mv,
+    resid_cor = needs_resid_cor
   )
 }
 
@@ -173,22 +190,65 @@ bsimms_needs_flags <- function(spec) {
 #' @noRd
 bsimms_stancode_from_spec <- function(spec, prior_df) {
   needs <- bsimms_needs_flags(spec)
-  needs_sigma      <- needs$sigma
+  needs_sigma <- needs$sigma
   needs_resid_prop <- needs$resid_prop
-  needs_proc       <- needs$proc
+  needs_proc <- needs$proc
   needs_source_cor <- needs$source_cor
-  needs_mv         <- needs$mv
-  needs_resid_cor  <- needs$resid_cor
+  needs_mv <- needs$mv
+  needs_resid_cor <- needs$resid_cor
 
   blocks <- c(
     stan_header(spec),
-    "functions {", indent(stan_functions_lines(spec)), "}",
-    "data {",   indent(stan_data_lines(spec)),   "}",
-    "transformed data {", indent(stan_transformed_data_lines(spec)), "}",
-    "parameters {", indent(stan_parameters_lines(spec, needs_sigma, needs_resid_prop, needs_source_cor, needs_resid_cor)), "}",
-    "transformed parameters {", indent(stan_transformed_parameters_lines(spec, needs_proc, needs_resid_prop, needs_source_cor, needs_mv, needs_resid_cor)), "}",
-    "model {", indent(stan_model_lines(spec, prior_df, needs_sigma, needs_resid_prop, needs_proc, needs_source_cor, needs_mv, needs_resid_cor)), "}",
-    "generated quantities {", indent(stan_generated_quantities_lines(spec, needs_sigma, needs_resid_prop, needs_proc, needs_mv, needs_resid_cor)), "}"
+    "functions {",
+    indent(stan_functions_lines(spec)),
+    "}",
+    "data {",
+    indent(stan_data_lines(spec)),
+    "}",
+    "transformed data {",
+    indent(stan_transformed_data_lines(spec)),
+    "}",
+    "parameters {",
+    indent(stan_parameters_lines(
+      spec,
+      needs_sigma,
+      needs_resid_prop,
+      needs_source_cor,
+      needs_resid_cor
+    )),
+    "}",
+    "transformed parameters {",
+    indent(stan_transformed_parameters_lines(
+      spec,
+      needs_proc,
+      needs_resid_prop,
+      needs_source_cor,
+      needs_mv,
+      needs_resid_cor
+    )),
+    "}",
+    "model {",
+    indent(stan_model_lines(
+      spec,
+      prior_df,
+      needs_sigma,
+      needs_resid_prop,
+      needs_proc,
+      needs_source_cor,
+      needs_mv,
+      needs_resid_cor
+    )),
+    "}",
+    "generated quantities {",
+    indent(stan_generated_quantities_lines(
+      spec,
+      needs_sigma,
+      needs_resid_prop,
+      needs_proc,
+      needs_mv,
+      needs_resid_cor
+    )),
+    "}"
   )
   paste(blocks, collapse = "\n")
 }
@@ -202,7 +262,9 @@ bsimms_stancode_from_spec <- function(spec, prior_df) {
 #' @return Character vector, same length as `lines`.
 #' @noRd
 indent <- function(lines, n = 2) {
-  if (length(lines) == 0) return(character(0))
+  if (length(lines) == 0) {
+    return(character(0))
+  }
   pad <- strrep(" ", n)
   paste0(pad, lines)
 }
@@ -216,20 +278,48 @@ indent <- function(lines, n = 2) {
 #' @noRd
 stan_header <- function(spec) {
   c(
-    paste0("// Stan program generated by bsimms ", utils::packageVersion("bsimms")),
+    paste0(
+      "// Stan program generated by bsimms ",
+      utils::packageVersion("bsimms")
+    ),
     paste0("// sources: ", paste(spec$source_names, collapse = ", ")),
     paste0("// isotopes: ", paste(spec$isotope_names, collapse = ", ")),
     "// global proportions: p_global ~ Dirichlet(alpha), covariate effects added in ILR space",
-    paste0("// fixed effects (covariate slopes, no intercept): ", if (length(spec$fixed_names) > 0) paste(spec$fixed_names, collapse = ", ") else "(none)"),
+    paste0(
+      "// fixed effects (covariate slopes, no intercept): ",
+      if (length(spec$fixed_names) > 0) {
+        paste(spec$fixed_names, collapse = ", ")
+      } else {
+        "(none)"
+      }
+    ),
     if (length(spec$re_terms) > 0) {
-      paste0("// group-level terms: ", paste(vapply(spec$re_terms, function(r) {
-        sprintf("(%s | %s)", paste(r$term_names, collapse = " + "), r$group)
-      }, character(1)), collapse = ", "))
+      paste0(
+        "// group-level terms: ",
+        paste(
+          vapply(
+            spec$re_terms,
+            function(r) {
+              sprintf(
+                "(%s | %s)",
+                paste(r$term_names, collapse = " + "),
+                r$group
+              )
+            },
+            character(1)
+          ),
+          collapse = ", "
+        )
+      )
     } else {
       "// group-level terms: (none)"
     },
     paste0("// error structure: ", spec$error_structure),
-    paste0("// source data: ", spec$source$mode, if (spec$has_conc_dep) ", concentration-dependent" else ""),
+    paste0(
+      "// source data: ",
+      spec$source$mode,
+      if (spec$has_conc_dep) ", concentration-dependent" else ""
+    ),
     paste0("// tdf data: ", spec$tdf$mode),
     ""
   )
@@ -286,7 +376,8 @@ stan_data_lines <- function(spec) {
     "vector<lower=0>[K] alpha_dirichlet;  // Dirichlet concentration for p_global"
   )
   if (spec$P > 0) {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "int<lower=1> P;  // number of fixed-effect coefficients (no intercept)",
       "matrix[N, P] X;  // fixed-effect design matrix (no intercept column)"
     )
@@ -295,42 +386,67 @@ stan_data_lines <- function(spec) {
   for (re in spec$re_terms) {
     Mv <- length(re$term_names)
     Gv <- length(re$group_levels)
-    lines <- c(lines,
-      sprintf("int<lower=1> N_re_%s;  // levels of grouping factor '%s'", re$label, re$group),
-      sprintf("int<lower=1> M_re_%s;  // number of group-level terms for '%s'", re$label, re$group),
-      sprintf("matrix[N, M_re_%s] Z_re_%s;  // group-level design matrix for '%s'", re$label, re$label, re$group),
-      sprintf("array[N] int<lower=1, upper=N_re_%s> grp_re_%s;  // level index per observation", re$label, re$label)
+    lines <- c(
+      lines,
+      sprintf(
+        "int<lower=1> N_re_%s;  // levels of grouping factor '%s'",
+        re$label,
+        re$group
+      ),
+      sprintf(
+        "int<lower=1> M_re_%s;  // number of group-level terms for '%s'",
+        re$label,
+        re$group
+      ),
+      sprintf(
+        "matrix[N, M_re_%s] Z_re_%s;  // group-level design matrix for '%s'",
+        re$label,
+        re$label,
+        re$group
+      ),
+      sprintf(
+        "array[N] int<lower=1, upper=N_re_%s> grp_re_%s;  // level index per observation",
+        re$label,
+        re$label
+      )
     )
   }
 
   if (spec$source$mode == "raw") {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "int<lower=1> N_source_raw;  // number of raw source samples",
       "array[N_source_raw] int<lower=1, upper=K> source_idx;  // source index (1..K) per raw sample",
       "matrix[N_source_raw, J] source_raw;  // raw source isotope measurements"
     )
   } else {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "matrix[K, J] source_mean_data;  // source isotope means, one row per source",
       "matrix[K, J] source_sd_data;  // source isotope SDs, one row per source"
     )
   }
 
   if (spec$tdf$mode == "raw") {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "int<lower=1> N_tdf_raw;  // number of raw TDF samples",
       "array[N_tdf_raw] int<lower=1, upper=K> tdf_idx;  // source index (1..K) per raw TDF sample",
       "matrix[N_tdf_raw, J] tdf_raw;  // raw TDF (trophic discrimination factor) measurements"
     )
   } else {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "matrix[K, J] tdf_mean_data;  // TDF isotope means, one row per source",
       "matrix[K, J] tdf_sd_data;  // TDF isotope SDs, one row per source"
     )
   }
 
   if (spec$has_conc_dep) {
-    lines <- c(lines, "matrix<lower=0, upper=1>[K, J] conc;  // elemental concentration by source x isotope")
+    lines <- c(
+      lines,
+      "matrix<lower=0, upper=1>[K, J] conc;  // elemental concentration by source x isotope"
+    )
   }
 
   lines
@@ -351,13 +467,16 @@ stan_data_lines <- function(spec) {
 stan_transformed_data_lines <- function(spec) {
   lines <- character(0)
   if (spec$source$mode == "summary") {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "matrix[K, J] source_mean = source_mean_data;  // alias: source means as supplied",
       "matrix[K, J] source_sd = source_sd_data;  // alias: source SDs as supplied"
     )
   }
   if (spec$tdf$mode == "summary") {
-    lines <- c(lines, if (length(lines) > 0) "",
+    lines <- c(
+      lines,
+      if (length(lines) > 0) "",
       "matrix[K, J] tdf_mean = tdf_mean_data;  // alias: TDF means as supplied",
       "matrix[K, J] tdf_sd = tdf_sd_data;  // alias: TDF SDs as supplied"
     )
@@ -382,44 +501,91 @@ stan_transformed_data_lines <- function(spec) {
 #'   See `bsimms_stancode_from_spec()`.
 #' @return Character vector of Stan code lines.
 #' @noRd
-stan_parameters_lines <- function(spec, needs_sigma, needs_resid_prop, needs_source_cor, needs_resid_cor) {
-  lines <- c("simplex[K] p_global;  // global (population-average) source proportions")
+stan_parameters_lines <- function(
+  spec,
+  needs_sigma,
+  needs_resid_prop,
+  needs_source_cor,
+  needs_resid_cor
+) {
+  lines <- c(
+    "simplex[K] p_global;  // global (population-average) source proportions"
+  )
   if (spec$P > 0) {
-    lines <- c(lines, "matrix[P, D] beta;  // fixed-effect covariate slopes (no intercept), one column per ILR dimension")
+    lines <- c(
+      lines,
+      "matrix[P, D] beta;  // fixed-effect covariate slopes (no intercept), one column per ILR dimension"
+    )
   }
 
   for (re in spec$re_terms) {
     size <- length(re$term_names) * spec$D
-    lines <- c(lines, sprintf("matrix[%d, N_re_%s] z_re_%s;  // std-normal, non-centered", size, re$label, re$label))
-    lines <- c(lines, sprintf("vector<lower=0>[%d] sd_re_%s;  // group-level SD, one per (term x ILR dim)", size, re$label))
+    lines <- c(
+      lines,
+      sprintf(
+        "matrix[%d, N_re_%s] z_re_%s;  // std-normal, non-centered",
+        size,
+        re$label,
+        re$label
+      )
+    )
+    lines <- c(
+      lines,
+      sprintf(
+        "vector<lower=0>[%d] sd_re_%s;  // group-level SD, one per (term x ILR dim)",
+        size,
+        re$label
+      )
+    )
     if (size > 1) {
-      lines <- c(lines, sprintf("cholesky_factor_corr[%d] Lcorr_re_%s;  // group-level correlation (Cholesky factor)", size, re$label))
+      lines <- c(
+        lines,
+        sprintf(
+          "cholesky_factor_corr[%d] Lcorr_re_%s;  // group-level correlation (Cholesky factor)",
+          size,
+          re$label
+        )
+      )
     }
   }
 
   if (needs_sigma) {
-    lines <- c(lines, "vector<lower=0>[J] sigma;  // residual / observation error")
+    lines <- c(
+      lines,
+      "vector<lower=0>[J] sigma;  // residual / observation error"
+    )
   }
 
   if (needs_resid_cor) {
-    lines <- c(lines, "cholesky_factor_corr[J] Lcorr_resid;  // residual-error correlation (Cholesky factor)")
+    lines <- c(
+      lines,
+      "cholesky_factor_corr[J] Lcorr_resid;  // residual-error correlation (Cholesky factor)"
+    )
   }
 
   if (needs_resid_prop) {
-    lines <- c(lines, "vector<lower=0, upper=20>[J] resid_prop;  // MixSIAR residual-error factor, scales process variance")
+    lines <- c(
+      lines,
+      "vector<lower=0, upper=20>[J] resid_prop;  // MixSIAR residual-error factor, scales process variance"
+    )
   }
 
   if (spec$source$mode == "raw") {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "matrix[K, J] source_mean;  // estimated source isotope means (raw source data)",
       "matrix<lower=0>[K, J] source_sd;  // estimated source isotope SDs (raw source data)"
     )
     if (needs_source_cor) {
-      lines <- c(lines, "array[K] cholesky_factor_corr[J] Lcorr_source;  // per-source isotope correlation (Cholesky factor)")
+      lines <- c(
+        lines,
+        "array[K] cholesky_factor_corr[J] Lcorr_source;  // per-source isotope correlation (Cholesky factor)"
+      )
     }
   }
   if (spec$tdf$mode == "raw") {
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "matrix[K, J] tdf_mean;  // estimated TDF isotope means (raw TDF data)",
       "matrix<lower=0>[K, J] tdf_sd;  // estimated TDF isotope SDs (raw TDF data)"
     )
@@ -447,11 +613,20 @@ stan_parameters_lines <- function(spec, needs_sigma, needs_resid_prop, needs_sou
 #'   See `bsimms_stancode_from_spec()`.
 #' @return Character vector of Stan code lines.
 #' @noRd
-stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop, needs_source_cor, needs_mv, needs_resid_cor) {
+stan_transformed_parameters_lines <- function(
+  spec,
+  needs_proc,
+  needs_resid_prop,
+  needs_source_cor,
+  needs_mv,
+  needs_resid_cor
+) {
   lines <- c(
     "vector[D] ilr_global;  // forward ILR of p_global (Egozcue et al. 2003, eq. 25)",
     "for (d in 1:D) {",
-    indent("ilr_global[d] = sqrt(d / (d + 1.0)) * log(gmean(p_global, d) / p_global[d + 1]);"),
+    indent(
+      "ilr_global[d] = sqrt(d / (d + 1.0)) * log(gmean(p_global, d) / p_global[d + 1]);"
+    ),
     "}",
     "",
     if (spec$P > 0) {
@@ -464,21 +639,53 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
   for (re in spec$re_terms) {
     Mv <- length(re$term_names)
     size <- Mv * spec$D
-    lines <- c(lines, "", sprintf("// group-level term: (%s | %s)", paste(re$term_names, collapse = " + "), re$group))
+    lines <- c(
+      lines,
+      "",
+      sprintf(
+        "// group-level term: (%s | %s)",
+        paste(re$term_names, collapse = " + "),
+        re$group
+      )
+    )
     if (size > 1) {
-      lines <- c(lines, sprintf("matrix[%d, N_re_%s] b_re_%s = diag_pre_multiply(sd_re_%s, Lcorr_re_%s) * z_re_%s;  // scaled, correlated group-level effects",
-                                 size, re$label, re$label, re$label, re$label, re$label))
+      lines <- c(
+        lines,
+        sprintf(
+          "matrix[%d, N_re_%s] b_re_%s = diag_pre_multiply(sd_re_%s, Lcorr_re_%s) * z_re_%s;  // scaled, correlated group-level effects",
+          size,
+          re$label,
+          re$label,
+          re$label,
+          re$label,
+          re$label
+        )
+      )
     } else {
-      lines <- c(lines, sprintf("matrix[1, N_re_%s] b_re_%s = rep_matrix(sd_re_%s[1], 1, N_re_%s) .* z_re_%s;  // scaled group-level effects",
-                                 re$label, re$label, re$label, re$label, re$label))
+      lines <- c(
+        lines,
+        sprintf(
+          "matrix[1, N_re_%s] b_re_%s = rep_matrix(sd_re_%s[1], 1, N_re_%s) .* z_re_%s;  // scaled group-level effects",
+          re$label,
+          re$label,
+          re$label,
+          re$label,
+          re$label
+        )
+      )
     }
-    lines <- c(lines,
-      sprintf("for (re_i in 1:N) {  // add this term's group-level effect to each mixture sample's eta"),
+    lines <- c(
+      lines,
+      sprintf(
+        "for (re_i in 1:N) {  // add this term's group-level effect to each mixture sample's eta"
+      ),
       indent(sprintf("for (re_m in 1:M_re_%s) {", re$label)),
       indent(indent(sprintf("for (re_d in 1:D) {"))),
       indent(indent(indent(sprintf(
         "eta[re_i, re_d] += Z_re_%s[re_i, re_m] * b_re_%s[(re_m - 1) * D + re_d, grp_re_%s[re_i]];",
-        re$label, re$label, re$label
+        re$label,
+        re$label,
+        re$label
       )))),
       indent(indent("}")),
       indent("}"),
@@ -486,7 +693,9 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
     )
   }
 
-  lines <- c(lines, "",
+  lines <- c(
+    lines,
+    "",
     "array[N] simplex[K] p;  // source proportions, one simplex per mixture sample",
     "for (i in 1:N) {  // inverse-ILR each mixture sample's eta onto the source simplex",
     indent("p[i] = softmax(V * to_vector(eta[i]));"),
@@ -494,33 +703,67 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
   )
 
   lines <- c(lines, "", "matrix[N, J] mu;  // expected mixture isotope value")
-  if (needs_proc) lines <- c(lines, "matrix[N, J] proc_var;  // source/TDF variance propagated into the mixture")
+  if (needs_proc) {
+    lines <- c(
+      lines,
+      "matrix[N, J] proc_var;  // source/TDF variance propagated into the mixture"
+    )
+  }
 
-  lines <- c(lines, "for (i in 1:N) {", indent("for (j in 1:J) {  // mu[i, j] = proportion-weighted source + TDF means"))
+  lines <- c(
+    lines,
+    "for (i in 1:N) {",
+    indent(
+      "for (j in 1:J) {  // mu[i, j] = proportion-weighted source + TDF means"
+    )
+  )
   body <- character(0)
   if (spec$has_conc_dep) {
-    body <- c(body,
+    body <- c(
+      body,
       "real denom = 0;  // concentration-weighted normaliser",
       "for (k in 1:K) denom += p[i, k] * conc[k, j];",
       "real mij = 0;  // concentration-weighted expected isotope value"
     )
-    if (needs_proc) body <- c(body, "real vij = 1e-8;  // concentration-weighted propagated variance")
-    body <- c(body,
+    if (needs_proc) {
+      body <- c(
+        body,
+        "real vij = 1e-8;  // concentration-weighted propagated variance"
+      )
+    }
+    body <- c(
+      body,
       "for (k in 1:K) {  // accumulate each source's concentration-weighted contribution",
-      indent("real pk = p[i, k] * conc[k, j] / denom;  // concentration-adjusted proportion"),
+      indent(
+        "real pk = p[i, k] * conc[k, j] / denom;  // concentration-adjusted proportion"
+      ),
       indent("mij += pk * (source_mean[k, j] + tdf_mean[k, j]);"),
-      if (needs_proc) indent("vij += square(pk) * (square(source_sd[k, j]) + square(tdf_sd[k, j]));"),
+      if (needs_proc) {
+        indent(
+          "vij += square(pk) * (square(source_sd[k, j]) + square(tdf_sd[k, j]));"
+        )
+      },
       "}",
       "mu[i, j] = mij;"
     )
     if (needs_proc) body <- c(body, "proc_var[i, j] = vij;")
   } else {
     body <- c(body, "real mij = 0;  // expected isotope value")
-    if (needs_proc) body <- c(body, "real vij = 1e-8;  // source/TDF variance propagated into the mixture")
-    body <- c(body,
+    if (needs_proc) {
+      body <- c(
+        body,
+        "real vij = 1e-8;  // source/TDF variance propagated into the mixture"
+      )
+    }
+    body <- c(
+      body,
       "for (k in 1:K) {  // accumulate each source's contribution, weighted by its proportion",
       indent("mij += p[i, k] * (source_mean[k, j] + tdf_mean[k, j]);"),
-      if (needs_proc) indent("vij += square(p[i, k]) * (square(source_sd[k, j]) + square(tdf_sd[k, j]));"),
+      if (needs_proc) {
+        indent(
+          "vij += square(p[i, k]) * (square(source_sd[k, j]) + square(tdf_sd[k, j]));"
+        )
+      },
       "}",
       "mu[i, j] = mij;"
     )
@@ -529,33 +772,45 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
   lines <- c(lines, indent(indent(body)), indent("}"), "}")
 
   if (needs_source_cor) {
-    lines <- c(lines, "",
+    lines <- c(
+      lines,
+      "",
       "array[K] matrix[J, J] L_source_cov;  // per-source isotope covariance (Cholesky factor)",
       "array[K] matrix[J, J] source_cov;  // per-source isotope covariance (variance + correlation)",
       "for (k in 1:K) {",
-      indent("L_source_cov[k] = diag_pre_multiply(to_vector(source_sd[k]), Lcorr_source[k]);"),
-      indent("source_cov[k] = multiply_lower_tri_self_transpose(L_source_cov[k]);"),
+      indent(
+        "L_source_cov[k] = diag_pre_multiply(to_vector(source_sd[k]), Lcorr_source[k]);"
+      ),
+      indent(
+        "source_cov[k] = multiply_lower_tri_self_transpose(L_source_cov[k]);"
+      ),
       "}"
     )
   }
 
   if (needs_mv) {
     cov_body <- if (spec$has_conc_dep) {
-      c("real denom1 = 0;  // concentration-weighted normaliser for j1",
+      c(
+        "real denom1 = 0;  // concentration-weighted normaliser for j1",
         "for (k in 1:K) denom1 += p[i, k] * conc[k, j1];",
         "real denom2 = 0;  // concentration-weighted normaliser for j2",
         "for (k in 1:K) denom2 += p[i, k] * conc[k, j2];",
         "real cij = 0;  // off-diagonal process covariance between isotopes j1, j2",
         "for (k in 1:K) {",
-        indent("real pk1 = p[i, k] * conc[k, j1] / denom1;  // concentration-adjusted proportion for j1"),
-        indent("real pk2 = p[i, k] * conc[k, j2] / denom2;  // concentration-adjusted proportion for j2"),
+        indent(
+          "real pk1 = p[i, k] * conc[k, j1] / denom1;  // concentration-adjusted proportion for j1"
+        ),
+        indent(
+          "real pk2 = p[i, k] * conc[k, j2] / denom2;  // concentration-adjusted proportion for j2"
+        ),
         indent("cij += pk1 * pk2 * source_cov[k][j1, j2];"),
         "}",
         "Omega[i][j1, j2] = cij;",
         "Omega[i][j2, j1] = cij;"
       )
     } else {
-      c("real cij = 0;  // off-diagonal process covariance between isotopes j1, j2",
+      c(
+        "real cij = 0;  // off-diagonal process covariance between isotopes j1, j2",
         "for (k in 1:K) {",
         indent("cij += square(p[i, k]) * source_cov[k][j1, j2];"),
         "}",
@@ -563,10 +818,14 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
         "Omega[i][j2, j1] = cij;"
       )
     }
-    lines <- c(lines, "",
+    lines <- c(
+      lines,
+      "",
       "array[N] matrix[J, J] Omega;  // full source/TDF covariance propagated into the mixture",
       "for (i in 1:N) {",
-      indent("Omega[i] = diag_matrix(to_vector(proc_var[i]));  // diagonal: per-isotope process variance"),
+      indent(
+        "Omega[i] = diag_matrix(to_vector(proc_var[i]));  // diagonal: per-isotope process variance"
+      ),
       indent("for (j1 in 1:(J - 1)) {"),
       indent(indent("for (j2 in (j1 + 1):J) {")),
       indent(indent(indent(cov_body))),
@@ -575,11 +834,15 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
       "}"
     )
 
-    lines <- c(lines, "",
+    lines <- c(
+      lines,
+      "",
       "array[N] matrix[J, J] L_Sigma;  // mixture covariance (Cholesky factor)",
       "for (i in 1:N) {",
       if (needs_resid_prop) {
-        indent("L_Sigma[i] = diag_pre_multiply(sqrt(resid_prop), cholesky_decompose(Omega[i]));  // MixSIAR residual-error factor scales process covariance")
+        indent(
+          "L_Sigma[i] = diag_pre_multiply(sqrt(resid_prop), cholesky_decompose(Omega[i]));  // MixSIAR residual-error factor scales process covariance"
+        )
       } else {
         indent("L_Sigma[i] = cholesky_decompose(Omega[i]);")
       },
@@ -588,7 +851,9 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
   }
 
   if (needs_resid_cor) {
-    lines <- c(lines, "",
+    lines <- c(
+      lines,
+      "",
       "matrix[J, J] L_Sigma_resid = diag_pre_multiply(sigma, Lcorr_resid);  // shared residual covariance (Cholesky factor)"
     )
   }
@@ -617,17 +882,32 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
 #'   See `bsimms_stancode_from_spec()`.
 #' @return Character vector of Stan code lines.
 #' @noRd
-stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, needs_proc, needs_source_cor, needs_mv, needs_resid_cor) {
+stan_model_lines <- function(
+  spec,
+  prior_df,
+  needs_sigma,
+  needs_resid_prop,
+  needs_proc,
+  needs_source_cor,
+  needs_mv,
+  needs_resid_cor
+) {
   lines <- character(0)
 
-  lines <- c(lines, "// prior: global (population-average) source proportions",
-             "p_global ~ dirichlet(alpha_dirichlet);")
+  lines <- c(
+    lines,
+    "// prior: global (population-average) source proportions",
+    "p_global ~ dirichlet(alpha_dirichlet);"
+  )
 
   if (spec$P > 0) {
     lines <- c(lines, "", "// priors: fixed-effect covariate slopes")
     for (p in seq_len(spec$P)) {
       pr <- select_prior(prior_df, "b", coef = spec$fixed_names[p])
-      lines <- c(lines, sprintf("beta[%d] ~ %s;  // %s", p, pr, spec$fixed_names[p]))
+      lines <- c(
+        lines,
+        sprintf("beta[%d] ~ %s;  // %s", p, pr, spec$fixed_names[p])
+      )
     }
   }
 
@@ -636,9 +916,23 @@ stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, need
     for (re in spec$re_terms) {
       size <- length(re$term_names) * spec$D
       lines <- c(lines, sprintf("to_vector(z_re_%s) ~ std_normal();", re$label))
-      lines <- c(lines, sprintf("sd_re_%s ~ %s;", re$label, select_prior(prior_df, "sd", group = re$group)))
+      lines <- c(
+        lines,
+        sprintf(
+          "sd_re_%s ~ %s;",
+          re$label,
+          select_prior(prior_df, "sd", group = re$group)
+        )
+      )
       if (size > 1) {
-        lines <- c(lines, sprintf("Lcorr_re_%s ~ %s;", re$label, select_prior(prior_df, "cor", group = re$group)))
+        lines <- c(
+          lines,
+          sprintf(
+            "Lcorr_re_%s ~ %s;",
+            re$label,
+            select_prior(prior_df, "cor", group = re$group)
+          )
+        )
       }
     }
   }
@@ -646,66 +940,161 @@ stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, need
   if (needs_sigma) {
     lines <- c(lines, "", "// priors: error term")
     for (j in seq_along(spec$isotope_names)) {
-      lines <- c(lines, sprintf("sigma[%d] ~ %s;  // %s", j, select_prior(prior_df, "sigma", resp = spec$isotope_names[j]), spec$isotope_names[j]))
+      lines <- c(
+        lines,
+        sprintf(
+          "sigma[%d] ~ %s;  // %s",
+          j,
+          select_prior(prior_df, "sigma", resp = spec$isotope_names[j]),
+          spec$isotope_names[j]
+        )
+      )
     }
   }
 
   if (needs_resid_cor) {
-    lines <- c(lines, "", "// prior: residual-error correlation (Cholesky factor)",
-               sprintf("Lcorr_resid ~ %s;", select_prior(prior_df, "resid_cor")))
+    lines <- c(
+      lines,
+      "",
+      "// prior: residual-error correlation (Cholesky factor)",
+      sprintf("Lcorr_resid ~ %s;", select_prior(prior_df, "resid_cor"))
+    )
   }
 
   if (needs_resid_prop) {
-    lines <- c(lines, "", "// priors: MixSIAR residual-error factor (scales process variance)")
+    lines <- c(
+      lines,
+      "",
+      "// priors: MixSIAR residual-error factor (scales process variance)"
+    )
     for (j in seq_along(spec$isotope_names)) {
-      lines <- c(lines, sprintf("resid_prop[%d] ~ %s;  // %s", j, select_prior(prior_df, "resid_prop", resp = spec$isotope_names[j]), spec$isotope_names[j]))
+      lines <- c(
+        lines,
+        sprintf(
+          "resid_prop[%d] ~ %s;  // %s",
+          j,
+          select_prior(prior_df, "resid_prop", resp = spec$isotope_names[j]),
+          spec$isotope_names[j]
+        )
+      )
     }
   }
 
   if (spec$source$mode == "raw") {
-    lines <- c(lines, "", "// priors + sub-model: raw source data (source- and isotope-specific)")
+    lines <- c(
+      lines,
+      "",
+      "// priors + sub-model: raw source data (source- and isotope-specific)"
+    )
     for (k in seq_along(spec$source_names)) {
       for (j in seq_along(spec$isotope_names)) {
-        pr_mean <- select_prior(prior_df, "source_mean", resp = spec$isotope_names[j], group = spec$source_names[k])
-        pr_sd   <- select_prior(prior_df, "source_sd",   resp = spec$isotope_names[j], group = spec$source_names[k])
-        lines <- c(lines, sprintf("source_mean[%d, %d] ~ %s;  // %s, %s", k, j, pr_mean, spec$source_names[k], spec$isotope_names[j]))
+        pr_mean <- select_prior(
+          prior_df,
+          "source_mean",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
+        )
+        pr_sd <- select_prior(
+          prior_df,
+          "source_sd",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
+        )
+        lines <- c(
+          lines,
+          sprintf(
+            "source_mean[%d, %d] ~ %s;  // %s, %s",
+            k,
+            j,
+            pr_mean,
+            spec$source_names[k],
+            spec$isotope_names[j]
+          )
+        )
         lines <- c(lines, sprintf("source_sd[%d, %d] ~ %s;", k, j, pr_sd))
       }
     }
 
     if (needs_source_cor) {
-      lines <- c(lines, "", "// priors: per-source isotope correlation (Cholesky factor)")
+      lines <- c(
+        lines,
+        "",
+        "// priors: per-source isotope correlation (Cholesky factor)"
+      )
       for (k in seq_along(spec$source_names)) {
-        pr_cor <- select_prior(prior_df, "source_cor", group = spec$source_names[k])
-        lines <- c(lines, sprintf("Lcorr_source[%d] ~ %s;  // %s", k, pr_cor, spec$source_names[k]))
+        pr_cor <- select_prior(
+          prior_df,
+          "source_cor",
+          group = spec$source_names[k]
+        )
+        lines <- c(
+          lines,
+          sprintf(
+            "Lcorr_source[%d] ~ %s;  // %s",
+            k,
+            pr_cor,
+            spec$source_names[k]
+          )
+        )
       }
-      lines <- c(lines,
+      lines <- c(
+        lines,
         "",
         "// likelihood for each raw source measurement (isotopes jointly, per-source correlation)",
         "for (n in 1:N_source_raw) {",
-        indent("to_vector(source_raw[n]) ~ multi_normal_cholesky(to_vector(source_mean[source_idx[n]]), L_source_cov[source_idx[n]]);"),
+        indent(
+          "to_vector(source_raw[n]) ~ multi_normal_cholesky(to_vector(source_mean[source_idx[n]]), L_source_cov[source_idx[n]]);"
+        ),
         "}"
       )
     } else {
-      lines <- c(lines,
+      lines <- c(
+        lines,
         "for (n in 1:N_source_raw) {  // likelihood for each raw source measurement",
-        indent("source_raw[n] ~ normal(source_mean[source_idx[n]], source_sd[source_idx[n]]);"),
+        indent(
+          "source_raw[n] ~ normal(source_mean[source_idx[n]], source_sd[source_idx[n]]);"
+        ),
         "}"
       )
     }
   }
 
   if (spec$tdf$mode == "raw") {
-    lines <- c(lines, "", "// priors + sub-model: raw TDF data (source- and isotope-specific)")
+    lines <- c(
+      lines,
+      "",
+      "// priors + sub-model: raw TDF data (source- and isotope-specific)"
+    )
     for (k in seq_along(spec$source_names)) {
       for (j in seq_along(spec$isotope_names)) {
-        pr_mean <- select_prior(prior_df, "tdf_mean", resp = spec$isotope_names[j], group = spec$source_names[k])
-        pr_sd   <- select_prior(prior_df, "tdf_sd",   resp = spec$isotope_names[j], group = spec$source_names[k])
-        lines <- c(lines, sprintf("tdf_mean[%d, %d] ~ %s;  // %s, %s", k, j, pr_mean, spec$source_names[k], spec$isotope_names[j]))
+        pr_mean <- select_prior(
+          prior_df,
+          "tdf_mean",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
+        )
+        pr_sd <- select_prior(
+          prior_df,
+          "tdf_sd",
+          resp = spec$isotope_names[j],
+          group = spec$source_names[k]
+        )
+        lines <- c(
+          lines,
+          sprintf(
+            "tdf_mean[%d, %d] ~ %s;  // %s, %s",
+            k,
+            j,
+            pr_mean,
+            spec$source_names[k],
+            spec$isotope_names[j]
+          )
+        )
         lines <- c(lines, sprintf("tdf_sd[%d, %d] ~ %s;", k, j, pr_sd))
       }
     }
-    lines <- c(lines,
+    lines <- c(
+      lines,
       "for (n in 1:N_tdf_raw) {  // likelihood for each raw TDF measurement",
       indent("tdf_raw[n] ~ normal(tdf_mean[tdf_idx[n]], tdf_sd[tdf_idx[n]]);"),
       "}"
@@ -714,29 +1103,45 @@ stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, need
 
   lines <- c(lines, "", "// mixture likelihood")
   lik <- if (needs_mv) {
-    c("for (i in 1:N) {  // isotopes jointly, full process (+ residual) covariance",
-      indent("to_vector(y[i]) ~ multi_normal_cholesky(to_vector(mu[i]), L_Sigma[i]);"),
-      "}")
+    c(
+      "for (i in 1:N) {  // isotopes jointly, full process (+ residual) covariance",
+      indent(
+        "to_vector(y[i]) ~ multi_normal_cholesky(to_vector(mu[i]), L_Sigma[i]);"
+      ),
+      "}"
+    )
   } else if (needs_resid_cor) {
-    c("for (i in 1:N) {  // isotopes jointly, shared residual covariance",
-      indent("to_vector(y[i]) ~ multi_normal_cholesky(to_vector(mu[i]), L_Sigma_resid);"),
-      "}")
+    c(
+      "for (i in 1:N) {  // isotopes jointly, shared residual covariance",
+      indent(
+        "to_vector(y[i]) ~ multi_normal_cholesky(to_vector(mu[i]), L_Sigma_resid);"
+      ),
+      "}"
+    )
   } else if (needs_proc && needs_resid_prop) {
-    c("for (i in 1:N) {",
+    c(
+      "for (i in 1:N) {",
       indent("for (j in 1:J) {"),
-      indent(indent("y[i, j] ~ normal(mu[i, j], sqrt(proc_var[i, j] * resid_prop[j]));")),
+      indent(indent(
+        "y[i, j] ~ normal(mu[i, j], sqrt(proc_var[i, j] * resid_prop[j]));"
+      )),
       indent("}"),
-      "}")
+      "}"
+    )
   } else if (needs_proc) {
-    c("for (i in 1:N) {",
+    c(
+      "for (i in 1:N) {",
       indent("for (j in 1:J) {"),
       indent(indent("y[i, j] ~ normal(mu[i, j], sqrt(proc_var[i, j]));")),
       indent("}"),
-      "}")
+      "}"
+    )
   } else {
-    c("for (i in 1:N) {",
+    c(
+      "for (i in 1:N) {",
       indent("to_vector(y[i]) ~ normal(to_vector(mu[i]), sigma);"),
-      "}")
+      "}"
+    )
   }
   c(lines, lik)
 }
@@ -758,14 +1163,25 @@ stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, need
 #'   See `bsimms_stancode_from_spec()`.
 #' @return Character vector of Stan code lines.
 #' @noRd
-stan_generated_quantities_lines <- function(spec, needs_sigma, needs_resid_prop, needs_proc, needs_mv, needs_resid_cor) {
+stan_generated_quantities_lines <- function(
+  spec,
+  needs_sigma,
+  needs_resid_prop,
+  needs_proc,
+  needs_mv,
+  needs_resid_cor
+) {
   if (needs_mv) {
     return(c(
       "vector[N] log_lik;  // joint log density per mixture sample (for loo)",
       "matrix[N, J] y_rep;",
       "for (i in 1:N) {",
-      indent("log_lik[i] = multi_normal_cholesky_lpdf(to_vector(y[i]) | to_vector(mu[i]), L_Sigma[i]);"),
-      indent("y_rep[i] = to_row_vector(multi_normal_cholesky_rng(to_vector(mu[i]), L_Sigma[i]));"),
+      indent(
+        "log_lik[i] = multi_normal_cholesky_lpdf(to_vector(y[i]) | to_vector(mu[i]), L_Sigma[i]);"
+      ),
+      indent(
+        "y_rep[i] = to_row_vector(multi_normal_cholesky_rng(to_vector(mu[i]), L_Sigma[i]));"
+      ),
       "}"
     ))
   }
@@ -775,8 +1191,12 @@ stan_generated_quantities_lines <- function(spec, needs_sigma, needs_resid_prop,
       "vector[N] log_lik;  // joint log density per mixture sample (for loo)",
       "matrix[N, J] y_rep;",
       "for (i in 1:N) {",
-      indent("log_lik[i] = multi_normal_cholesky_lpdf(to_vector(y[i]) | to_vector(mu[i]), L_Sigma_resid);"),
-      indent("y_rep[i] = to_row_vector(multi_normal_cholesky_rng(to_vector(mu[i]), L_Sigma_resid));"),
+      indent(
+        "log_lik[i] = multi_normal_cholesky_lpdf(to_vector(y[i]) | to_vector(mu[i]), L_Sigma_resid);"
+      ),
+      indent(
+        "y_rep[i] = to_row_vector(multi_normal_cholesky_rng(to_vector(mu[i]), L_Sigma_resid));"
+      ),
       "}"
     ))
   }

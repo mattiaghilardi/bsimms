@@ -47,11 +47,22 @@
 #' )
 #' plot(fit)
 #' }
-plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvariables = 5,
-                             plot = TRUE, ask = TRUE, newpage = TRUE, ...) {
+plot.bsimms_fit <- function(
+  x,
+  variable = NULL,
+  combo = c("dens", "trace"),
+  nvariables = 5,
+  plot = TRUE,
+  ask = TRUE,
+  newpage = TRUE,
+  ...
+) {
   rlang::check_installed(
     "bayesplot",
-    reason = "to use `plot.bsimms_fit()` (or use `plot_proportions()` / `summary()` directly)."
+    reason = paste0(
+      "to use `plot.bsimms_fit()` (or use `plot_proportions()` / ",
+      "`summary()` directly)."
+    )
   )
   spec <- x$spec
   if (is.null(variable)) {
@@ -59,7 +70,11 @@ plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvar
       "p_global",
       if (spec$P > 0) "beta",
       if (length(spec$re_terms) > 0) {
-        vapply(spec$re_terms, function(re) paste0("sd_re_", re$label), character(1))
+        vapply(
+          spec$re_terms,
+          function(re) paste0("sd_re_", re$label),
+          character(1)
+        )
       },
       if (spec$error_structure == "residual_only") "sigma",
       if (spec$error_structure == "process_residual") "resid_prop"
@@ -138,13 +153,22 @@ plot.bsimms_fit <- function(x, variable = NULL, combo = c("dens", "trace"), nvar
 #' )
 #' bayesplot::pp_check(fit, resp = "d13C")
 #' }
-pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndraws = NULL, ...) {
+pp_check.bsimms_fit <- function(
+  object,
+  resp = NULL,
+  type = "dens_overlay",
+  ndraws = NULL,
+  ...
+) {
   rlang::check_installed("bayesplot", reason = "to use `pp_check()`.")
   spec <- object$spec
   if (is.null(resp)) {
     if (spec$J > 1) {
       cli::cli_abort(
-        "Model has multiple isotopes ({.val {spec$isotope_names}}); specify {.arg resp} to select one.",
+        paste0(
+          "Model has multiple isotopes ({.val {spec$isotope_names}}); ",
+          "specify {.arg resp} to select one."
+        ),
         call = NULL
       )
     }
@@ -155,16 +179,23 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
 
   valid_types <- sub("^ppc_", "", as.character(bayesplot::available_ppc("")))
   if (!type %in% valid_types) {
-    cli::cli_abort("{.arg type} must be one of {.val {valid_types}}.", call = NULL)
+    cli::cli_abort(
+      "{.arg type} must be one of {.val {valid_types}}.",
+      call = NULL
+    )
   }
   ppc_fun <- getExportedValue("bayesplot", paste0("ppc_", type))
 
   if (is.null(ndraws)) {
     if (type %in% aggregate_ppc_types) {
-      cli::cli_inform("Using all posterior draws for ppc type {.val {type}} by default.")
+      cli::cli_inform(
+        "Using all posterior draws for ppc type {.val {type}} by default."
+      )
     } else {
       ndraws <- 10
-      cli::cli_inform("Using {ndraws} posterior draws for ppc type {.val {type}} by default.")
+      cli::cli_inform(
+        "Using {ndraws} posterior draws for ppc type {.val {type}} by default."
+      )
     }
   }
 
@@ -173,7 +204,7 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
   dm <- draws_matrix(object, variable = "y_rep")
   dm <- subset_ndraws(dm, ndraws)
   yrep_arr <- extract_array_draws(dm, "y_rep", spec$N, spec$J)
-  yrep <- matrix(yrep_arr[, , j], nrow = dim(yrep_arr)[1])
+  yrep <- matrix(yrep_arr[,, j], nrow = dim(yrep_arr)[1])
 
   ppc_fun(y = y, yrep = yrep, ...)
 }
@@ -184,12 +215,27 @@ pp_check.bsimms_fit <- function(object, resp = NULL, type = "dens_overlay", ndra
 #' draw" only for these.
 #' @noRd
 aggregate_ppc_types <- c(
-  "error_scatter_avg", "error_scatter_avg_vs_x",
-  "intervals", "intervals_grouped", "loo_intervals",
-  "loo_pit", "loo_pit_overlay", "loo_pit_qq", "loo_ribbon",
-  "loo_pit_ecdf", "pit_ecdf", "pit_ecdf_grouped", "ribbon",
-  "ribbon_grouped", "rootogram", "scatter_avg", "scatter_avg_grouped",
-  "stat", "stat_2d", "stat_freqpoly_grouped", "stat_grouped",
+  "error_scatter_avg",
+  "error_scatter_avg_vs_x",
+  "intervals",
+  "intervals_grouped",
+  "loo_intervals",
+  "loo_pit",
+  "loo_pit_overlay",
+  "loo_pit_qq",
+  "loo_ribbon",
+  "loo_pit_ecdf",
+  "pit_ecdf",
+  "pit_ecdf_grouped",
+  "ribbon",
+  "ribbon_grouped",
+  "rootogram",
+  "scatter_avg",
+  "scatter_avg_grouped",
+  "stat",
+  "stat_2d",
+  "stat_freqpoly_grouped",
+  "stat_grouped",
   "violin_grouped"
 )
 
@@ -245,16 +291,28 @@ aggregate_ppc_types <- c(
 #' plot_proportions(p_arr, type = "interval")
 #' plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 #' }
-plot_proportions <- function(p_arr, type = c("density", "histogram", "interval"),
-                              probs = c(0.5, 0.95), robust = FALSE, point_size = 2, ...) {
+plot_proportions <- function(
+  p_arr,
+  type = c("density", "histogram", "interval"),
+  probs = c(0.5, 0.95),
+  robust = FALSE,
+  point_size = 2,
+  ...
+) {
   type <- rlang::arg_match(type)
   rlang::check_installed("ggplot2", reason = "to use `plot_proportions()`.")
 
   if (length(dim(p_arr)) != 3 || is.null(dimnames(p_arr)[[3]])) {
     cli::cli_abort(
       c(
-        "{.arg p_arr} must be a `[n_draws, n_obs, K]` array with source names attached as the 3rd dimension's dimnames.",
-        "i" = "Use {.fn posterior_proportions} (or {.fn fitted_proportions} with {.code summary = FALSE}) to build it."
+        paste0(
+          "{.arg p_arr} must be a `[n_draws, n_obs, K]` array with ",
+          "source names attached as the 3rd dimension's dimnames."
+        ),
+        "i" = paste0(
+          "Use {.fn posterior_proportions} (or {.fn fitted_proportions} ",
+          "with {.code summary = FALSE}) to build it."
+        )
       ),
       call = NULL
     )
@@ -264,8 +322,14 @@ plot_proportions <- function(p_arr, type = c("density", "histogram", "interval")
   if (type %in% c("density", "histogram") && n_obs != 1) {
     cli::cli_abort(
       c(
-        "{.arg p_arr} must have exactly one observation (row) for {.val {type}} plots, not {n_obs}.",
-        "i" = "Use {.code type = \"interval\"} to plot proportions for multiple observations."
+        paste0(
+          "{.arg p_arr} must have exactly one observation (row) for ",
+          "{.val {type}} plots, not {n_obs}."
+        ),
+        "i" = paste0(
+          "Use {.code type = \"interval\"} to plot proportions for ",
+          "multiple observations."
+        )
       ),
       call = NULL
     )
@@ -291,15 +355,24 @@ plot_proportions <- function(p_arr, type = c("density", "histogram", "interval")
 #' @noRd
 plot_proportions_dist <- function(p_arr, type, ...) {
   df <- draws_long(p_arr, var_col = "source", value_col = "proportion")
-  ggplot2::ggplot(df, ggplot2::aes(x = .data$proportion, color = .data$source, fill = .data$source)) +
+  ggplot2::ggplot(
+    df,
+    ggplot2::aes(
+      x = .data$proportion,
+      color = .data$source,
+      fill = .data$source
+    )
+  ) +
     (if (type == "density") {
       ggplot2::geom_density(alpha = 0.3, ...)
     } else {
       ggplot2::geom_histogram(alpha = 0.5, position = "identity", ...)
     }) +
     ggplot2::labs(
-      x = "Posterior proportion", y = if (type == "density") "Density" else "Count",
-      color = "Source", fill = "Source"
+      x = "Posterior proportion",
+      y = if (type == "density") "Density" else "Count",
+      color = "Source",
+      fill = "Source"
     ) +
     ggplot2::theme_minimal()
 }
@@ -314,7 +387,10 @@ plot_proportions_dist <- function(p_arr, type, ...) {
 validate_ci_probs <- function(probs) {
   if (length(probs) < 1 || any(probs <= 0 | probs >= 1)) {
     cli::cli_abort(
-      "{.arg probs} must be one or more credible-interval masses strictly between 0 and 1.",
+      paste0(
+        "{.arg probs} must be one or more credible-interval masses ",
+        "strictly between 0 and 1."
+      ),
       call = NULL
     )
   }
@@ -339,25 +415,47 @@ validate_ci_probs <- function(probs) {
 #'   `"source"`).
 #' @return A long-format data frame; see above for columns.
 #' @noRd
-summarise_multi_interval <- function(arr, probs, robust = FALSE, cat_col = "source") {
+summarise_multi_interval <- function(
+  arr,
+  probs,
+  robust = FALSE,
+  cat_col = "source"
+) {
   probs <- validate_ci_probs(probs)
   cat_names <- dimnames(arr)[[3]]
   est_measure <- if (robust) "median" else "mean"
   n_draws <- dim(arr)[1]
   n_obs <- dim(arr)[2]
 
-  out <- do.call(rbind, lapply(seq_len(n_obs), function(i) {
-    d <- posterior::as_draws_matrix(matrix(arr[, i, ], nrow = n_draws, dimnames = list(NULL, cat_names)))
-    est <- as.data.frame(posterior::summarise_draws(d, est_measure))
-    do.call(rbind, lapply(probs, function(p) {
-      lo <- (1 - p) / 2
-      qs <- as.data.frame(posterior::summarise_draws(d, ~ posterior::quantile2(.x, probs = c(lo, 1 - lo))))
-      data.frame(
-        row = i, category = qs$variable, estimate = est[[est_measure]],
-        lower = qs[[2]], upper = qs[[3]], width = p
+  out <- do.call(
+    rbind,
+    lapply(seq_len(n_obs), function(i) {
+      d <- posterior::as_draws_matrix(matrix(
+        arr[, i, ],
+        nrow = n_draws,
+        dimnames = list(NULL, cat_names)
+      ))
+      est <- as.data.frame(posterior::summarise_draws(d, est_measure))
+      do.call(
+        rbind,
+        lapply(probs, function(p) {
+          lo <- (1 - p) / 2
+          qs <- as.data.frame(posterior::summarise_draws(
+            d,
+            ~ posterior::quantile2(.x, probs = c(lo, 1 - lo))
+          ))
+          data.frame(
+            row = i,
+            category = qs$variable,
+            estimate = est[[est_measure]],
+            lower = qs[[2]],
+            upper = qs[[3]],
+            width = p
+          )
+        })
       )
-    }))
-  }))
+    })
+  )
   names(out)[names(out) == "category"] <- cat_col
   rownames(out) <- NULL
 
@@ -390,13 +488,30 @@ plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
   df$row <- factor(df$row)
   dodge <- ggplot2::position_dodge(width = 0.5)
 
-  ggplot2::ggplot(df, ggplot2::aes(x = .data$row, color = .data$source, group = .data$source)) +
+  ggplot2::ggplot(
+    df,
+    ggplot2::aes(x = .data$row, color = .data$source, group = .data$source)
+  ) +
     ggplot2::geom_linerange(
-      ggplot2::aes(ymin = .data$lower, ymax = .data$upper, linewidth = .data$width),
-      position = dodge, ...
+      ggplot2::aes(
+        ymin = .data$lower,
+        ymax = .data$upper,
+        linewidth = .data$width
+      ),
+      position = dodge,
+      ...
     ) +
-    ggplot2::geom_point(ggplot2::aes(y = .data$estimate), size = point_size, position = dodge) +
+    ggplot2::geom_point(
+      ggplot2::aes(y = .data$estimate),
+      size = point_size,
+      position = dodge
+    ) +
     ggplot2::scale_linewidth_ordinal(range = c(0.5, 1.5)) +
-    ggplot2::labs(x = "Observation", y = "Posterior proportion", color = "Source", linewidth = "Interval") +
+    ggplot2::labs(
+      x = "Observation",
+      y = "Posterior proportion",
+      color = "Source",
+      linewidth = "Interval"
+    ) +
     ggplot2::theme_minimal()
 }

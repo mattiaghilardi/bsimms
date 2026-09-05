@@ -43,25 +43,42 @@
 #'   chains = 2, iter_warmup = 500, iter_sampling = 500
 #' )
 #' }
-bsimm <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
-                    source_means_sds = FALSE, tdf_means_sds = TRUE,
-                    conc_dep = FALSE,
-                    error_structure = c("process_residual", "process_only", "residual_only"),
-                    prior = NULL,
-                    source_col = "Source",
-                    backend = c("auto", "cmdstanr", "rstan"),
-                    chains = 4, iter_warmup = 1000, iter_sampling = 1000,
-                    seed = NULL, cores = getOption("mc.cores", 1), refresh = NULL,
-                    ...) {
+bsimm <- function(
+  formula,
+  mixture_data,
+  source_data,
+  tdf_data,
+  isotope_names,
+  source_means_sds = FALSE,
+  tdf_means_sds = TRUE,
+  conc_dep = FALSE,
+  error_structure = c("process_residual", "process_only", "residual_only"),
+  prior = NULL,
+  source_col = "Source",
+  backend = c("auto", "cmdstanr", "rstan"),
+  chains = 4,
+  iter_warmup = 1000,
+  iter_sampling = 1000,
+  seed = NULL,
+  cores = getOption("mc.cores", 1),
+  refresh = NULL,
+  ...
+) {
   error_structure <- rlang::arg_match(error_structure)
   backend <- rlang::arg_match(backend)
   mc <- match.call()
 
   spec <- build_bsimms_spec(
-    formula = formula, mixture_data = mixture_data,
-    source_data = source_data, tdf_data = tdf_data, isotope_names = isotope_names,
-    source_means_sds = source_means_sds, tdf_means_sds = tdf_means_sds,
-    conc_dep = conc_dep, error_structure = error_structure, source_col = source_col
+    formula = formula,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = isotope_names,
+    source_means_sds = source_means_sds,
+    tdf_means_sds = tdf_means_sds,
+    conc_dep = conc_dep,
+    error_structure = error_structure,
+    source_col = source_col
   )
   prior_df <- merge_bsimms_prior(default_bsimms_prior(spec), prior, spec)
   code <- bsimms_stancode_from_spec(spec, prior_df)
@@ -72,15 +89,40 @@ bsimm <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
   backend <- resolve_backend(backend)
 
   fit <- if (backend == "cmdstanr") {
-    fit_cmdstanr(code, sdata, chains, iter_warmup, iter_sampling, seed, cores, refresh, ...)
+    fit_cmdstanr(
+      code,
+      sdata,
+      chains,
+      iter_warmup,
+      iter_sampling,
+      seed,
+      cores,
+      refresh,
+      ...
+    )
   } else {
-    fit_rstan(code, sdata, chains, iter_warmup, iter_sampling, seed, cores, refresh, ...)
+    fit_rstan(
+      code,
+      sdata,
+      chains,
+      iter_warmup,
+      iter_sampling,
+      seed,
+      cores,
+      refresh,
+      ...
+    )
   }
 
   structure(
     list(
-      fit = fit, backend = backend, spec = spec,
-      stancode = code, standata = sdata, prior = prior_df, call = mc
+      fit = fit,
+      backend = backend,
+      spec = spec,
+      stancode = code,
+      standata = sdata,
+      prior = prior_df,
+      call = mc
     ),
     class = "bsimms_fit"
   )
@@ -95,21 +137,38 @@ bsimm <- function(formula, mixture_data, source_data, tdf_data, isotope_names,
 #' @noRd
 resolve_backend <- function(backend) {
   if (backend == "auto") {
-    if (requireNamespace("cmdstanr", quietly = TRUE)) return("cmdstanr")
-    if (requireNamespace("rstan", quietly = TRUE)) return("rstan")
+    if (requireNamespace("cmdstanr", quietly = TRUE)) {
+      return("cmdstanr")
+    }
+    if (requireNamespace("rstan", quietly = TRUE)) {
+      return("rstan")
+    }
     cli::cli_abort(
       c(
-        "Fitting requires either {.pkg cmdstanr} or {.pkg rstan} to be installed.",
+        paste0(
+          "Fitting requires either {.pkg cmdstanr} or {.pkg rstan} to be ",
+          "installed."
+        ),
         "*" = "{.code install.packages(\"rstan\")}",
         "*" = "or",
-        "*" = "{.code install.packages(\"cmdstanr\", repos = c(\"https://mc-stan.org/r-packages/\", getOption(\"repos\")))}",
+        "*" = paste0(
+          "{.code install.packages(\"cmdstanr\", ",
+          "repos = c(\"https://mc-stan.org/r-packages/\", ",
+          "getOption(\"repos\")))}"
+        ),
         "*" = "{.code cmdstanr::install_cmdstan()}",
-        "i" = "You can still call {.fn make_stancode}/{.fn make_standata} and fit the model yourself."
+        "i" = paste0(
+          "You can still call {.fn make_stancode}/{.fn make_standata} ",
+          "and fit the model yourself."
+        )
       ),
       call = NULL
     )
   }
-  rlang::check_installed(backend, reason = paste0("to use `backend = \"", backend, "\"`."))
+  rlang::check_installed(
+    backend,
+    reason = paste0("to use `backend = \"", backend, "\"`.")
+  )
   backend
 }
 
@@ -124,16 +183,32 @@ resolve_backend <- function(backend) {
 #' @param ... Further arguments passed on to `cmdstanr`'s `$sample()`.
 #' @return The `CmdStanMCMC` fit object returned by `$sample()`.
 #' @noRd
-fit_cmdstanr <- function(code, sdata, chains, iter_warmup, iter_sampling, seed, cores, refresh, ...) {
+fit_cmdstanr <- function(
+  code,
+  sdata,
+  chains,
+  iter_warmup,
+  iter_sampling,
+  seed,
+  cores,
+  refresh,
+  ...
+) {
   stan_file <- cmdstanr::write_stan_file(unclass(code))
   mod <- cmdstanr::cmdstan_model(stan_file)
   args <- list(
-    data = unclass(sdata), chains = chains,
+    data = unclass(sdata),
+    chains = chains,
     parallel_chains = max(1, cores),
-    iter_warmup = iter_warmup, iter_sampling = iter_sampling
+    iter_warmup = iter_warmup,
+    iter_sampling = iter_sampling
   )
-  if (!is.null(seed)) args$seed <- seed
-  if (!is.null(refresh)) args$refresh <- refresh
+  if (!is.null(seed)) {
+    args$seed <- seed
+  }
+  if (!is.null(refresh)) {
+    args$refresh <- refresh
+  }
   do.call(mod$sample, c(args, list(...)))
 }
 
@@ -149,13 +224,30 @@ fit_cmdstanr <- function(code, sdata, chains, iter_warmup, iter_sampling, seed, 
 #' @param ... Further arguments passed on to `rstan::stan()`.
 #' @return The `stanfit` object returned by `rstan::stan()`.
 #' @noRd
-fit_rstan <- function(code, sdata, chains, iter_warmup, iter_sampling, seed, cores, refresh, ...) {
+fit_rstan <- function(
+  code,
+  sdata,
+  chains,
+  iter_warmup,
+  iter_sampling,
+  seed,
+  cores,
+  refresh,
+  ...
+) {
   args <- list(
-    model_code = unclass(code), data = unclass(sdata), chains = chains,
-    iter = iter_warmup + iter_sampling, warmup = iter_warmup,
+    model_code = unclass(code),
+    data = unclass(sdata),
+    chains = chains,
+    iter = iter_warmup + iter_sampling,
+    warmup = iter_warmup,
     cores = max(1, cores)
   )
-  if (!is.null(seed)) args$seed <- seed
-  if (!is.null(refresh)) args$refresh <- refresh
+  if (!is.null(seed)) {
+    args$seed <- seed
+  }
+  if (!is.null(refresh)) {
+    args$refresh <- refresh
+  }
   do.call(rstan::stan, c(args, list(...)))
 }
