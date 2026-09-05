@@ -118,12 +118,12 @@ extract_array_draws <- function(dm, prefix, dim1, dim2 = NULL) {
 
 #' Extract a rectangular `[n_draws, dim1, dim2, dim2]` array of draws for a
 #' Stan parameter that is an array of square matrices, e.g.
-#' `array[K] cholesky_factor_corr[J] L_source_corr`, flattened by Stan into
+#' `array[K] cholesky_factor_corr[J] Lcorr_source`, flattened by Stan into
 #' `prefix[k,j1,j2]`-named columns (i.e. `extract_array_draws()`'s 1-/2-index
 #' extraction generalised to this 3-index case).
 #'
 #' @param dm A `posterior::draws_matrix` (as returned by `draws_matrix()`).
-#' @param prefix Stan parameter name, e.g. `"L_source_corr"`.
+#' @param prefix Stan parameter name, e.g. `"Lcorr_source"`.
 #' @param dim1 Size of the parameter's array index (e.g. `K`).
 #' @param dim2 Size of each matrix's row/column index (e.g. `J`).
 #' @return A numeric array `[n_draws, dim1, dim2, dim2]`.

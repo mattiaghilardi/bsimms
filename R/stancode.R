@@ -415,7 +415,7 @@ stan_parameters_lines <- function(spec, needs_sigma, needs_resid_prop, needs_sou
       "matrix<lower=0>[K, J] source_sd;  // estimated source isotope SDs (raw source data)"
     )
     if (needs_source_cor) {
-      lines <- c(lines, "array[K] cholesky_factor_corr[J] L_source_corr;  // per-source isotope correlation (Cholesky factor)")
+      lines <- c(lines, "array[K] cholesky_factor_corr[J] Lcorr_source;  // per-source isotope correlation (Cholesky factor)")
     }
   }
   if (spec$tdf$mode == "raw") {
@@ -533,7 +533,7 @@ stan_transformed_parameters_lines <- function(spec, needs_proc, needs_resid_prop
       "array[K] matrix[J, J] L_source_cov;  // per-source isotope covariance (Cholesky factor)",
       "array[K] matrix[J, J] source_cov;  // per-source isotope covariance (variance + correlation)",
       "for (k in 1:K) {",
-      indent("L_source_cov[k] = diag_pre_multiply(to_vector(source_sd[k]), L_source_corr[k]);"),
+      indent("L_source_cov[k] = diag_pre_multiply(to_vector(source_sd[k]), Lcorr_source[k]);"),
       indent("source_cov[k] = multiply_lower_tri_self_transpose(L_source_cov[k]);"),
       "}"
     )
@@ -677,7 +677,7 @@ stan_model_lines <- function(spec, prior_df, needs_sigma, needs_resid_prop, need
       lines <- c(lines, "", "// priors: per-source isotope correlation (Cholesky factor)")
       for (k in seq_along(spec$source_names)) {
         pr_cor <- select_prior(prior_df, "source_cor", group = spec$source_names[k])
-        lines <- c(lines, sprintf("L_source_corr[%d] ~ %s;  // %s", k, pr_cor, spec$source_names[k]))
+        lines <- c(lines, sprintf("Lcorr_source[%d] ~ %s;  // %s", k, pr_cor, spec$source_names[k]))
       }
       lines <- c(lines,
         "",

@@ -135,14 +135,14 @@ test_that("cross-tracer covariance appears only with raw source data and 2+ isot
     formula = ~1, mixture_data = mixture_data, source_data = source_data_raw,
     tdf_data = tdf_data_summary, isotope_names = c("d13C", "d15N")
   )
-  expect_match(code_cov, "L_source_corr")
+  expect_match(code_cov, "Lcorr_source")
   expect_match(code_cov, "multi_normal_cholesky")
 
   code_single <- make_stancode(
     formula = ~1, mixture_data = mixture_data, source_data = source_data_raw,
     tdf_data = tdf_data_summary, isotope_names = "d13C"
   )
-  expect_no_match(code_single, "L_source_corr")
+  expect_no_match(code_single, "Lcorr_source")
 })
 
 test_that("residual-error correlation appears only under residual_only with 2+ isotopes", {

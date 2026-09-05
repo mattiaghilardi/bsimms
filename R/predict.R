@@ -836,7 +836,7 @@ compute_mu_newdata <- function(spec, dm, p_arr, needs_proc) {
 
 #' Per-draw, per-source isotope covariance `source_cov[k] = L_source_cov[k]
 #' %*% t(L_source_cov[k])`, `L_source_cov[k] = diag(source_sd[k, ]) %*%
-#' L_source_corr[k]`, `[n_draws, K, J, J]`; only meaningful (and only
+#' Lcorr_source[k]`, `[n_draws, K, J, J]`; only meaningful (and only
 #' called) when `needs$mv` (raw source data, 2+ isotopes, source/TDF
 #' variance propagated into the mixture). Mirrors the `source_cov`/
 #' `L_source_cov` computation in `stan_transformed_parameters_lines()`.
@@ -850,7 +850,7 @@ compute_mu_newdata <- function(spec, dm, p_arr, needs_proc) {
 #'   matrices.
 #' @noRd
 compute_source_cov_newdata <- function(spec, dm, source_sd_arr, n_draws) {
-  Lcorr_arr <- extract_array_of_matrices(dm, "L_source_corr", spec$K, spec$J)
+  Lcorr_arr <- extract_array_of_matrices(dm, "Lcorr_source", spec$K, spec$J)
   cov_arr <- array(0, dim = c(n_draws, spec$K, spec$J, spec$J))
   for (s in seq_len(n_draws)) {
     for (k in seq_len(spec$K)) {
