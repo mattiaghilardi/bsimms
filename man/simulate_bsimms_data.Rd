@@ -88,9 +88,9 @@ multiplicative residual-error factor, i.e. the "Residual * Process"
 error structure of Stock & Semmens 2016), \code{"process_only"} (only
 source/TDF variance propagated, no separate residual term, as in the
 original MixSIR model, Moore & Semmens 2008), or \code{"residual_only"}
-(source/TDF means treated as fixed and known; all unexplained
-variance goes into a single residual error term, as in the original
-SIAR model, Parnell et al. 2010).}
+(source/TDF variance is not propagated into the mixture at all; all
+unexplained variance instead goes into an isotope-specific residual
+error term, as in the original SIAR model, Parnell et al. 2010).}
 
 \item{p_global}{Optional numeric vector of length \code{n_sources}, the true
 baseline source proportions (must sum to 1). If \code{NULL} (default),

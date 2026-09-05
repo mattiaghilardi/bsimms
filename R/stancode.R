@@ -59,9 +59,9 @@
 #'   error structure of Stock & Semmens 2016), `"process_only"` (only
 #'   source/TDF variance propagated, no separate residual term, as in the
 #'   original MixSIR model, Moore & Semmens 2008), or `"residual_only"`
-#'   (source/TDF means treated as fixed and known; all unexplained
-#'   variance goes into a single residual error term, as in the original
-#'   SIAR model, Parnell et al. 2010).
+#'   (source/TDF variance is not propagated into the mixture at all; all
+#'   unexplained variance instead goes into an isotope-specific residual
+#'   error term, as in the original SIAR model, Parnell et al. 2010).
 #' @param prior Optional `bsimms_prior` object (see [bsimms_prior()]) with
 #'   one or more rows overriding the default priors. Unspecified
 #'   parameters keep their (weakly informative, partly data-scaled)
