@@ -52,6 +52,7 @@ jobs:
             any::knitr
             any::loo
             any::markdown
+            any::rmarkdown
             any::rstan
             any::rstantools
             any::testthat
