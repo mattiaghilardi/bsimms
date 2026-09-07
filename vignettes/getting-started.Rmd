@@ -1,0 +1,215 @@
+---
+title: "Getting started with bsimms"
+author: "Mattia Ghilardi"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Getting started with bsimms}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+params:
+  EVAL: !r identical(Sys.getenv("NOT_CRAN"), "true")
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  eval = if (isTRUE(exists("params"))) params$EVAL else FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "getting-started-",
+  dev = "png",
+  dpi = 150,
+  fig.width = 6,
+  out.width = "70%",
+  fig.align = "center"
+)
+```
+
+## Overview
+
+Fitting a mixing model with bsimms always needs the same five ingredients:
+
+- `formula`: a one-sided `lme4`-style formula of mixture-level covariates
+  on source proportions (`~1` for no covariates).
+- `mixture_data`: a data frame with one row per mixture sample, a column
+  per isotope, and, optionally, covariate columns used in `formula`.
+- `source_data`: a data frame of isotope values for each candidate
+  source, either raw replicate measurements or a summarised mean/SD per
+  source (`source_means_sds = TRUE`).
+- `tdf_data`: a data frame of the trophic discrimination factor (TDF,
+  a.k.a. fractionation or enrichment factor) for each source, again raw
+  or summarised (`tdf_means_sds`, `TRUE` by default).
+- `isotope_names`: the isotope column names shared by `mixture_data`,
+  `source_data`, and `tdf_data` above.
+
+This vignette fits a model with no covariates end to end and works through
+the results. See `vignette("model-specification")` for raw vs. summarised
+source/TDF data, error structures, concentration dependence, and covariates,
+and `vignette("diagnostics-troubleshooting")` for interpreting Stan's sampler
+diagnostics and informational messages.
+
+## Simulating example data
+
+`simulate_bsimms_data()` generates data for any bsimms model configuration
+from known parameter values, which is useful for learning the package (and
+for testing). Here we simulate data for a 3-source, 2-isotope model with
+10 mixture samples, no covariates, raw replicate source data without
+concentration dependence (`conc_dep = FALSE`, the default), and summarised
+(mean/SD) TDF data.
+
+```{r sim, message = FALSE}
+library(bsimms)
+
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+```
+
+`sim` bundles everything needed to fit the model (`mixture_data`,
+`source_data`, `tdf_data`, and the settings below), plus `sim$truth`, the
+true parameter values used to generate the data.
+
+## Fitting the model
+
+`bsimm()` builds the Stan program for the requested model, compiles it,
+and draws posterior samples via MCMC. By default it uses whichever of
+`cmdstanr`/`rstan` is installed (`cmdstanr` if both are); set `backend`
+to choose explicitly. `chains = 4` MCMC chains are run by default; we
+set `cores = 4` below so all four sample in parallel instead of one
+after another.
+
+```{r fit, message = FALSE, results = "hide"}
+fit <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  cores = 4,
+  seed = 1
+)
+```
+
+## Inspecting the fit
+
+Printing the fit gives a one-screen overview of the model: the formula,
+source/isotope/mixture counts and names, error structure, source/TDF data
+mode, and fitting backend.
+
+```{r print-fit}
+fit
+```
+
+`summary()` reports the population-average source proportions and error
+term(s), each with a posterior mean, SD, 95% credible interval, and MCMC
+convergence diagnostics (`rhat`, bulk/tail effective sample size). With the
+default `error_structure = "process_residual"`, the error term shown per
+isotope is `resid_prop`, MixSIAR's multiplicative factor scaling the
+source/TDF variance propagated into the mixture -- not a raw residual SD.
+
+```{r summary}
+summary(fit)
+```
+
+Population-average contributions lean towards Deer and Hare over Beaver,
+though with fairly wide credible intervals given the small simulated
+sample size. `rhat` close to 1 and large effective sample sizes indicate
+the chains mixed well, which we can also check visually with trace and
+density plots of the underlying Stan parameters.
+
+```{r plot-fit}
+#| fig.alt: "Density and trace plots of p_global and resid_prop across four MCMC chains; densities are unimodal and traces overlap with no trend, indicating good mixing."
+#| fig.asp: 1.2
+plot(fit)
+```
+
+## Posterior predictive checks
+
+Beyond `rhat`/effective sample size, it is worth checking that the fitted
+model actually reproduces the observed mixture data. `pp_check()` overlays
+the observed isotope values (dark line) against posterior predictive
+draws (light lines), one isotope at a time, using `bayesplot`'s
+`dens_overlay` by default; pass `type` to use any other `bayesplot`
+`ppc_*` function instead (e.g. `type = "ecdf_overlay"`). With only 10
+mixture samples in this example, the observed density is naturally
+rougher than it would be with more data -- judge the check by its
+overall location and spread against the predictive draws, not by
+matching every wiggle.
+
+```{r pp-check}
+#| fig.alt:
+#|   - "Posterior predictive check for d13C: the observed density falls within the spread of posterior predictive draws."
+#|   - "Posterior predictive check for d15N: the observed density falls within the spread of posterior predictive draws."
+#| fig.asp: 0.8
+bayesplot::pp_check(fit, resp = "d13C")
+bayesplot::pp_check(fit, resp = "d15N")
+```
+
+## Working with posterior source proportions
+
+`posterior_proportions()` returns the raw posterior draws of source
+proportions `p` as a `[n_draws, n_obs, K]` array; `fitted_proportions()`
+wraps it with the same summary measures as `summary()`. Since this model
+has no covariates, every mixture sample shares the same population-average
+proportions (`p_global`), so both return identical values for every
+observation. Both also accept `newdata` to predict source proportions
+for new, unobserved samples -- most useful once covariates are involved
+(see `vignette("model-specification")`), since without them every new
+sample would get the same population-average proportions shown here.
+
+```{r fitted-proportions}
+fitted_proportions(fit)
+```
+
+`plot_proportions()` visualises these draws. With a single set of
+proportions shared by every mixture sample, a density/histogram plot of
+population-average source proportions is the clearest view (`type =
+"interval"` instead suits several distinct observations, e.g. one per
+covariate level -- see `vignette("model-specification")`).
+
+```{r plot-proportions-density}
+#| fig.alt: "Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions."
+#| fig.asp: 0.8
+p_arr <- posterior_proportions(fit)
+plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
+```
+
+## Other posterior quantities
+
+Besides source proportions, `fitted()`/`predict()` return the model's
+expected/predicted mixture isotope values, useful for checking how well
+the model reproduces the observed mixture data. As with source
+proportions, every mixture sample shares the same expected isotope values
+here, so we only show the first. `fitted()`/`predict()` accept the same
+`newdata` argument as `posterior_proportions()`/`fitted_proportions()`
+above, to predict mixture isotope values for new, unobserved samples.
+
+```{r other-quantities}
+subset(fitted(fit), row == 1)
+```
+
+## Bayesian R^2^
+
+`rstantools::bayes_R2()` reports a Bayesian R-squared per isotope, but is
+not useful with no covariates: every mixture sample shares the same
+fitted value, so there is no across-sample variation for it to explain,
+and it is always ~0. See `vignette("model-specification")`, where it
+becomes informative once covariates are added.
+
+## Next steps
+
+- `vignette("model-specification")`: raw vs. summarised source/TDF data,
+  error structures, concentration dependence, and covariates.
+- `vignette("diagnostics-troubleshooting")`: interpreting Stan's sampler
+  diagnostics and informational messages.
