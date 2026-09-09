@@ -27,9 +27,39 @@ knitr::opts_chunk$set(
 )
 ```
 
+Stable isotope mixing models (SIMMs) estimate the proportional
+contribution of a set of sources to a mixture from differences in
+stable isotope ratios (e.g. $\delta^{13}$C, $\delta^{15}$N) between
+sources and the mixture -- most commonly for reconstructing animal
+diets from tissue isotope values, though the same problem arises
+elsewhere too, such as tracing the sources of pollutants or sediments.
+The classic implementations, [SIAR](https://cran.r-project.org/package=siar)
+and [MixSIR](https://doi.org/10.1111/j.1461-0248.2008.01163.x), were later
+combined into [MixSIAR](https://cran.r-project.org/package=MixSIAR), which
+-- together with SIAR's successor
+[simmr](https://cran.r-project.org/package=simmr) -- remains among the
+most widely used R packages for fitting Bayesian SIMMs in JAGS today.
+[cosimmr](https://cran.r-project.org/package=cosimmr) extends simmr with
+covariates, fit with a fast variational Bayes approximation instead of
+JAGS.
+
+**bsimms** fits this same class of models in Stan instead, using full
+MCMC sampling. It reproduces MixSIAR's core modelling options -- raw
+or summarised source and trophic discrimination factor (TDF) data,
+concentration dependence, flexible error structures, and cross-tracer
+covariance -- and extends them by letting source proportions depend
+on an arbitrary `lme4`-style formula of fixed *and* random effects,
+rather than MixSIAR's fixed menu of up to two categorical factors
+plus one continuous covariate (cosimmr also supports covariates,
+though via a fixed-effects design matrix only). Source
+proportions are modelled in isometric log-ratio (ILR) coordinates, so
+an unconstrained linear predictor maps onto the source simplex the
+same way it would for any other response, via a numerically stable
+softmax transform.
+
 ## Overview
 
-Fitting a mixing model with bsimms always needs the same five ingredients:
+Fitting a mixing model with **bsimms** always needs the same five ingredients:
 
 - `formula`: a one-sided `lme4`-style formula of mixture-level covariates
   on source proportions (`~1` for no covariates).
@@ -44,15 +74,20 @@ Fitting a mixing model with bsimms always needs the same five ingredients:
 - `isotope_names`: the isotope column names shared by `mixture_data`,
   `source_data`, and `tdf_data` above.
 
-This vignette fits a model with no covariates end to end and works through
-the results. See `vignette("model-specification")` for raw vs. summarised
-source/TDF data, error structures, concentration dependence, and covariates,
-and `vignette("diagnostics-troubleshooting")` for interpreting Stan's sampler
-diagnostics and informational messages.
+This vignette fits a model with no covariates end to end and works
+through the results. See
+[`vignette("model-specification")`](model-specification.html) for raw
+vs. summarised source/TDF data, error structures, and concentration
+dependence, [`vignette("covariates")`](covariates.html) for letting
+source proportions depend on mixture-level covariates, and
+[`vignette("diagnostics-troubleshooting")`](diagnostics-troubleshooting.html)
+for interpreting Stan's sampler diagnostics and informational messages.
 
-## Simulating example data
+## Worked example
 
-`simulate_bsimms_data()` generates data for any bsimms model configuration
+### Simulating example data
+
+`simulate_bsimms_data()` generates data for any **bsimms** model configuration
 from known parameter values, which is useful for learning the package (and
 for testing). Here we simulate data for a 3-source, 2-isotope model with
 10 mixture samples, no covariates, raw replicate source data without
@@ -75,7 +110,7 @@ sim <- simulate_bsimms_data(
 `source_data`, `tdf_data`, and the settings below), plus `sim$truth`, the
 true parameter values used to generate the data.
 
-## Fitting the model
+### Fitting the model
 
 `bsimm()` builds the Stan program for the requested model, compiles it,
 and draws posterior samples via MCMC. By default it uses whichever of
@@ -101,7 +136,7 @@ fit <- bsimm(
 )
 ```
 
-## Inspecting the fit
+### Inspecting the fit
 
 Printing the fit gives a one-screen overview of the model: the formula,
 source/isotope/mixture counts and names, error structure, source/TDF data
@@ -134,7 +169,7 @@ density plots of the underlying Stan parameters.
 plot(fit)
 ```
 
-## Posterior predictive checks
+### Posterior predictive checks
 
 Beyond `rhat`/effective sample size, it is worth checking that the fitted
 model actually reproduces the observed mixture data. `pp_check()` overlays
@@ -156,7 +191,7 @@ bayesplot::pp_check(fit, resp = "d13C")
 bayesplot::pp_check(fit, resp = "d15N")
 ```
 
-## Working with posterior source proportions
+### Working with posterior source proportions
 
 `posterior_proportions()` returns the raw posterior draws of source
 proportions `p` as a `[n_draws, n_obs, K]` array; `fitted_proportions()`
@@ -164,9 +199,10 @@ wraps it with the same summary measures as `summary()`. Since this model
 has no covariates, every mixture sample shares the same population-average
 proportions (`p_global`), so both return identical values for every
 observation. Both also accept `newdata` to predict source proportions
-for new, unobserved samples -- most useful once covariates are involved
-(see `vignette("model-specification")`), since without them every new
-sample would get the same population-average proportions shown here.
+for new, unobserved samples -- most useful once covariates are
+involved (see [`vignette("covariates")`](covariates.html)), since
+without them every new sample would get the same population-average
+proportions shown here.
 
 ```{r fitted-proportions}
 fitted_proportions(fit)
@@ -176,7 +212,7 @@ fitted_proportions(fit)
 proportions shared by every mixture sample, a density/histogram plot of
 population-average source proportions is the clearest view (`type =
 "interval"` instead suits several distinct observations, e.g. one per
-covariate level -- see `vignette("model-specification")`).
+covariate level -- see [`vignette("covariates")`](covariates.html)).
 
 ```{r plot-proportions-density}
 #| fig.alt: "Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions."
@@ -185,7 +221,7 @@ p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 ```
 
-## Other posterior quantities
+### Other posterior quantities
 
 Besides source proportions, `fitted()`/`predict()` return the model's
 expected/predicted mixture isotope values, useful for checking how well
@@ -199,17 +235,20 @@ above, to predict mixture isotope values for new, unobserved samples.
 subset(fitted(fit), row == 1)
 ```
 
-## Bayesian R^2^
+### Bayesian R^2^
 
 `rstantools::bayes_R2()` reports a Bayesian R-squared per isotope, but is
 not useful with no covariates: every mixture sample shares the same
 fitted value, so there is no across-sample variation for it to explain,
-and it is always ~0. See `vignette("model-specification")`, where it
-becomes informative once covariates are added.
+and it is always ~0. See [`vignette("covariates")`](covariates.html),
+where it becomes informative once covariates are added.
 
 ## Next steps
 
-- `vignette("model-specification")`: raw vs. summarised source/TDF data,
-  error structures, concentration dependence, and covariates.
-- `vignette("diagnostics-troubleshooting")`: interpreting Stan's sampler
-  diagnostics and informational messages.
+- [`vignette("model-specification")`](model-specification.html): raw
+  vs. summarised source/TDF data, error structures, and concentration
+  dependence.
+- [`vignette("covariates")`](covariates.html): letting source
+  proportions depend on mixture-level covariates.
+- [`vignette("diagnostics-troubleshooting")`](diagnostics-troubleshooting.html):
+  interpreting Stan's sampler diagnostics and informational messages.
