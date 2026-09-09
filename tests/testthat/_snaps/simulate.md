@@ -1,3 +1,12 @@
+# a nested inner total smaller than the number of outer groups is rejected
+
+    Code
+      simulate_bsimms_data(~ (1 | Region / Site), n_mixture_obs = 60, n_groups = list(
+        Region = 5, Site = 3))
+    Condition
+      Error:
+      ! Cannot split 3 observations across 5 levels: each level needs at least one observation.
+
 # unknown n_levels/n_groups names are rejected
 
     Code
@@ -84,4 +93,14 @@
       Warning:
       4 sources with only 2 isotopes is an underdetermined mixing system (`n_sources > n_isotopes + 1`).
       i Source proportions will rely more heavily on the prior than the data.
+
+# a nested inner total equal to the outer total warns
+
+    Code
+      invisible(simulate_bsimms_data(~ (1 | Region / Site), n_mixture_obs = 30,
+      n_groups = list(Region = 3, Site = 3), seed = 1))
+    Condition
+      Warning:
+      3 Site groups nested within 3 Region groups leaves exactly one Site per Region.
+      i Site would just relabel Region, rather than adding real nested replication.
 

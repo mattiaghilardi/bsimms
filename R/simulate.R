@@ -29,7 +29,11 @@
 #' A warning is issued when `n_sources > n_isotopes + 1`: the mixing system
 #' is then underdetermined in the classical sense (more sources than
 #' isotopes can resolve without help from the prior), which `bsimms`
-#' supports but which relies more heavily on the prior than the data.
+#' supports but which relies more heavily on the prior than the data. A
+#' warning is also issued for a nested pair whose inner total equals its
+#' outer total, since that leaves exactly one inner group per outer
+#' group -- relabelling it rather than adding real nested
+#' replication.
 #'
 #' @param formula A one-sided `lme4`-style formula, as in [bsimm()]. Random
 #'   slopes (e.g. `(x | Group)`) are not supported.
@@ -50,8 +54,13 @@
 #'   covariate instead.
 #' @param n_groups Named list, one entry per random-effect grouping factor
 #'   in `formula` (i.e. every variable referenced to the right of `|`),
-#'   giving that factor's number of groups (an integer >= 2). Required for
-#'   every grouping factor in `formula`.
+#'   giving that factor's total number of groups (an integer >= 2).
+#'   Required for every grouping factor in `formula`. For a nested inner
+#'   factor (e.g. `Site` in `(1 | Region/Site)`), this total is split
+#'   across the outer factor's levels the same way `n_mixture_obs` is
+#'   split across a factor's levels elsewhere (see `balanced`), so each
+#'   outer level ends up with its own, possibly unequal, number of inner
+#'   levels.
 #' @param balanced Logical; split `n_mixture_obs` as evenly as possible
 #'   across each factor's/grouping factor's levels (`TRUE`, default; sizes
 #'   differ by at most one observation when `n_mixture_obs` is not a
@@ -202,7 +211,7 @@ simulate_bsimms_data <- function(
   fixed_formula <- reformulas::nobars(expanded)
   fixed_vars <- all.vars(fixed_formula)
 
-  group_vars <- character(0)
+  group_strs <- character(0)
   for (b in bars) {
     b_str <- rlang::expr_deparse(b)
     parts <- strsplit(b_str, "\\|")[[1]]
@@ -220,9 +229,28 @@ simulate_bsimms_data <- function(
         call = NULL
       )
     }
-    group_vars <- c(group_vars, all.vars(str2lang(group_str)))
+    group_strs <- c(group_strs, group_str)
   }
-  group_vars <- unique(group_vars)
+  group_vars <- unique(unlist(lapply(
+    group_strs,
+    function(g) all.vars(str2lang(g))
+  )))
+
+  # `reformulas::findbars()` expands `(1 | a/b)` into `(1 | b:a) + (1 | a)`;
+  # detect that pattern -- a two-variable interaction group whose other
+  # component is also, on its own, some other bar's group -- and generate
+  # the inner variable nested within the outer one instead of independently.
+  plain_groups <- group_strs[!grepl(":", group_strs)]
+  nested_in <- list()
+  for (g in group_strs[grepl(":", group_strs)]) {
+    vars_in_g <- all.vars(str2lang(g))
+    if (length(vars_in_g) == 2) {
+      outer_var <- intersect(vars_in_g, plain_groups)
+      if (length(outer_var) == 1) {
+        nested_in[[setdiff(vars_in_g, outer_var)]] <- outer_var
+      }
+    }
+  }
 
   sim_check_condition_names(n_levels, "n_levels", fixed_vars)
   sim_check_condition_names(n_groups, "n_groups", group_vars)
@@ -250,12 +278,38 @@ simulate_bsimms_data <- function(
       stats::rnorm(n_mixture_obs)
     }
   }
-  for (v in setdiff(group_vars, names(mixture_data))) {
+  non_nested_vars <- setdiff(group_vars, names(nested_in))
+  for (v in setdiff(non_nested_vars, names(mixture_data))) {
     mixture_data[[v]] <- sim_factor_column(
       n_mixture_obs,
       n_groups[[v]],
       balanced,
       sim_level_names(n_groups[[v]])
+    )
+  }
+  for (v in names(nested_in)) {
+    outer_var <- nested_in[[v]]
+    outer_col <- mixture_data[[outer_var]]
+    if (n_groups[[v]] == nlevels(outer_col)) {
+      cli::cli_warn(
+        c(
+          paste0(
+            "{n_groups[[v]]} {.field {v}} {cli::qty(n_groups[[v]])}",
+            "group{?s} nested within {nlevels(outer_col)} ",
+            "{.field {outer_var}} {cli::qty(nlevels(outer_col))}group{?s} ",
+            "leaves exactly one {.field {v}} per {.field {outer_var}}."
+          ),
+          "i" = paste0(
+            "{.field {v}} would just relabel {.field {outer_var}}, ",
+            "rather than adding real nested replication."
+          )
+        )
+      )
+    }
+    mixture_data[[v]] <- sim_nested_factor_column(
+      outer_col,
+      n_groups[[v]],
+      balanced
     )
   }
 
@@ -584,6 +638,40 @@ sim_factor_column <- function(n_obs, n_lvl, balanced, level_names) {
   counts <- sim_level_counts(n_obs, n_lvl, balanced)
   values <- sample(rep(seq_len(n_lvl), times = counts))
   factor(level_names[values], levels = level_names)
+}
+
+#' Generate a factor column nested within `outer_col`: `n_lvl_total` inner
+#' levels are first split across `outer_col`'s levels via
+#' `sim_level_counts()` (the same balanced/random split `n_mixture_obs`
+#' rows get across a factor's levels elsewhere), then each outer level's
+#' rows are split, again via `sim_level_counts()`, across its own share of
+#' inner levels (labelled `<outer level>_<A/B/...>`). No inner level is
+#' shared across two different outer levels -- the defining property of a
+#' nested (as opposed to crossed) design.
+#'
+#' @param outer_col A factor of length `n_obs`, already assigned (e.g. by
+#'   `sim_factor_column()`).
+#' @param n_lvl_total Positive integer, the inner factor's total number of
+#'   levels across all outer levels combined (>= `nlevels(outer_col)`, so
+#'   every outer level gets at least one).
+#' @param balanced Logical, see `sim_level_counts()`.
+#' @return A factor of length `length(outer_col)`.
+#' @noRd
+sim_nested_factor_column <- function(outer_col, n_lvl_total, balanced) {
+  outer_levels <- levels(outer_col)
+  n_lvl <- sim_level_counts(n_lvl_total, length(outer_levels), balanced)
+  values <- character(length(outer_col))
+  level_order <- character(0)
+  for (i in seq_along(outer_levels)) {
+    lvl <- outer_levels[i]
+    idx <- which(outer_col == lvl)
+    counts <- sim_level_counts(length(idx), n_lvl[i], balanced)
+    inner_names <- paste0(lvl, "_", sim_level_names(n_lvl[i]))
+    assigned <- sample(rep(seq_len(n_lvl[i]), times = counts))
+    values[idx] <- inner_names[assigned]
+    level_order <- c(level_order, inner_names)
+  }
+  factor(values, levels = level_order)
 }
 
 #' Generate a `K x J` matrix of well-separated, non-collinear source means:

@@ -58,6 +58,68 @@ test_that("fixed and random-effect covariates are generated correctly", {
   expect_equal(dim(sim$truth$random[[1]]$effects), c(2, 3))
 })
 
+test_that("nested random effects (a/b) generate exclusive inner levels", {
+  sim <- simulate_bsimms_data(
+    ~ (1 | Region / Site),
+    n_mixture_obs = 60,
+    n_groups = list(Region = 3, Site = 6),
+    seed = 1
+  )
+  expect_equal(nlevels(sim$mixture_data$Region), 3)
+  expect_equal(nlevels(sim$mixture_data$Site), 6)
+  region_per_site <- tapply(
+    sim$mixture_data$Region,
+    sim$mixture_data$Site,
+    function(x) length(unique(x))
+  )
+  expect_equal(unique(as.integer(region_per_site)), 1L)
+})
+
+test_that("nested random effects split inner levels as evenly as possible", {
+  sim <- simulate_bsimms_data(
+    ~ (1 | Region / Site),
+    n_mixture_obs = 70,
+    n_groups = list(Region = 3, Site = 7),
+    seed = 1
+  )
+  expect_equal(nlevels(sim$mixture_data$Site), 7)
+  sites_per_region <- tapply(
+    sim$mixture_data$Site,
+    sim$mixture_data$Region,
+    function(x) length(unique(x))
+  )
+  expect_equal(sort(as.integer(sites_per_region)), c(2, 2, 3))
+})
+
+test_that("nested random effects allow unbalanced inner counts", {
+  sim <- simulate_bsimms_data(
+    ~ (1 | Region / Site),
+    n_mixture_obs = 60,
+    n_groups = list(Region = 5, Site = 6),
+    balanced = FALSE,
+    seed = 1
+  )
+  sites_per_region <- as.integer(tapply(
+    sim$mixture_data$Site,
+    sim$mixture_data$Region,
+    function(x) length(unique(x))
+  ))
+  expect_equal(length(sites_per_region), 5)
+  expect_true(all(sites_per_region >= 1))
+  expect_equal(sum(sites_per_region), 6)
+})
+
+test_that("a nested inner total smaller than the number of outer groups is rejected", {
+  expect_snapshot(
+    error = TRUE,
+    simulate_bsimms_data(
+      ~ (1 | Region / Site),
+      n_mixture_obs = 60,
+      n_groups = list(Region = 5, Site = 3)
+    )
+  )
+})
+
 test_that("balanced levels are split as evenly as possible", {
   sim <- simulate_bsimms_data(
     ~Region,
@@ -283,6 +345,21 @@ test_that("an underdetermined system (n_sources > n_isotopes + 1) warns", {
     n_mixture_obs = 10,
     n_sources = 3,
     n_isotopes = 2,
+    seed = 1
+  ))
+})
+
+test_that("a nested inner total equal to the outer total warns", {
+  expect_snapshot(invisible(simulate_bsimms_data(
+    ~ (1 | Region / Site),
+    n_mixture_obs = 30,
+    n_groups = list(Region = 3, Site = 3),
+    seed = 1
+  )))
+  expect_no_warning(simulate_bsimms_data(
+    ~ (1 | Region / Site),
+    n_mixture_obs = 60,
+    n_groups = list(Region = 3, Site = 6),
     seed = 1
   ))
 })

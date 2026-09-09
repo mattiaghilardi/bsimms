@@ -54,8 +54,13 @@ covariate instead.}
 
 \item{n_groups}{Named list, one entry per random-effect grouping factor
 in \code{formula} (i.e. every variable referenced to the right of \code{|}),
-giving that factor's number of groups (an integer >= 2). Required for
-every grouping factor in \code{formula}.}
+giving that factor's total number of groups (an integer >= 2).
+Required for every grouping factor in \code{formula}. For a nested inner
+factor (e.g. \code{Site} in \code{(1 | Region/Site)}), this total is split
+across the outer factor's levels the same way \code{n_mixture_obs} is
+split across a factor's levels elsewhere (see \code{balanced}), so each
+outer level ends up with its own, possibly unequal, number of inner
+levels.}
 
 \item{balanced}{Logical; split \code{n_mixture_obs} as evenly as possible
 across each factor's/grouping factor's levels (\code{TRUE}, default; sizes
@@ -155,7 +160,11 @@ guarantee isotopically distinct sources.
 A warning is issued when \code{n_sources > n_isotopes + 1}: the mixing system
 is then underdetermined in the classical sense (more sources than
 isotopes can resolve without help from the prior), which \code{bsimms}
-supports but which relies more heavily on the prior than the data.
+supports but which relies more heavily on the prior than the data. A
+warning is also issued for a nested pair whose inner total equals its
+outer total, since that leaves exactly one inner group per outer
+group -- relabelling it rather than adding real nested
+replication.
 }
 \examples{
 sim <- simulate_bsimms_data(
