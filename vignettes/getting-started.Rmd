@@ -34,12 +34,16 @@ sources and the mixture -- most commonly for reconstructing animal
 diets from tissue isotope values, though the same problem arises
 elsewhere too, such as tracing the sources of pollutants or sediments.
 The classic implementations, [SIAR](https://cran.r-project.org/package=siar)
-and [MixSIR](https://doi.org/10.1111/j.1461-0248.2008.01163.x), were later
-combined into [MixSIAR](https://cran.r-project.org/package=MixSIAR), which
--- together with SIAR's successor
-[simmr](https://cran.r-project.org/package=simmr) -- remains among the
-most widely used R packages for fitting Bayesian SIMMs in JAGS today.
-[cosimmr](https://cran.r-project.org/package=cosimmr) extends simmr with
+([Parnell et al. 2010](https://doi.org/10.1371/journal.pone.0009672)) and
+MixSIR ([Moore & Semmens
+2008](https://doi.org/10.1111/j.1461-0248.2008.01163.x)), were later
+combined into [MixSIAR](https://cran.r-project.org/package=MixSIAR)
+([Stock et al. 2018](https://doi.org/10.7717/peerj.5096)), which -- together
+with SIAR's successor [simmr](https://cran.r-project.org/package=simmr)
+([Govan et al. 2023](https://doi.org/10.48550/arXiv.2306.07817)) -- remains
+among the most widely used R packages for fitting Bayesian SIMMs in JAGS
+today. [cosimmr](https://cran.r-project.org/package=cosimmr) ([Govan et al.
+2024](https://doi.org/10.48550/arXiv.2408.17230)) extends simmr with
 covariates, fit with a fast variational Bayes approximation instead of
 JAGS.
 
@@ -55,7 +59,9 @@ though via a fixed-effects design matrix only). Source
 proportions are modelled in isometric log-ratio (ILR) coordinates, so
 an unconstrained linear predictor maps onto the source simplex the
 same way it would for any other response, via a numerically stable
-softmax transform.
+softmax transform. It also uses weakly informative, data-scaled
+default priors, robust to the skew and outliers common in isotope
+data, with a full override system.
 
 ## Overview
 
@@ -75,13 +81,14 @@ Fitting a mixing model with **bsimms** always needs the same five ingredients:
   `source_data`, and `tdf_data` above.
 
 This vignette fits a model with no covariates end to end and works
-through the results. See
-[`vignette("model-specification")`](model-specification.html) for raw
-vs. summarised source/TDF data, error structures, and concentration
-dependence, [`vignette("covariates")`](covariates.html) for letting
-source proportions depend on mixture-level covariates, and
-[`vignette("diagnostics-troubleshooting")`](diagnostics-troubleshooting.html)
-for interpreting Stan's sampler diagnostics and informational messages.
+through the results. See [`vignette("data-error")`](data-error.html)
+for raw vs. summarised source/TDF data, concentration dependence, and
+error structures, [`vignette("covariates")`](covariates.html)
+for letting source proportions depend on mixture-level covariates,
+[`vignette("priors")`](priors.html) for **bsimms**'s data-scaled
+default priors and how to override them, and
+[`vignette("diagnostics")`](diagnostics.html) for interpreting Stan's
+sampler diagnostics and informational messages.
 
 ## Worked example
 
@@ -164,7 +171,10 @@ the chains mixed well, which we can also check visually with trace and
 density plots of the underlying Stan parameters.
 
 ```{r plot-fit}
-#| fig.alt: "Density and trace plots of p_global and resid_prop across four MCMC chains; densities are unimodal and traces overlap with no trend, indicating good mixing."
+#| fig.alt: >-
+#|   Density and trace plots of p_global and resid_prop across four
+#|   MCMC chains; densities are unimodal and traces overlap with no
+#|   trend, indicating good mixing.
 #| fig.asp: 1.2
 plot(fit)
 ```
@@ -184,8 +194,12 @@ matching every wiggle.
 
 ```{r pp-check}
 #| fig.alt:
-#|   - "Posterior predictive check for d13C: the observed density falls within the spread of posterior predictive draws."
-#|   - "Posterior predictive check for d15N: the observed density falls within the spread of posterior predictive draws."
+#|   - >-
+#|       Posterior predictive check for d13C: the observed density
+#|       falls within the spread of posterior predictive draws.
+#|   - >-
+#|       Posterior predictive check for d15N: the observed density
+#|       falls within the spread of posterior predictive draws.
 #| fig.asp: 0.8
 bayesplot::pp_check(fit, resp = "d13C")
 bayesplot::pp_check(fit, resp = "d15N")
@@ -215,7 +229,11 @@ population-average source proportions is the clearest view (`type =
 covariate level -- see [`vignette("covariates")`](covariates.html)).
 
 ```{r plot-proportions-density}
-#| fig.alt: "Density plot of posterior source proportions for Beaver, Deer, and Hare; Beaver's distribution is shifted towards lower proportions and more widely spread than the overlapping Deer and Hare distributions."
+#| fig.alt: >-
+#|   Density plot of posterior source proportions for Beaver, Deer,
+#|   and Hare; Beaver's distribution is shifted towards lower
+#|   proportions and more widely spread than the overlapping Deer and
+#|   Hare distributions.
 #| fig.asp: 0.8
 p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
@@ -243,12 +261,29 @@ fitted value, so there is no across-sample variation for it to explain,
 and it is always ~0. See [`vignette("covariates")`](covariates.html),
 where it becomes informative once covariates are added.
 
-## Next steps
+## References
 
-- [`vignette("model-specification")`](model-specification.html): raw
-  vs. summarised source/TDF data, error structures, and concentration
-  dependence.
-- [`vignette("covariates")`](covariates.html): letting source
-  proportions depend on mixture-level covariates.
-- [`vignette("diagnostics-troubleshooting")`](diagnostics-troubleshooting.html):
-  interpreting Stan's sampler diagnostics and informational messages.
+Parnell AC, Inger R, Bearhop S, Jackson AL (2010). "Source
+partitioning using stable isotopes: coping with too much variation."
+*PLoS ONE*, 5(3), e9672.
+[doi:10.1371/journal.pone.0009672](https://doi.org/10.1371/journal.pone.0009672)
+
+Moore JW, Semmens BX (2008). "Incorporating uncertainty and prior
+information into stable isotope mixing models." *Ecology Letters*,
+11(5), 470-480.
+[doi:10.1111/j.1461-0248.2008.01163.x](https://doi.org/10.1111/j.1461-0248.2008.01163.x)
+
+Stock BC, Jackson AL, Ward EJ, Parnell AC, Phillips DL, Semmens BX
+(2018). "Analyzing mixing systems using a new generation of Bayesian
+tracer mixing models." *PeerJ*, 6, e5096.
+[doi:10.7717/peerj.5096](https://doi.org/10.7717/peerj.5096)
+
+Govan E, Jackson AL, Inger R, Bearhop S, Parnell AC (2023). "simmr: A
+package for fitting Stable Isotope Mixing Models in R." *arXiv
+preprint*.
+[doi:10.48550/arXiv.2306.07817](https://doi.org/10.48550/arXiv.2306.07817)
+
+Govan E, Jackson AL, Bearhop S, Inger R, Stock BC, Semmens BX, Ward
+EJ, Parnell AC (2024). "cosimmr: an R package for fast fitting of
+Stable Isotope Mixing Models with covariates." *arXiv preprint*.
+[doi:10.48550/arXiv.2408.17230](https://doi.org/10.48550/arXiv.2408.17230)
