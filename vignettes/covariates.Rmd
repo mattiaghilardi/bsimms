@@ -1,0 +1,335 @@
+---
+title: "Modelling covariate effects"
+author: "Mattia Ghilardi"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Modelling covariate effects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+params:
+  EVAL: !r identical(Sys.getenv("NOT_CRAN"), "true")
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  eval = if (isTRUE(exists("params"))) params$EVAL else FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "covariates-",
+  dev = "png",
+  dpi = 150,
+  fig.width = 6,
+  out.width = "70%",
+  fig.align = "center"
+)
+```
+
+## Overview
+
+[`vignette("data-error")`](data-error.html) works through
+**bsimms**'s core, MixSIAR-parity options -- data shapes, concentration
+dependence, and error structures -- all fit with an intercept-only
+(`~1`) formula. This vignette covers **bsimms**'s main extension
+beyond MixSIAR, simmr, and cosimmr: an arbitrary `lme4`-style formula
+of mixture-level covariates, spanning fixed effects (continuous,
+factor, interaction) and crossed/nested random effects.
+
+[`vignette("diagnostics")`](diagnostics.html) covers interpreting
+Stan's sampler diagnostics.
+
+## Fixed and random effects
+
+Source proportions can depend on an `lme4`-style `formula` of
+mixture-level covariates, added as deviations from the `p_global`
+baseline in ILR space. Here we simulate a factor fixed effect (`Sex`),
+a continuous fixed effect (`Age`), their interaction, and a random
+intercept (`Region`):
+
+```{r sim-covariates, message = FALSE, results = "hide"}
+library(bsimms)
+
+sim_cov <- simulate_bsimms_data(
+  ~ Sex * Age + (1 | Region),
+  n_mixture_obs = 60,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  n_levels = list(Sex = 2),
+  n_groups = list(Region = 3),
+  seed = 1
+)
+
+fit_full <- bsimm(
+  sim_cov$formula,
+  mixture_data = sim_cov$mixture_data,
+  source_data = sim_cov$source_data,
+  tdf_data = sim_cov$tdf_data,
+  isotope_names = sim_cov$isotope_names,
+  source_means_sds = sim_cov$source_means_sds,
+  tdf_means_sds = sim_cov$tdf_means_sds,
+  conc_dep = sim_cov$conc_dep,
+  error_structure = sim_cov$error_structure,
+  source_col = sim_cov$source_col,
+  cores = 4,
+  seed = 1
+)
+```
+
+`summary()` now also reports fixed-effect coefficients (ILR-scale
+deviations from `p_global`) and group-level standard deviations:
+
+```{r summary-covariates}
+summary(fit_full)
+```
+
+## Nested and crossed random effects
+
+Nested random effects (e.g. sampling sites within regions) use
+`lme4`'s `/` shorthand: `(1 | Region/Site)` expands to `(1 | Region) +
+(1 | Site:Region)`, giving one random intercept per `Region` and a
+further one per `Region`-`Site` combination. Crossed random effects,
+where the grouping factors have no parent/child relationship (e.g.
+`(1 | Sex:Region)`), use `:` the same way, without the implied
+nesting. `chains`/`iter_warmup`/`iter_sampling` are reduced below
+purely to keep this demonstration fast.
+
+```{r sim-nested, message = FALSE, results = "hide"}
+sim_nested <- simulate_bsimms_data(
+  ~ (1 | Region / Site),
+  n_mixture_obs = 60,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  n_groups = list(Region = 3, Site = 6),
+  seed = 1
+)
+
+fit_nested <- bsimm(
+  sim_nested$formula,
+  mixture_data = sim_nested$mixture_data,
+  source_data = sim_nested$source_data,
+  tdf_data = sim_nested$tdf_data,
+  isotope_names = sim_nested$isotope_names,
+  source_means_sds = sim_nested$source_means_sds,
+  tdf_means_sds = sim_nested$tdf_means_sds,
+  conc_dep = sim_nested$conc_dep,
+  error_structure = sim_nested$error_structure,
+  source_col = sim_nested$source_col,
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  seed = 1
+)
+```
+
+`summary()` now reports a separate group-level SD for `Region` and
+for `Site:Region` -- each region's own baseline deviation, and each
+site's further deviation within its region. `n_groups$Site`'s total
+(`6`) is split across `Region`'s levels the same way `n_mixture_obs`
+is split across a factor's levels elsewhere, here 2 sites per region:
+
+```{r summary-nested}
+summary(fit_nested)
+```
+
+## Model comparison
+
+To check whether these covariates are worth including, fit the same
+data with the null (intercept-only) model and compare with
+`loo_compare()`:
+
+```{r loo-compare, message = FALSE, results = "hide"}
+fit_null_cov <- bsimm(
+  ~1,
+  mixture_data = sim_cov$mixture_data,
+  source_data = sim_cov$source_data,
+  tdf_data = sim_cov$tdf_data,
+  isotope_names = sim_cov$isotope_names,
+  source_means_sds = sim_cov$source_means_sds,
+  tdf_means_sds = sim_cov$tdf_means_sds,
+  conc_dep = sim_cov$conc_dep,
+  error_structure = sim_cov$error_structure,
+  source_col = sim_cov$source_col,
+  cores = 4,
+  seed = 1
+)
+```
+
+```{r loo-compare-result}
+loo::loo_compare(fit_full, fit_null_cov)
+```
+
+The best-fitting model is listed first (`elpd_diff = 0`); a positive,
+several-times-larger-than-its-SE `elpd_diff` for the runner-up would
+indicate a real difference in predictive fit.
+
+## Bayesian R^2^
+
+With covariates that create real across-sample variation,
+`rstantools::bayes_R2()` is now informative (unlike the
+intercept-only case in
+[`vignette("getting-started")`](getting-started.html), where it is
+always ~0):
+
+```{r bayes-r2-covariates}
+rstantools::bayes_R2(fit_full)
+```
+
+R^2^ is reported per isotope, and relates directly to that isotope's
+error term in `summary(fit_full)` above: `resid_prop` scales how much
+source/TDF process variance is propagated into the mixture as
+residual noise, so a smaller `resid_prop` -- more of that isotope's
+variance explained by the covariates rather than left as noise --
+corresponds to a higher R^2^, and vice versa, as seen here for `d15N`
+(smaller `resid_prop`, higher R^2^) versus `d13C` (larger `resid_prop`,
+lower R^2^).
+
+## Conditional effects
+
+`conditional_effects()` shows how source proportions vary across a
+fixed-effect covariate, holding every other covariate at a reference
+value and group-level terms at their population-average level. With
+no `effects` argument, it computes one plot per term of the
+fixed-effect formula -- main effects and two-way interactions alike:
+
+```{r conditional-effects}
+#| fig.alt:
+#|   - >-
+#|       Forest plot of posterior source proportions for Beaver, Deer,
+#|       and Hare across the two levels of Sex, each with 50% and 95%
+#|       credible intervals.
+#|   - >-
+#|       Ribbon plot of posterior source proportions for Beaver, Deer,
+#|       and Hare across the range of Age, each with 50% and 95%
+#|       credible intervals.
+#|   - >-
+#|       Forest plot of posterior source proportions for Beaver, Deer,
+#|       and Hare across the two levels of Sex, faceted by three
+#|       representative values of Age, each with 50% and 95% credible
+#|       intervals.
+#| fig.asp: 0.8
+ce <- conditional_effects(fit_full)
+plot(ce)
+```
+
+A factor covariate (`Sex`) is shown as a forest-plot-style linerange
+at its levels; a numeric covariate (`Age`) as a ribbon across its
+observed range. The interaction (`Sex:Age`) facets `Sex`'s linerange
+plot by three representative values of `Age` (its mean and +/-1 SD by
+default, overridable via `int_conditions`).
+
+An `effects` entry names which covariate is swept (the first) and
+which becomes the moderator (the second), so naming the same
+interaction the other way round -- `"Age:Sex"` instead of `"Sex:Age"`
+-- instead sweeps `Age` as a ribbon, faceted by `Sex`'s two levels:
+
+```{r conditional-effects-swap}
+#| fig.alt: >-
+#|   Ribbon plot of posterior source proportions for Beaver, Deer, and
+#|   Hare across the range of Age, faceted by the two levels of Sex,
+#|   each with 50% and 95% credible intervals.
+#| fig.asp: 0.8
+ce_age <- conditional_effects(fit_full, effects = "Age:Sex")
+plot(ce_age)
+```
+
+The random intercept on `Region` is, by default, marginalised out of
+these plots (`re_formula = NA`); pass a reduced formula (e.g. `~ (1 |
+Region)`) to condition on it instead, here or in
+`posterior_proportions()`/`fitted_proportions()`/`predict()`.
+
+## Visualising the random effect
+
+`conditional_effects()` only ever sweeps a fixed-effect covariate, so
+it cannot show `Region`'s own random effect. To visualise it instead,
+predict directly for each of `Region`'s three fitted levels with
+`posterior_proportions()`/`fitted_proportions()` and `newdata`,
+holding `Sex`/`Age` at a reference value and conditioning
+on `Region` via `re_formula`:
+
+```{r region-newdata}
+region_data <- data.frame(
+  Sex = levels(sim_cov$mixture_data$Sex)[1],
+  Age = mean(sim_cov$mixture_data$Age),
+  Region = levels(sim_cov$mixture_data$Region)
+)
+region_data
+```
+
+```{r region-proportions, message = FALSE, results = "hide"}
+p_region <- posterior_proportions(
+  fit_full,
+  newdata = region_data,
+  re_formula = ~ (1 | Region)
+)
+```
+
+`plot_proportions()` labels the x axis generically ("Observation"),
+since the `[n_draws, n_obs, K]` array returned by
+`posterior_proportions()` carries no information about what varies
+between rows. It returns a plain `ggplot` object, though, so
+relabelling it with `Region`'s own values needs only a couple of
+`ggplot2` calls appended:
+
+```{r plot-region}
+#| fig.alt: >-
+#|   Forest plot of posterior source proportions for Beaver, Deer,
+#|   and Hare across the three levels of Region, each with 50% and
+#|   95% credible intervals.
+#| fig.asp: 0.8
+plot_proportions(p_region, type = "interval") +
+  ggplot2::labs(x = "Region") +
+  ggplot2::scale_x_discrete(labels = region_data$Region)
+```
+
+## Predicting for unobserved data
+
+The same `newdata` mechanism, introduced in
+[`vignette("getting-started")`](getting-started.html), also predicts
+for entirely new mixture samples -- including, here, a specific
+individual (`Sex = "B"`, `Age = 2`) from a genuinely new, previously
+unobserved `Region`. Set `allow_new_levels = TRUE` to sample a fresh
+group-level deviation for the new region instead of erroring; with as
+few levels as here, `sample_new_levels = "gaussian"` (drawing from
+the estimated group-level SD) is more appropriate than the default
+`"uncertainty"` (resampling one of the existing levels' draws):
+
+```{r new-region, message = FALSE, results = "hide"}
+new_region_data <- data.frame(Sex = "B", Age = 2, Region = "D")
+p_new_region <- posterior_proportions(
+  fit_full,
+  newdata = new_region_data,
+  re_formula = ~ (1 | Region),
+  allow_new_levels = TRUE,
+  sample_new_levels = "gaussian"
+)
+```
+
+```{r plot-new-region}
+#| fig.alt: >-
+#|   Density plot of posterior source proportions for Beaver, Deer,
+#|   and Hare for a new, previously unobserved Region.
+#| fig.asp: 0.8
+plot_proportions(p_new_region, type = "density")
+```
+
+The same `newdata`/`re_formula`/`allow_new_levels`/`sample_new_levels`
+arguments work identically for `fitted()`/`predict()`, returning this
+new individual's predicted mixture isotope values instead of its
+source proportions. Once that individual is actually measured, this
+prediction is a benchmark to flag a surprising sample: compare its
+observed isotope values against it, the same idea as
+[`vignette("getting-started")`](getting-started.html)'s posterior
+predictive checks, but for one specific new sample rather than the
+whole fitted dataset:
+
+```{r new-region-predict}
+predict(
+  fit_full,
+  newdata = new_region_data,
+  re_formula = ~ (1 | Region),
+  allow_new_levels = TRUE,
+  sample_new_levels = "gaussian"
+)
+```
