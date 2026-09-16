@@ -1,0 +1,241 @@
+---
+title: "Setting custom priors"
+author: "Mattia Ghilardi"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Setting custom priors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+params:
+  EVAL: !r identical(Sys.getenv("NOT_CRAN"), "true")
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  eval = if (isTRUE(exists("params"))) params$EVAL else FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "priors-",
+  dev = "png",
+  dpi = 150,
+  fig.width = 6,
+  out.width = "70%",
+  fig.align = "center"
+)
+```
+
+## Overview
+
+[`vignette("data-error")`](data-error.html) and
+[`vignette("covariates")`](covariates.html) work through **bsimms**'s
+modelling options. This vignette covers its priors. Every parameter a
+`bsimm()` model has -- source proportions, fixed- and random-effect
+coefficients, error terms, and, when source/TDF data are raw, their
+means/SDs -- gets a default prior automatically. Each can be
+previewed with `bsimms_get_prior()` before fitting, and overridden,
+in full or in part, with `bsimms_prior()`.
+
+Some of these defaults are scaled to the data instead of fixed: the
+residual error term under `error_structure = "residual_only"`
+(`sigma`), and, when source/TDF data are raw, each source's own mean
+and SD (`source_mean`/`source_sd`, `tdf_mean`/`tdf_sd`). These use the
+sample median and MAD (median absolute deviation) of the relevant
+data, rather than a single fixed default shared across every model
+and dataset. Median and MAD are robust to the skew and outliers
+common in isotope data.
+
+## Previewing default priors
+
+`bsimms_get_prior()` previews the default priors **bsimms** would use
+for a given model configuration, without fitting it:
+
+```{r sim, message = FALSE}
+library(bsimms)
+
+sim <- simulate_bsimms_data(
+  ~1,
+  n_mixture_obs = 10,
+  source_names = c("Beaver", "Deer", "Hare"),
+  isotope_names = c("d13C", "d15N"),
+  seed = 1
+)
+
+bsimms_get_prior(
+  ~1,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  error_structure = sim$error_structure
+)
+```
+
+## Overriding priors
+
+Any row can be overridden with `bsimms_prior()`, passed to `bsimm()`'s
+`prior` argument. A more specific row (naming a `coef`/`resp`/`group`)
+takes precedence over a general `class` default, and a general
+override cascades onto every more specific default row it would
+otherwise be shadowed by, rather than being silently unused.
+`bsimms_get_prior()` above pre-fills one `p_global` row per source; a
+general override with no `group` applies to all three at once:
+
+```{r prior-override-general, message = FALSE, results = "hide"}
+fit_general <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  prior = bsimms_prior("2", class = "p_global"),
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  seed = 1
+)
+```
+
+```{r prior-override-general-check}
+fit_general$prior[fit_general$prior$class == "p_global", ]
+```
+
+A `group`-specific override instead only replaces that one source's
+row, taking precedence over the general one.
+For example, to additionally give Beaver's share a
+stronger-than-default concentration:
+
+```{r prior-override, message = FALSE, results = "hide"}
+fit <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  prior = bsimms_prior("3", class = "p_global", group = "Beaver"),
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  seed = 1
+)
+```
+
+```{r prior-override-check}
+fit$prior[fit$prior$class == "p_global" & fit$prior$group == "Beaver", ]
+```
+
+Several overrides can be combined with `c()`, e.g. to also raise
+Deer's concentration at the same time:
+
+```{r prior-override-multi}
+c(
+  bsimms_prior("3", class = "p_global", group = "Beaver"),
+  bsimms_prior("2", class = "p_global", group = "Deer")
+)
+```
+
+Other parameter classes work the same way. `bsimms_get_prior()`'s
+output above shows `resid_prop`'s default is `uniform(0, 20)` for
+both isotopes; `resid_prop` is restricted to non-negative values, so a
+custom prior needs a matching, positive-only distribution -- e.g. a
+`gamma(2, 2)`, centred near its expected value of 1, for `d13C`:
+
+```{r prior-override-resid-prop, message = FALSE, results = "hide"}
+fit_resid_prop <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  prior = bsimms_prior("gamma(2, 2)", class = "resid_prop", resp = "d13C"),
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  seed = 1
+)
+```
+
+```{r prior-override-resid-prop-check}
+fit_resid_prop$prior[fit_resid_prop$prior$class == "resid_prop", ]
+```
+
+### Informative priors from independent source-contribution data
+
+When independent information on each source's contribution already
+exists -- from a previous study, a different data type, or expert
+knowledge -- it can be turned into an informative Dirichlet prior for
+every source's `p_global` at once. Rescale the raw counts or
+percentages so they sum to $K$, the number of sources ([Stock et al.
+2018](https://doi.org/10.7717/peerj.5096), eq. 4): this keeps the
+prior's total weight the same as the default, "generalist"
+$\mathrm{Dirichlet}(1, \ldots, 1)$ prior, while preserving the
+independent data's relative proportions among sources.
+
+A common example is diet composition estimated from stomach or
+faecal content analysis, but the same approach applies to any
+source-contribution estimate from outside the isotope data itself --
+e.g. known upstream contributions in a sediment- or
+pollutant-tracing application:
+
+```{r informative-prior-alpha}
+# hypothetical stomach-content counts for each source
+diet_counts <- c(Beaver = 30, Deer = 18, Hare = 12)
+
+# rescale so the concentrations sum to K (Stock et al. 2018, eq. 4)
+alpha <- length(diet_counts) * diet_counts / sum(diet_counts)
+alpha
+```
+
+```{r informative-prior-fit, message = FALSE, results = "hide"}
+informative_prior <- c(
+  bsimms_prior("1.5", class = "p_global", group = "Beaver"),
+  bsimms_prior("0.9", class = "p_global", group = "Deer"),
+  bsimms_prior("0.6", class = "p_global", group = "Hare")
+)
+
+fit_informative <- bsimm(
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
+  source_col = sim$source_col,
+  prior = informative_prior,
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500,
+  seed = 1
+)
+```
+
+```{r informative-prior-check}
+fit_informative$prior[fit_informative$prior$class == "p_global", ]
+```
+
+## References
+
+Stock BC, Jackson AL, Ward EJ, Parnell AC, Phillips DL, Semmens BX
+(2018). "Analyzing mixing systems using a new generation of Bayesian
+tracer mixing models." *PeerJ*, 6, e5096.
+[doi:10.7717/peerj.5096](https://doi.org/10.7717/peerj.5096)
