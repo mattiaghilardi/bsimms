@@ -8,6 +8,7 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/mattiaghilardi/bsimms/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mattiaghilardi/bsimms/actions/workflows/R-CMD-check.yaml)
+[![lint](https://github.com/mattiaghilardi/bsimms/actions/workflows/lint.yaml/badge.svg)](https://github.com/mattiaghilardi/bsimms/actions/workflows/lint.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/mattiaghilardi/bsimms/graph/badge.svg)](https://app.codecov.io/gh/mattiaghilardi/bsimms)
 <!-- [![CRAN status](https://www.r-pkg.org/badges/version/bsimms)](https://CRAN.R-project.org/package=bsimms) -->
@@ -117,15 +118,15 @@ summary(fit)
 #>  formula: ~1
 #> 
 #> Population-average source proportions:
-#>  source  mean    sd  q2.5 q97.5 rhat ess_bulk ess_tail
-#>  Beaver 0.256 0.122 0.037 0.513    1     2248     1901
-#>    Deer 0.368 0.075 0.207 0.498    1     2200     1783
-#>    Hare 0.376 0.051 0.271 0.472    1     2604     2208
+#>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
+#>  Beaver 0.249 0.122 0.033 0.511 1.003     1100      725
+#>    Deer 0.372 0.075 0.209 0.504 1.002     1100      931
+#>    Hare 0.379 0.050 0.272 0.472 1.002     1306      984
 #> 
 #> Error term(s):
-#>  isotope  mean    sd  q2.5  q97.5 rhat ess_bulk ess_tail
-#>     d13C 4.189 2.807 1.112 12.150    1     4127     2847
-#>     d15N 1.787 1.410 0.469  5.656    1     3420     2414
+#>  isotope  mean    sd  q2.5  q97.5  rhat ess_bulk ess_tail
+#>     d13C 4.094 2.706 1.090 11.724 1.000     3042     1821
+#>     d15N 1.823 1.443 0.482  5.455 1.002     2384     1812
 ```
 
 `rhat` close to 1 and large effective sample sizes indicate the chains

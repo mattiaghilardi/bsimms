@@ -40,7 +40,6 @@ jobs:
             any::BH
             any::RcppEigen
             stan-dev/cmdstanr
-          needs: lint
 
       - name: Lint
         run: lintr::lint_package()
