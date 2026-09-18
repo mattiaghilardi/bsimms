@@ -22,11 +22,15 @@ jobs:
 
       # cmdstanr is not on CRAN, so let pak install only the hard
       # dependencies (Imports) and specify the Suggests packages needed for
-      # linting manually, sourcing cmdstanr from its GitHub repo.
+      # linting manually, sourcing cmdstanr from its GitHub repo. The
+      # package itself (local::.) must also be installed, not just its
+      # dependencies, so lintr::lint_package() can resolve internal,
+      # package-local function calls (object_usage_linter) correctly.
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: NA
           extra-packages: |
+            local::.
             any::lintr
             any::bayesplot
             any::ggplot2
