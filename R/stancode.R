@@ -824,7 +824,7 @@ stan_transformed_parameters_lines <- function(
       "array[N] matrix[J, J] Omega;  // full source/TDF covariance propagated into the mixture",
       "for (i in 1:N) {",
       indent(
-        "Omega[i] = diag_matrix(to_vector(proc_var[i]));  // diagonal: per-isotope process variance"
+        "Omega[i] = add_diag(rep_matrix(0, J, J), to_vector(proc_var[i]));  // diagonal: per-isotope process variance"
       ),
       indent("for (j1 in 1:(J - 1)) {"),
       indent(indent("for (j2 in (j1 + 1):J) {")),
