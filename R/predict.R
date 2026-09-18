@@ -537,7 +537,7 @@ resolve_re_b <- function(
   }
 
   if (!allow_new_levels) {
-    unseen <- unique(gvar[is_new])
+    unseen <- unique(gvar[is_new]) # nolint: object_usage_linter.
     vars <- strsplit(re$group, ":")[[1]]
     if (length(vars) == 1) {
       cli::cli_abort(

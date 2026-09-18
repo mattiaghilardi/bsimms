@@ -158,7 +158,7 @@ build_bsimms_spec <- function(
       is.factor(pf$fixed_frame[[1]]) &&
       nlevels(pf$fixed_frame[[1]]) == N
   ) {
-    fe_name <- names(pf$fixed_frame)
+    fe_name <- names(pf$fixed_frame) # nolint: object_usage_linter.
     cli::cli_abort(
       c(
         paste0(

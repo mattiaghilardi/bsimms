@@ -439,7 +439,7 @@ summarise_multi_interval <- function(
       do.call(
         rbind,
         lapply(probs, function(p) {
-          lo <- (1 - p) / 2
+          lo <- (1 - p) / 2 # nolint: object_usage_linter.
           qs <- as.data.frame(posterior::summarise_draws(
             d,
             ~ posterior::quantile2(.x, probs = c(lo, 1 - lo))

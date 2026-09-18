@@ -149,7 +149,7 @@ print.bsimms_stancode <- function(x, ...) {
 #' needs a full multivariate process + residual covariance rather than
 #' per-isotope normals), and `resid_cor` (`sigma` with 2+ isotopes: a
 #' shared residual-error correlation is estimated). Shared by
-#' `bsimms_stancode_from_spec()` (which of the 7 Stan program blocks'
+#' `bsimms_stancode_from_spec()` (which of the 7 Stan program blocks' # nolint: commented_code_linter.
 #' optional pieces to generate) and `predict.R`'s new-data `mu`/`y_rep`
 #' prediction (which R computation mirrors which Stan block).
 #'
@@ -384,8 +384,6 @@ stan_data_lines <- function(spec) {
   }
 
   for (re in spec$re_terms) {
-    Mv <- length(re$term_names)
-    Gv <- length(re$group_levels)
     lines <- c(
       lines,
       sprintf(

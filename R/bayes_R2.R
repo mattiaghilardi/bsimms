@@ -75,7 +75,7 @@ bayes_R2.bsimms_fit <- function(
     colnames(r2) <- resp
     for (k in seq_along(j_idx)) {
       fit_j <- mu_arr[,, j_idx[k]] # n_draws x N
-      resid_j <- sweep(-fit_j, 2, y[, j_idx[k]], "+") # y[i] - fit[s, i]
+      resid_j <- sweep(-fit_j, 2, y[, j_idx[k]], "+") # per-draw residual
       var_fit <- apply(fit_j, 1, stats::var)
       var_res <- apply(resid_j, 1, stats::var)
       r2[, k] <- var_fit / (var_fit + var_res)

@@ -424,7 +424,6 @@ simulate_bsimms_data <- function(
   }
 
   needs_proc <- error_structure != "residual_only"
-  needs_resid_prop <- error_structure == "process_residual"
   if (needs_proc) {
     mu_var <- sim_mu_var(p_true, source_mean, source_sd, tdf_mean, tdf_sd, conc)
     mu <- mu_var$mu

@@ -1,0 +1,19 @@
+linters: linters_with_defaults(object_name_linter = NULL) # see vignette("lintr")
+encoding: "UTF-8"
+exclusions: list(
+    "R/stancode.R" = list(
+      line_length_linter = Inf,
+      object_length_linter = c(614, 1164) # stan_*_lines() naming family
+    ),
+    "R/bayes_R2.R" = list(
+      line_length_linter = 27, # unbreakable reference URL
+      commas_linter = 77 # air removes the space after `[,`
+    ),
+    "R/bsimm.R" = list(line_length_linter = 54), # air doesn't wrap this default value
+    "R/plot.R" = list(commas_linter = 207), # air removes the space after `[,`
+    "R/predict.R" = list(
+      commas_linter = c(251, 533, 614, 1392) # air removes the space after `[,`
+    ),
+    "R/spec.R" = list(line_length_linter = 10), # unbreakable @param name list
+    "tests/testthat" = list(line_length_linter = Inf) # long, descriptive test_that() titles
+  ) # see ?lintr::exclude

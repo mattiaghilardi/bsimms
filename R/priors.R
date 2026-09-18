@@ -156,7 +156,8 @@ print.bsimms_prior <- function(x, ...) {
 default_bsimms_prior <- function(spec) {
   rows <- list()
   add <- function(prior, class, coef = "", resp = "", group = "") {
-    rows[[length(rows) + 1]] <<- bsimms_prior(prior, class, coef, resp, group)
+    rows[[length(rows) + 1]] <<- # nolint: assignment_linter.
+      bsimms_prior(prior, class, coef, resp, group)
   }
 
   add("normal(0, 1)", "b")
