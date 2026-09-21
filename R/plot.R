@@ -532,7 +532,8 @@ plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
 #' \eqn{\sqrt{\sigma_{source}^2 + \sigma_{TDF}^2}}{
 #' sqrt(source_sd^2 + tdf_sd^2)}.
 #' Mixtures are plotted as points at their observed values. Mixtures lying
-#' well outside the sources suggest a missing source or an incorrect TDF.
+#' well outside the sources suggest a missing source or an incorrect TDF
+#' (Phillips et al. 2014).
 #'
 #' @inheritParams bsimms_get_prior
 #' @param source_means_sds Logical; is `source_data` supplied as means/SDs
@@ -547,6 +548,10 @@ plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
 #' @param color_by Optional name of a `mixture_data` column (factor or
 #'   numeric) to colour the mixture points by.
 #' @return A `ggplot` object, which can be further customised with `+`.
+#' @references Phillips, D.L., Inger, R., Bearhop, S., Jackson, A.L., Moore,
+#'   J.W., Parnell, A.C., Semmens, B.X., & Ward, E.J. (2014). Best practices
+#'   for use of stable isotope mixing models in food-web studies. *Canadian
+#'   Journal of Zoology*, 92(10), 823-835. \doi{10.1139/cjz-2014-0127}
 #' @export
 #' @examples
 #' sim <- simulate_bsimms_data(
@@ -562,6 +567,45 @@ plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
 #'   source_means_sds = sim$source_means_sds,
 #'   tdf_means_sds = sim$tdf_means_sds
 #' )
+#'
+#' # Colour the mixtures by a factor covariate
+#' sim_f <- simulate_bsimms_data(
+#'   ~Sex,
+#'   n_mixture_obs = 40,
+#'   n_levels = list(Sex = 2),
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' p_f <- plot_isospace(
+#'   sim_f$mixture_data, sim_f$source_data, sim_f$tdf_data,
+#'   isotope_names = sim_f$isotope_names,
+#'   source_means_sds = sim_f$source_means_sds,
+#'   tdf_means_sds = sim_f$tdf_means_sds,
+#'   color_by = "Sex"
+#' )
+#' p_f
+#'
+#' # ... or by a continuous covariate
+#' sim_c <- simulate_bsimms_data(
+#'   ~Size,
+#'   n_mixture_obs = 40,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N"),
+#'   seed = 1
+#' )
+#' p_c <- plot_isospace(
+#'   sim_c$mixture_data, sim_c$source_data, sim_c$tdf_data,
+#'   isotope_names = sim_c$isotope_names,
+#'   source_means_sds = sim_c$source_means_sds,
+#'   tdf_means_sds = sim_c$tdf_means_sds,
+#'   color_by = "Size"
+#' )
+#' p_c
+#'
+#' # The mixtures are coloured with the fill aesthetic, so change their
+#' # colours with a fill scale (the sources keep their own colour scale)
+#' p_c + ggplot2::scale_fill_distiller(palette = "Greys", direction = 1)
 plot_isospace <- function(
   mixture_data,
   source_data,
