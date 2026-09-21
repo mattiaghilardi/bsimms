@@ -56,3 +56,29 @@
       Error:
       ! `probs` must be one or more credible-interval masses strictly between 0 and 1.
 
+# plot_isospace validates isotopes, color_by and isotope count
+
+    Code
+      plot_isospace(iso3_mixture, iso3_source, iso3_tdf, iso3_names,
+        source_means_sds = TRUE, isotopes = c("d13C", "banana"))
+    Condition
+      Error:
+      ! `isotopes` must be two distinct isotope names, from "d13C", "d15N", and "d34S".
+
+---
+
+    Code
+      plot_isospace(iso3_mixture, iso3_source, iso3_tdf, iso3_names,
+        source_means_sds = TRUE, color_by = "banana")
+    Condition
+      Error:
+      ! `color_by` must be the name of a `mixture_data` column.
+
+---
+
+    Code
+      plot_isospace(iso3_mixture, iso3_source, iso3_tdf, "d13C", source_means_sds = TRUE)
+    Condition
+      Error:
+      ! `plot_isospace()` needs at least two isotopes, not one.
+

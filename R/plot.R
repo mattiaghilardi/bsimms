@@ -515,3 +515,237 @@ plot_proportions_interval <- function(p_arr, probs, robust, point_size, ...) {
     ) +
     ggplot2::theme_minimal()
 }
+
+#' Plot mixture data in isotope space alongside the sources
+#'
+#' Plots the raw mixture data against each source's mean +/- 1 SD in isotope
+#' (tracer) space, to check that the mixtures fall within the region spanned
+#' by the sources *before* fitting a model. With exactly two isotopes (or a
+#' single `isotopes` pair) the result is one biplot; with three or more, one
+#' panel per pair of isotopes, so all pairwise mixing regions can be checked in
+#' a single figure.
+#'
+#' @details
+#' Sources are plotted at their mean plus the trophic discrimination factor
+#' (TDF) mean, since that is the actual mixing region, with the source and TDF
+#' SDs combined as
+#' \eqn{\sqrt{\sigma_{source}^2 + \sigma_{TDF}^2}}{sqrt(source_sd^2 + tdf_sd^2)}.
+#' Mixtures are plotted as points at their observed values. Mixtures lying
+#' well outside the sources suggest a missing source or an incorrect TDF.
+#'
+#' @inheritParams bsimms_get_prior
+#' @param source_means_sds Logical; is `source_data` supplied as means/SDs
+#'   (`TRUE`) or raw replicate samples (`FALSE`, default)? Raw data are
+#'   summarised by the sample mean and SD of the replicates per source.
+#' @param tdf_means_sds Logical; is `tdf_data` supplied as means/SDs (`TRUE`,
+#'   default) or raw replicate samples (`FALSE`)? Raw data are summarised by
+#'   the sample mean and SD of the replicates per source.
+#' @param isotopes Optional character vector of two isotope names (from
+#'   `isotope_names`), the first for the x axis and the second for the y
+#'   axis, to plot a single pair. `NULL` (default) plots every pair.
+#' @param color_by Optional name of a `mixture_data` column (factor or
+#'   numeric) to colour the mixture points by.
+#' @return A `ggplot` object, which can be further customised with `+`.
+#' @export
+#' @examples
+#' sim <- simulate_bsimms_data(
+#'   ~1,
+#'   n_mixture_obs = 20,
+#'   source_names = c("Beaver", "Deer", "Hare"),
+#'   isotope_names = c("d13C", "d15N", "d34S"),
+#'   seed = 1
+#' )
+#' plot_isospace(
+#'   sim$mixture_data, sim$source_data, sim$tdf_data,
+#'   isotope_names = sim$isotope_names,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds
+#' )
+plot_isospace <- function(
+  mixture_data,
+  source_data,
+  tdf_data,
+  isotope_names,
+  source_means_sds = FALSE,
+  tdf_means_sds = TRUE,
+  source_col = "Source",
+  isotopes = NULL,
+  color_by = NULL
+) {
+  rlang::check_installed("ggplot2", reason = "to use `plot_isospace()`.")
+  # process_only avoids error-structure identifiability checks that are
+  # irrelevant to (and would needlessly block) a data-only plot
+  spec <- build_bsimms_spec(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = isotope_names,
+    source_means_sds = source_means_sds,
+    tdf_means_sds = tdf_means_sds,
+    conc_dep = FALSE,
+    error_structure = "process_only",
+    source_col = source_col
+  )
+  isotope_names <- spec$isotope_names
+  if (length(isotope_names) < 2) {
+    cli::cli_abort(
+      "{.fn plot_isospace} needs at least two isotopes, not one.",
+      call = NULL
+    )
+  }
+  if (is.null(isotopes)) {
+    pairs <- utils::combn(isotope_names, 2, simplify = FALSE)
+  } else {
+    if (
+      !is.character(isotopes) ||
+        length(isotopes) != 2 ||
+        anyDuplicated(isotopes) > 0 ||
+        !all(isotopes %in% isotope_names)
+    ) {
+      cli::cli_abort(
+        paste0(
+          "{.arg isotopes} must be two distinct isotope names, from ",
+          "{.val {isotope_names}}."
+        ),
+        call = NULL
+      )
+    }
+    pairs <- list(isotopes)
+  }
+  if (!is.null(color_by)) {
+    if (!rlang::is_string(color_by) || !color_by %in% names(mixture_data)) {
+      cli::cli_abort(
+        "{.arg color_by} must be the name of a {.arg mixture_data} column.",
+        call = NULL
+      )
+    }
+  }
+
+  src <- isospace_group_summary(spec$source, spec$source_names, isotope_names)
+  tdf <- isospace_group_summary(spec$tdf, spec$source_names, isotope_names)
+  pos <- src$mean + tdf$mean
+  spread <- sqrt(src$sd^2 + tdf$sd^2)
+
+  pair_label <- function(p) paste(p[2], "vs", p[1])
+  pair_levels <- vapply(pairs, pair_label, character(1))
+  mix_long <- do.call(
+    rbind,
+    lapply(pairs, function(p) {
+      out <- data.frame(
+        pair = pair_label(p),
+        x = spec$y[, match(p[1], isotope_names)],
+        y = spec$y[, match(p[2], isotope_names)]
+      )
+      if (!is.null(color_by)) {
+        out$covariate <- mixture_data[[color_by]]
+      }
+      out
+    })
+  )
+  src_long <- do.call(
+    rbind,
+    lapply(pairs, function(p) {
+      ix <- match(p[1], isotope_names)
+      iy <- match(p[2], isotope_names)
+      data.frame(
+        pair = pair_label(p),
+        source = factor(spec$source_names, levels = spec$source_names),
+        x = pos[, ix],
+        y = pos[, iy],
+        xmin = pos[, ix] - spread[, ix],
+        xmax = pos[, ix] + spread[, ix],
+        ymin = pos[, iy] - spread[, iy],
+        ymax = pos[, iy] + spread[, iy]
+      )
+    })
+  )
+  mix_long$pair <- factor(mix_long$pair, levels = pair_levels)
+  src_long$pair <- factor(src_long$pair, levels = pair_levels)
+
+  mix_aes <- if (is.null(color_by)) {
+    ggplot2::aes(x = .data$x, y = .data$y)
+  } else {
+    ggplot2::aes(x = .data$x, y = .data$y, fill = .data$covariate)
+  }
+  mix_layer <- if (is.null(color_by)) {
+    ggplot2::geom_point(
+      data = mix_long,
+      mapping = mix_aes,
+      shape = 21,
+      fill = "grey70",
+      colour = "grey30",
+      alpha = 0.7
+    )
+  } else {
+    ggplot2::geom_point(
+      data = mix_long,
+      mapping = mix_aes,
+      shape = 21,
+      colour = "grey30",
+      alpha = 0.8
+    )
+  }
+
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_segment(
+      data = src_long,
+      ggplot2::aes(
+        x = .data$x,
+        xend = .data$x,
+        y = .data$ymin,
+        yend = .data$ymax,
+        color = .data$source
+      )
+    ) +
+    ggplot2::geom_segment(
+      data = src_long,
+      ggplot2::aes(
+        x = .data$xmin,
+        xend = .data$xmax,
+        y = .data$y,
+        yend = .data$y,
+        color = .data$source
+      )
+    ) +
+    mix_layer +
+    ggplot2::geom_point(
+      data = src_long,
+      ggplot2::aes(x = .data$x, y = .data$y, color = .data$source),
+      size = 2.5
+    ) +
+    ggplot2::labs(color = "Source", fill = color_by) +
+    ggplot2::theme_bw()
+
+  if (length(pairs) == 1) {
+    p + ggplot2::labs(x = pairs[[1]][1], y = pairs[[1]][2])
+  } else {
+    p +
+      ggplot2::facet_wrap(ggplot2::vars(.data$pair), scales = "free") +
+      ggplot2::labs(x = NULL, y = NULL) +
+      ggplot2::theme(strip.text = ggplot2::element_text(face = "bold"))
+  }
+}
+
+#' Per-source mean/SD matrices (`K x J`) from a `bsimms_spec`'s `source` or
+#' `tdf` component: as supplied when summarised, or the sample mean/SD of
+#' each source's replicates when raw.
+#'
+#' @param part `spec$source` or `spec$tdf`.
+#' @param source_names,isotope_names From the `bsimms_spec`.
+#' @return A list with `mean` and `sd` matrices.
+#' @noRd
+isospace_group_summary <- function(part, source_names, isotope_names) {
+  if (part$mode == "summary") {
+    return(list(mean = part$mean, sd = part$sd))
+  }
+  K <- length(source_names)
+  J <- length(isotope_names)
+  m <- s <- matrix(NA_real_, K, J)
+  for (k in seq_len(K)) {
+    Yk <- part$Y[part$source_idx == k, , drop = FALSE]
+    m[k, ] <- colMeans(Yk)
+    s[k, ] <- apply(Yk, 2, stats::sd)
+  }
+  list(mean = m, sd = s)
+}

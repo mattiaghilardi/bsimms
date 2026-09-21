@@ -190,3 +190,162 @@ test_that("plot_proportions's ... is forwarded to geom_linerange", {
   g <- plot_proportions(p_arr, type = "interval", linetype = "dashed")
   expect_equal(g$layers[[1]]$aes_params$linetype, "dashed")
 })
+
+# plot_isospace --------------------------------------------------------------
+
+iso3_mixture <- data.frame(
+  d13C = c(-20, -21, -19, -22),
+  d15N = c(10, 11, 9, 12),
+  d34S = c(5, 6, 4, 5.5),
+  Sex = factor(c("F", "M", "F", "M"))
+)
+iso3_source <- data.frame(
+  Source = c("Beaver", "Deer"),
+  d13C_mean = c(-25, -18),
+  d13C_sd = c(1, 1),
+  d15N_mean = c(5, 8),
+  d15N_sd = c(1, 2),
+  d34S_mean = c(2, 8),
+  d34S_sd = c(0.5, 0.5)
+)
+iso3_tdf <- data.frame(
+  Source = c("Beaver", "Deer"),
+  d13C_mean = c(1, 1.2),
+  d13C_sd = c(0.2, 0.3),
+  d15N_mean = c(3, 3.1),
+  d15N_sd = c(0.4, 0.5),
+  d34S_mean = c(0.5, 0.5),
+  d34S_sd = c(0.1, 0.1)
+)
+iso3_names <- c("d13C", "d15N", "d34S")
+
+test_that("plot_isospace with 2 isotopes is a single, unfaceted biplot", {
+  p <- plot_isospace(
+    mixture_data,
+    source_data,
+    tdf_data,
+    c("d13C", "d15N"),
+    source_means_sds = TRUE
+  )
+  expect_s3_class(p, "ggplot")
+  expect_s3_class(p$facet, "FacetNull")
+  expect_equal(p$labels$x, "d13C")
+  expect_equal(p$labels$y, "d15N")
+})
+
+test_that("plot_isospace plots sources at mean + TDF with combined SD", {
+  p <- plot_isospace(
+    mixture_data,
+    source_data,
+    tdf_data,
+    c("d13C", "d15N"),
+    source_means_sds = TRUE
+  )
+  src <- p$layers[[1]]$data
+  expect_equal(src$x, c(-25 + 1, -18 + 1.2))
+  expect_equal(src$ymin, c(5 + 3, 8 + 3.1) - sqrt(c(1, 1)^2 + c(0.4, 0.5)^2))
+  expect_equal(src$xmax, c(-24, -16.8) + sqrt(c(1, 1)^2 + c(0.2, 0.3)^2))
+})
+
+test_that("plot_isospace summarises raw source data by sample mean/SD", {
+  raw <- data.frame(
+    Source = rep(c("Beaver", "Deer"), each = 3),
+    d13C = c(-25, -26, -24, -18, -17, -19.5),
+    d15N = c(5, 4, 6.5, 8, 9, 7)
+  )
+  p <- plot_isospace(
+    mixture_data,
+    raw,
+    tdf_data,
+    c("d13C", "d15N"),
+    source_means_sds = FALSE
+  )
+  src <- p$layers[[1]]$data
+  expect_equal(src$x, c(mean(raw$d13C[1:3]), mean(raw$d13C[4:6])) + c(1, 1.2))
+  expect_equal(
+    src$xmax - src$xmin,
+    2 * sqrt(c(sd(raw$d13C[1:3]), sd(raw$d13C[4:6]))^2 + c(0.2, 0.3)^2)
+  )
+})
+
+test_that("plot_isospace with 3+ isotopes facets by each pair once", {
+  p <- plot_isospace(
+    iso3_mixture,
+    iso3_source,
+    iso3_tdf,
+    iso3_names,
+    source_means_sds = TRUE
+  )
+  expect_s3_class(p$facet, "FacetWrap")
+  expect_equal(
+    levels(p$layers[[1]]$data$pair),
+    c("d15N vs d13C", "d34S vs d13C", "d34S vs d15N")
+  )
+  expect_equal(nrow(p$layers[[1]]$data), 3 * 2)
+})
+
+test_that("plot_isospace's isotopes argument plots one chosen pair", {
+  p <- plot_isospace(
+    iso3_mixture,
+    iso3_source,
+    iso3_tdf,
+    iso3_names,
+    source_means_sds = TRUE,
+    isotopes = c("d34S", "d13C")
+  )
+  expect_s3_class(p$facet, "FacetNull")
+  expect_equal(p$labels$x, "d34S")
+  expect_equal(p$labels$y, "d13C")
+  expect_equal(p$layers[[1]]$data$x, c(2 + 0.5, 8 + 0.5))
+})
+
+test_that("plot_isospace colours mixture points by a covariate", {
+  p <- plot_isospace(
+    iso3_mixture,
+    iso3_source,
+    iso3_tdf,
+    iso3_names,
+    source_means_sds = TRUE,
+    color_by = "Sex"
+  )
+  expect_equal(
+    as.character(p$layers[[3]]$data$covariate[1:4]),
+    c("F", "M", "F", "M")
+  )
+  expect_equal(p$labels$fill, "Sex")
+})
+
+test_that("plot_isospace validates isotopes, color_by and isotope count", {
+  expect_snapshot(
+    error = TRUE,
+    plot_isospace(
+      iso3_mixture,
+      iso3_source,
+      iso3_tdf,
+      iso3_names,
+      source_means_sds = TRUE,
+      isotopes = c("d13C", "banana")
+    )
+  )
+  expect_snapshot(
+    error = TRUE,
+    plot_isospace(
+      iso3_mixture,
+      iso3_source,
+      iso3_tdf,
+      iso3_names,
+      source_means_sds = TRUE,
+      color_by = "banana"
+    )
+  )
+  expect_snapshot(
+    error = TRUE,
+    plot_isospace(
+      iso3_mixture,
+      iso3_source,
+      iso3_tdf,
+      "d13C",
+      source_means_sds = TRUE
+    )
+  )
+})
