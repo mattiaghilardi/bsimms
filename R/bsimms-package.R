@@ -23,6 +23,8 @@
 #' - [make_stancode()] / [make_standata()] — inspect or hand-edit
 #'   the generated Stan program / data without fitting.
 #' - [bsimms_get_prior()] / [bsimms_prior()] — inspect and set priors.
+#' - [plot_isospace()] — plot the mixtures against the sources in isotope
+#'   space, before fitting.
 #' - [summary.bsimms_fit()], [print.bsimms_fit()] — summarise a
 #'   fitted model.
 #' - [posterior_proportions()], [fitted_proportions()] — posterior

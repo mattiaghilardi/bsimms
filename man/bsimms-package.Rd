@@ -31,6 +31,8 @@ Main functions:
 \item \code{\link[=make_stancode]{make_stancode()}} / \code{\link[=make_standata]{make_standata()}} — inspect or hand-edit
 the generated Stan program / data without fitting.
 \item \code{\link[=bsimms_get_prior]{bsimms_get_prior()}} / \code{\link[=bsimms_prior]{bsimms_prior()}} — inspect and set priors.
+\item \code{\link[=plot_isospace]{plot_isospace()}} — plot the mixtures against the sources in isotope
+space, before fitting.
 \item \code{\link[=summary.bsimms_fit]{summary.bsimms_fit()}}, \code{\link[=print.bsimms_fit]{print.bsimms_fit()}} — summarise a
 fitted model.
 \item \code{\link[=posterior_proportions]{posterior_proportions()}}, \code{\link[=fitted_proportions]{fitted_proportions()}} — posterior
