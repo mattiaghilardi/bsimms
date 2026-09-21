@@ -45,22 +45,34 @@ sim <- simulate_bsimms_data(
   seed = 1
 )
 fit1 <- bsimm(
-  ~1, mixture_data = sim$mixture_data,
-  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  ~1,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
   isotope_names = sim$isotope_names,
-  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
   source_col = sim$source_col,
-  chains = 2, iter_warmup = 500, iter_sampling = 500
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500
 )
 fit2 <- bsimm(
-  ~Sex, mixture_data = sim$mixture_data,
-  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  ~Sex,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
   isotope_names = sim$isotope_names,
-  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
   source_col = sim$source_col,
-  chains = 2, iter_warmup = 500, iter_sampling = 500
+  chains = 2,
+  iter_warmup = 500,
+  iter_sampling = 500
 )
 loo::loo_compare(fit1, fit2)
 }

@@ -62,11 +62,15 @@
 #' bsimms_prior("student_t(3, 0, 1)", class = "sd", group = "Region")
 #' bsimms_prior(
 #'   "normal(3.4, 0.3)",
-#'   class = "tdf_mean", resp = "d15N", group = "Beaver"
+#'   class = "tdf_mean",
+#'   resp = "d15N",
+#'   group = "Beaver"
 #' )
 #' bsimms_prior(
 #'   "student_t(3, 0, 0.5)",
-#'   class = "source_sd", resp = "d13C", group = "Beaver"
+#'   class = "source_sd",
+#'   resp = "d13C",
+#'   group = "Beaver"
 #' )
 #' bsimms_prior("2", class = "p_global", group = "Beaver")
 #' bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
@@ -506,11 +510,15 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
 #'   seed = 1
 #' )
 #' bsimms_get_prior(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col
 #' )
 bsimms_get_prior <- function(

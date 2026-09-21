@@ -27,5 +27,5 @@ matrix).}
 \examples{
 p <- c(0.5, 0.3, 0.2)
 z <- clr(p)
-clr_inv(z)  # back to p
+clr_inv(z) # back to p
 }

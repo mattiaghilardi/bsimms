@@ -29,8 +29,8 @@ space) via \code{softmax(V * eta)} (see \code{\link[=ilr_inv]{ilr_inv()}}).
 }
 \examples{
 V <- ilr_basis(4)
-round(crossprod(V), 10)   # identity: columns are orthonormal
-round(colSums(V), 10)     # zero: valid clr-constrained basis
+round(crossprod(V), 10) # identity: columns are orthonormal
+round(colSums(V), 10) # zero: valid clr-constrained basis
 }
 \references{
 Egozcue, J.J., Pawlowsky-Glahn, V., Mateu-Figueras, G., &

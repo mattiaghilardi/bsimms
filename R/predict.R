@@ -54,13 +54,19 @@
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' p_arr <- posterior_proportions(fit)
 #' dim(p_arr)
@@ -134,13 +140,19 @@ posterior_proportions.bsimms_fit <- function(
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' fitted_proportions(fit)
 #' }
@@ -197,13 +209,19 @@ fitted_proportions <- function(
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' mu_arr <- rstantools::posterior_epred(fit)
 #' dim(mu_arr)
@@ -279,13 +297,19 @@ posterior_epred.bsimms_fit <- function(
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' fitted(fit)
 #' }
@@ -1329,13 +1353,19 @@ predict_y_rep_newdata <- function(
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' y_rep <- rstantools::posterior_predict(fit)
 #' dim(y_rep)
@@ -1419,13 +1449,19 @@ posterior_predict.bsimms_fit <- function(
 #'   seed = 1
 #' )
 #' fit <- bsimm(
-#'   sim$formula, mixture_data = sim$mixture_data,
-#'   source_data = sim$source_data, tdf_data = sim$tdf_data,
+#'   sim$formula,
+#'   mixture_data = sim$mixture_data,
+#'   source_data = sim$source_data,
+#'   tdf_data = sim$tdf_data,
 #'   isotope_names = sim$isotope_names,
-#'   source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-#'   conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+#'   source_means_sds = sim$source_means_sds,
+#'   tdf_means_sds = sim$tdf_means_sds,
+#'   conc_dep = sim$conc_dep,
+#'   error_structure = sim$error_structure,
 #'   source_col = sim$source_col,
-#'   chains = 2, iter_warmup = 500, iter_sampling = 500
+#'   chains = 2,
+#'   iter_warmup = 500,
+#'   iter_sampling = 500
 #' )
 #' predict(fit)
 #' }

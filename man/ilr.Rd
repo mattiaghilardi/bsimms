@@ -55,7 +55,7 @@ onto the source simplex.
 \examples{
 p <- c(0.5, 0.3, 0.2)
 z <- ilr(p)
-ilr_inv(z)  # back to p
+ilr_inv(z) # back to p
 }
 \references{
 Egozcue, J.J., Pawlowsky-Glahn, V., Mateu-Figueras, G., &

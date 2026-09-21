@@ -23,8 +23,8 @@
 #' @export
 #' @examples
 #' V <- ilr_basis(4)
-#' round(crossprod(V), 10)   # identity: columns are orthonormal
-#' round(colSums(V), 10)     # zero: valid clr-constrained basis
+#' round(crossprod(V), 10) # identity: columns are orthonormal
+#' round(colSums(V), 10) # zero: valid clr-constrained basis
 ilr_basis <- function(K) {
   K <- as.integer(K)
   if (is.na(K) || K < 2) {
@@ -54,7 +54,7 @@ ilr_basis <- function(K) {
 #' @examples
 #' p <- c(0.5, 0.3, 0.2)
 #' z <- clr(p)
-#' clr_inv(z)  # back to p
+#' clr_inv(z) # back to p
 clr <- function(x) {
   if (is.matrix(x)) {
     if (any(x <= 0)) {
@@ -134,7 +134,7 @@ clr_inv <- function(y) {
 #' @examples
 #' p <- c(0.5, 0.3, 0.2)
 #' z <- ilr(p)
-#' ilr_inv(z)  # back to p
+#' ilr_inv(z) # back to p
 ilr <- function(x, V = NULL) {
   if (!is.null(V)) {
     cx <- clr(x)

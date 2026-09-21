@@ -106,11 +106,15 @@ sim <- simulate_bsimms_data(
   seed = 1
 )
 bsimms_get_prior(
-  sim$formula, mixture_data = sim$mixture_data,
-  source_data = sim$source_data, tdf_data = sim$tdf_data,
+  sim$formula,
+  mixture_data = sim$mixture_data,
+  source_data = sim$source_data,
+  tdf_data = sim$tdf_data,
   isotope_names = sim$isotope_names,
-  source_means_sds = sim$source_means_sds, tdf_means_sds = sim$tdf_means_sds,
-  conc_dep = sim$conc_dep, error_structure = sim$error_structure,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds,
+  conc_dep = sim$conc_dep,
+  error_structure = sim$error_structure,
   source_col = sim$source_col
 )
 }

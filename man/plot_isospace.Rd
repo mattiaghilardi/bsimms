@@ -84,7 +84,9 @@ sim <- simulate_bsimms_data(
   seed = 1
 )
 plot_isospace(
-  sim$mixture_data, sim$source_data, sim$tdf_data,
+  sim$mixture_data,
+  sim$source_data,
+  sim$tdf_data,
   isotope_names = sim$isotope_names,
   source_means_sds = sim$source_means_sds,
   tdf_means_sds = sim$tdf_means_sds
@@ -100,7 +102,9 @@ sim_f <- simulate_bsimms_data(
   seed = 1
 )
 p_f <- plot_isospace(
-  sim_f$mixture_data, sim_f$source_data, sim_f$tdf_data,
+  sim_f$mixture_data,
+  sim_f$source_data,
+  sim_f$tdf_data,
   isotope_names = sim_f$isotope_names,
   source_means_sds = sim_f$source_means_sds,
   tdf_means_sds = sim_f$tdf_means_sds,
@@ -117,7 +121,9 @@ sim_c <- simulate_bsimms_data(
   seed = 1
 )
 p_c <- plot_isospace(
-  sim_c$mixture_data, sim_c$source_data, sim_c$tdf_data,
+  sim_c$mixture_data,
+  sim_c$source_data,
+  sim_c$tdf_data,
   isotope_names = sim_c$isotope_names,
   source_means_sds = sim_c$source_means_sds,
   tdf_means_sds = sim_c$tdf_means_sds,
