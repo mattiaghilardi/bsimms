@@ -69,7 +69,8 @@ a single figure.
 Sources are plotted at their mean plus the trophic discrimination factor
 (TDF) mean, since that is the actual mixing region, with the source and TDF
 SDs combined as
-\eqn{\sqrt{\sigma_{source}^2 + \sigma_{TDF}^2}}{sqrt(source_sd^2 + tdf_sd^2)}.
+\eqn{\sqrt{\sigma_{source}^2 + \sigma_{TDF}^2}}{
+sqrt(source_sd^2 + tdf_sd^2)}.
 Mixtures are plotted as points at their observed values. Mixtures lying
 well outside the sources suggest a missing source or an incorrect TDF.
 }
