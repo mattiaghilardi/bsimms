@@ -73,7 +73,26 @@ sim <- simulate_bsimms_data(
   isotope_names = c("d13C", "d15N"),
   seed = 1
 )
+```
 
+Before fitting, `plot_isospace()` plots the mixtures in isotope space
+against the TDF-corrected source means $\pm$ 1 SD, to check that they
+fall within the region spanned by the sources.
+
+``` r
+plot_isospace(
+  sim$mixture_data,
+  sim$source_data,
+  sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds
+)
+```
+
+<img src="man/figures/README-isospace-1.png" alt="Biplot of d13C against d15N showing the ten mixture samples as points and the Beaver, Deer, and Hare sources as crosshairs of mean plus or minus one standard deviation; the mixtures lie within the region spanned by the sources." width="70%" style="display: block; margin: auto;" />
+
+``` r
 fit <- bsimm(
   sim$formula,
   mixture_data = sim$mixture_data,

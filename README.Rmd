@@ -76,7 +76,7 @@ As an example, we fit a mixing model to simulated data for a 3-source,
 2-isotope model with 10 mixture samples, no covariates (`~1`), raw
 replicate source data, and summarised (mean/SD) TDF data.
 
-```{r sim-fit, message = FALSE, results = "hide"}
+```{r sim, message = FALSE}
 library(bsimms)
 
 sim <- simulate_bsimms_data(
@@ -86,7 +86,30 @@ sim <- simulate_bsimms_data(
   isotope_names = c("d13C", "d15N"),
   seed = 1
 )
+```
 
+Before fitting, `plot_isospace()` plots the mixtures in isotope space against
+the TDF-corrected source means $\pm$ 1 SD, to check that they fall within the
+region spanned by the sources.
+
+```{r isospace}
+#| fig.alt: >-
+#|   Biplot of d13C against d15N showing the ten mixture samples as points
+#|   and the Beaver, Deer, and Hare sources as crosshairs of mean plus or
+#|   minus one standard deviation; the mixtures lie within the region
+#|   spanned by the sources.
+#| fig.asp: 0.8
+plot_isospace(
+  sim$mixture_data,
+  sim$source_data,
+  sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds
+)
+```
+
+```{r fit, message = FALSE, results = "hide"}
 fit <- bsimm(
   sim$formula,
   mixture_data = sim$mixture_data,

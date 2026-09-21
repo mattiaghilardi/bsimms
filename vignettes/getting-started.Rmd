@@ -117,6 +117,35 @@ sim <- simulate_bsimms_data(
 `source_data`, `tdf_data`, and the settings below), plus `sim$truth`, the
 true parameter values used to generate the data.
 
+### Checking the data in isotope space
+
+Before fitting, `plot_isospace()` plots the mixtures in isotope space against
+the TDF-corrected source means $\pm$ 1 SD, to check that they fall within the
+region spanned by the sources.
+
+```{r isospace}
+#| fig.alt: >-
+#|   Biplot of d13C against d15N showing the ten mixture samples as points
+#|   and the Beaver, Deer, and Hare sources as crosshairs of mean plus or
+#|   minus one standard deviation; the mixtures lie within the region
+#|   spanned by the sources.
+#| fig.asp: 0.8
+plot_isospace(
+  sim$mixture_data,
+  sim$source_data,
+  sim$tdf_data,
+  isotope_names = sim$isotope_names,
+  source_means_sds = sim$source_means_sds,
+  tdf_means_sds = sim$tdf_means_sds
+)
+```
+
+All the mixtures fall within the region spanned by the sources, so the data
+are consistent with a mixing model and we can proceed to fit it ([Phillips et al.
+2014](https://doi.org/10.1139/cjz-2014-0127)). Mixtures
+lying well outside would instead suggest a missing source or an incorrect
+TDF.
+
 ### Fitting the model
 
 `bsimm()` builds the Stan program for the requested model, compiles it,
@@ -272,6 +301,12 @@ Moore JW, Semmens BX (2008). "Incorporating uncertainty and prior
 information into stable isotope mixing models." *Ecology Letters*,
 11(5), 470-480.
 [doi:10.1111/j.1461-0248.2008.01163.x](https://doi.org/10.1111/j.1461-0248.2008.01163.x)
+
+Phillips DL, Inger R, Bearhop S, Jackson AL, Moore JW, Parnell AC,
+Semmens BX, Ward EJ (2014). "Best practices for use of stable isotope
+mixing models in food-web studies." *Canadian Journal of Zoology*,
+92(10), 823-835.
+[doi:10.1139/cjz-2014-0127](https://doi.org/10.1139/cjz-2014-0127)
 
 Stock BC, Jackson AL, Ward EJ, Parnell AC, Phillips DL, Semmens BX
 (2018). "Analyzing mixing systems using a new generation of Bayesian
