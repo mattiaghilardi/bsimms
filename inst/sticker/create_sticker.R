@@ -120,4 +120,3 @@ sticker(
   h_color = "#C8C8C8",
   filename = out
 )
-
