@@ -15,6 +15,7 @@
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -200,6 +201,7 @@ extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -218,7 +220,8 @@ extract_array_of_matrices <- function(dm, prefix, dim1, dim2) {
 #'   iter_sampling = 500
 #' )
 #' p_arr <- posterior_proportions(fit)
-#' draws_long(p_arr, var_col = "source", value_col = "proportion")
+#' long <- draws_long(p_arr, var_col = "source", value_col = "proportion")
+#' head(long)
 #' }
 draws_long <- function(arr, var_col = "variable", value_col = "value") {
   if (length(dim(arr)) != 3 || is.null(dimnames(arr)[[3]])) {

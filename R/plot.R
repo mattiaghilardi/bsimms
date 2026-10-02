@@ -34,6 +34,7 @@
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -146,6 +147,7 @@ plot.bsimms_fit <- function(
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -288,6 +290,7 @@ aggregate_ppc_types <- c(
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(

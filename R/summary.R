@@ -17,6 +17,7 @@
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -104,6 +105,7 @@ print.bsimms_fit <- function(x, ...) {
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(

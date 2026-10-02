@@ -29,6 +29,7 @@ sim <- simulate_bsimms_data(
   n_mixture_obs = 10,
   source_names = c("Beaver", "Deer", "Hare"),
   isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
   seed = 1
 )
 fit <- bsimm(

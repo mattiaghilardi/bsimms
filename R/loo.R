@@ -23,6 +23,7 @@
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -72,6 +73,7 @@ loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -122,6 +124,7 @@ waic.bsimms_fit <- function(x, ...) {
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   seed = 1
 #' )
 #' fit <- bsimm(
@@ -195,6 +198,7 @@ add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
 #'   n_mixture_obs = 10,
 #'   source_names = c("Beaver", "Deer", "Hare"),
 #'   isotope_names = c("d13C", "d15N"),
+#'   source_means_sds = TRUE,
 #'   n_levels = list(Sex = 2),
 #'   seed = 1
 #' )

@@ -36,6 +36,7 @@ sim <- simulate_bsimms_data(
   n_mixture_obs = 10,
   source_names = c("Beaver", "Deer", "Hare"),
   isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
   seed = 1
 )
 fit <- bsimm(
@@ -54,6 +55,7 @@ fit <- bsimm(
   iter_sampling = 500
 )
 p_arr <- posterior_proportions(fit)
-draws_long(p_arr, var_col = "source", value_col = "proportion")
+long <- draws_long(p_arr, var_col = "source", value_col = "proportion")
+head(long)
 }
 }
