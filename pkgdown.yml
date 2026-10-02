@@ -1,0 +1,13 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  covariates: covariates.html
+  data-error: data-error.html
+  diagnostics: diagnostics.html
+  getting-started: getting-started.html
+  priors: priors.html
+last_built: 2026-10-02T15:06Z
+urls:
+  reference: https://mattiaghilardi.github.io/bsimms/reference
+  article: https://mattiaghilardi.github.io/bsimms/articles
