@@ -49,6 +49,18 @@ test_that("print.bsimms_stancode prints plain text without quotes", {
   expect_true(any(grepl("^functions \\{", out)))
 })
 
+test_that("ilr_global floors p_global away from the simplex boundary", {
+  code <- make_stancode(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_match(code, "fmax(gmean(p_global, d), 1e-12)", fixed = TRUE)
+  expect_match(code, "fmax(p_global[d + 1], 1e-12)", fixed = TRUE)
+})
+
 test_that("fixed-effect covariates add a beta parameter and per-coef priors", {
   code <- make_stancode(
     formula = ~Sex,

@@ -627,7 +627,7 @@ stan_transformed_parameters_lines <- function(
     "vector[D] ilr_global;  // forward ILR of p_global (Egozcue et al. 2003, eq. 25)",
     "for (d in 1:D) {",
     indent(
-      "ilr_global[d] = sqrt(d / (d + 1.0)) * log(gmean(p_global, d) / p_global[d + 1]);"
+      "ilr_global[d] = sqrt(d / (d + 1.0)) * log(fmax(gmean(p_global, d), 1e-12) / fmax(p_global[d + 1], 1e-12));  // floored to avoid log(0) at a simplex boundary"
     ),
     "}",
     "",
