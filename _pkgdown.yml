@@ -1,0 +1,87 @@
+url: https://mattiaghilardi.github.io/bsimms/
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  math-rendering: katex
+  light-switch: true
+
+reference:
+- title: Fit a model
+  desc: Build, compile, and sample from a bsimms model.
+  contents:
+  - bsimm
+  - make_stancode
+  - make_standata
+  - parse_bsimms_formula
+- title: Priors
+  desc: Preview, override, and print bsimms's data-scaled default priors.
+  contents:
+  - bsimms_prior
+  - bsimms_get_prior
+  - print.bsimms_prior
+- title: Inspect a fit
+  desc: Print and summarise a fitted model.
+  contents:
+  - print.bsimms_fit
+  - summary.bsimms_fit
+- title: Posterior draws
+  desc: Extract and reshape raw posterior draws.
+  contents:
+  - bsimms_draws
+  - draws_long
+- title: Predictions
+  desc: >-
+    Posterior (predictive) source proportions and mixture isotope
+    values, for the fitted data or new observations.
+  contents:
+  - posterior_proportions
+  - fitted_proportions
+  - fitted.bsimms_fit
+  - predict.bsimms_fit
+  - posterior_epred.bsimms_fit
+  - posterior_predict.bsimms_fit
+- title: Model comparison and evaluation
+  desc: >-
+    Approximate leave-one-out cross-validation, WAIC, and Bayesian
+    R-squared.
+  contents:
+  - loo.bsimms_fit
+  - loo_compare.bsimms_fit
+  - waic.bsimms_fit
+  - add_criterion
+  - bayes_R2.bsimms_fit
+- title: Plots
+  desc: >-
+    Plot the data before fitting, and diagnostic and summary plots for a
+    fitted model.
+  contents:
+  - plot.bsimms_fit
+  - pp_check.bsimms_fit
+  - plot_proportions
+  - plot_isospace
+  - conditional_effects
+- title: Simulate data
+  desc: >-
+    Simulate data, with known true parameter values, for any bsimms
+    model configuration.
+  contents:
+  - simulate_bsimms_data
+- title: ILR/CLR transforms
+  desc: Transforms between the source simplex and unconstrained coordinates.
+  contents:
+  - ilr
+  - ilr_basis
+  - clr
+- title: Package
+  contents:
+  - bsimms-package
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - getting-started
+  - data-error
+  - covariates
+  - priors
+  - diagnostics
