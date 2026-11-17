@@ -68,7 +68,7 @@ fit <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.4 seconds.
+#> Chain 1 finished in 0.3 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -84,40 +84,40 @@ fit <- bsimm(
 #> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 1.0 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 bsimms_draws(fit, variable = "p_global")
 #> # A draws_array: 500 iterations, 2 chains, and 3 variables
 #> , , variable = p_global[1]
 #> 
 #>          chain
-#> iteration    1    2
-#>         1 0.19 0.31
-#>         2 0.25 0.30
-#>         3 0.22 0.30
-#>         4 0.21 0.27
-#>         5 0.19 0.33
+#> iteration     1    2
+#>         1 0.479 0.21
+#>         2 0.197 0.19
+#>         3 0.046 0.18
+#>         4 0.033 0.23
+#>         5 0.029 0.22
 #> 
 #> , , variable = p_global[2]
 #> 
 #>          chain
 #> iteration    1    2
-#>         1 0.41 0.33
-#>         2 0.36 0.36
-#>         3 0.39 0.33
-#>         4 0.38 0.38
-#>         5 0.41 0.31
+#>         1 0.25 0.41
+#>         2 0.41 0.41
+#>         3 0.50 0.41
+#>         4 0.47 0.38
+#>         5 0.51 0.37
 #> 
 #> , , variable = p_global[3]
 #> 
 #>          chain
 #> iteration    1    2
-#>         1 0.40 0.36
-#>         2 0.39 0.34
-#>         3 0.39 0.37
-#>         4 0.41 0.36
-#>         5 0.40 0.35
+#>         1 0.27 0.39
+#>         2 0.40 0.40
+#>         3 0.46 0.41
+#>         4 0.49 0.39
+#>         5 0.46 0.41
 #> 
 #> # ... with 495 more iterations
 # }

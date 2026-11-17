@@ -94,8 +94,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.4 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 0.9 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 summary(fit)
 #> Bayesian stable isotope mixing model
@@ -103,13 +103,13 @@ summary(fit)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.208 0.106 0.036 0.442 1.014      320      215
-#>    Deer 0.393 0.065 0.258 0.503 1.011      365      397
-#>    Hare 0.400 0.045 0.296 0.474 1.013      321      333
+#>  Beaver 0.199 0.100 0.016 0.414 1.010      258      189
+#>    Deer 0.398 0.061 0.278 0.504 1.009      286      283
+#>    Hare 0.404 0.043 0.316 0.483 1.009      278      277
 #> 
 #> Error term(s):
-#>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 3.735 2.397 1.177 9.637 1.002      511      272
-#>     d15N 1.801 1.183 0.587 4.540 1.000      481      459
+#>  isotope  mean    sd  q2.5  q97.5  rhat ess_bulk ess_tail
+#>     d13C 3.946 2.817 1.218 12.618 1.012      398      244
+#>     d15N 1.786 1.423 0.570  5.585 1.004      422      296
 # }
 ```

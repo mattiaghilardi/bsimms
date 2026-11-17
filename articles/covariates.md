@@ -85,28 +85,28 @@ summary(fit_full)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.334 0.089 0.168 0.525 1.003     1608     1766
-#>    Deer 0.388 0.094 0.203 0.585 1.002     1554     1706
-#>    Hare 0.278 0.074 0.148 0.445 1.001     1585     1657
+#>  Beaver 0.336 0.091 0.168 0.534 1.002     1489     1667
+#>    Deer 0.383 0.098 0.181 0.582 1.006      825      535
+#>    Hare 0.281 0.082 0.145 0.476 1.002      991      770
 #> 
 #> Fixed effects (ILR scale, deviations from the global proportions):
 #>  coefficient ilr_dim   mean    sd   q2.5  q97.5  rhat ess_bulk ess_tail
-#>         SexB       1  0.972 0.240  0.538  1.458 1.001     2692     2313
-#>          Age       1  0.006 0.107 -0.198  0.217 1.002     2627     2544
-#>     SexB:Age       1 -0.644 0.169 -0.970 -0.320 1.001     2915     2312
-#>         SexB       2 -0.730 0.118 -0.972 -0.506 1.001     2142     2498
-#>          Age       2  0.179 0.063  0.057  0.300 1.001     2686     2556
-#>     SexB:Age       2  0.054 0.106 -0.147  0.268 1.001     1936     2122
+#>         SexB       1  0.977 0.240  0.531  1.461 1.001     2846     2343
+#>          Age       1  0.002 0.108 -0.212  0.218 1.002     2407     1917
+#>     SexB:Age       1 -0.629 0.169 -0.966 -0.308 1.000     2650     2691
+#>         SexB       2 -0.731 0.117 -0.965 -0.503 1.001     2480     2607
+#>          Age       2  0.177 0.064  0.050  0.302 1.002     2398     2679
+#>     SexB:Age       2  0.062 0.104 -0.140  0.265 1.002     2047     2180
 #> 
 #> Group-level standard deviations (ILR scale):
 #>   group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Region (Intercept)       1 0.572 0.377 0.139 1.559 1.001     1303     2251
-#>  Region (Intercept)       2 0.511 0.295 0.155 1.294 1.003     1672     1602
+#>  Region (Intercept)       1 0.581 0.393 0.144 1.599 1.001     1605     2172
+#>  Region (Intercept)       2 0.529 0.331 0.151 1.413 1.002      977      625
 #> 
 #> Error term(s):
 #>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 2.927 0.947 1.467 5.188 1.001     1957     2144
-#>     d15N 1.906 0.560 1.018 3.189 1.001     2508     2712
+#>     d13C 2.998 0.938 1.485 5.117 1.001     2512     2628
+#>     d15N 1.929 0.566 1.034 3.244 1.002     2528     2791
 ```
 
 ## Nested and crossed random effects
@@ -164,26 +164,26 @@ summary(fit_nested)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.409 0.129 0.173 0.679 1.002      439      513
-#>    Deer 0.401 0.094 0.210 0.595 1.004      559      506
-#>    Hare 0.190 0.080 0.043 0.355 1.003      401      390
+#>  Beaver 0.410 0.128 0.153 0.654 1.005      375      388
+#>    Deer 0.398 0.106 0.198 0.630 1.001      431      455
+#>    Hare 0.192 0.095 0.035 0.417 1.008      412      338
 #> 
 #> Group-level standard deviations (ILR scale):
 #>        group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk
-#>  Site:Region (Intercept)       1 0.250 0.205 0.010 0.795 1.005      414
-#>  Site:Region (Intercept)       2 0.284 0.294 0.009 1.110 1.000      493
-#>       Region (Intercept)       1 0.568 0.396 0.054 1.612 1.004      432
-#>       Region (Intercept)       2 0.449 0.437 0.008 1.568 1.006      449
+#>  Site:Region (Intercept)       1 0.248 0.207 0.008 0.777 1.002      358
+#>  Site:Region (Intercept)       2 0.289 0.294 0.015 1.115 1.006      372
+#>       Region (Intercept)       1 0.578 0.461 0.034 1.683 1.002      425
+#>       Region (Intercept)       2 0.517 0.490 0.016 1.871 1.002      557
 #>  ess_tail
-#>       651
-#>       542
-#>       353
-#>       386
+#>       406
+#>       662
+#>       437
+#>       570
 #> 
 #> Error term(s):
-#>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 1.725 0.584 0.827 2.994 0.999      780      713
-#>     d15N 2.737 0.812 1.404 4.513 0.999      866      642
+#>  isotope  mean    sd  q2.5 q97.5 rhat ess_bulk ess_tail
+#>     d13C 1.728 0.585 0.824 3.052    1      717      599
+#>     d15N 2.768 0.797 1.429 4.482    1      706      599
 ```
 
 ## Model comparison
@@ -219,8 +219,8 @@ loo::loo_compare(fit_full, fit_null_cov)
 #> Computing "loo" for model "fit_null_cov" (not cached; use `add_criterion()` to
 #> cache it for reuse).
 #>         model elpd_diff se_diff p_worse diag_diff      diag_elpd
-#>      fit_full       0.0     0.0      NA           1 k_psis > 0.7
-#>  fit_null_cov     -67.5     5.7    1.00   N < 100
+#>      fit_full       0.0     0.0      NA           2 k_psis > 0.7
+#>  fit_null_cov     -67.1     5.8    1.00   N < 100
 #> 
 #> Diagnostic flags present.
 #> See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)
@@ -243,8 +243,8 @@ where it is always ~0):
 
 rstantools::bayes_R2(fit_full)
 #>   isotope      mean         sd       q2.5     q97.5
-#> 1    d13C 0.1817435 0.05915232 0.07122544 0.2945961
-#> 2    d15N 0.8929466 0.01098385 0.86624205 0.9079594
+#> 1    d13C 0.1775111 0.06035563 0.06601869 0.2976717
+#> 2    d15N 0.8926811 0.01103966 0.86511717 0.9079263
 ```
 
 R² is reported per isotope, and relates directly to that isotope’s error
@@ -411,6 +411,6 @@ predict(
   sample_new_levels = "gaussian"
 )
 #>   row isotope     mean       sd       q2.5     q97.5
-#> 1   1    d13C 4.091931 2.038466 -0.2894615  7.979859
-#> 2   1    d15N 5.748648 3.134601 -0.8217872 11.993104
+#> 1   1    d13C 4.100536 2.071552 -0.1580402  8.129324
+#> 2   1    d15N 5.675570 3.236674 -1.2966528 12.069178
 ```

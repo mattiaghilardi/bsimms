@@ -86,7 +86,7 @@ fit <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.4 seconds.
+#> Chain 1 finished in 0.3 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -102,8 +102,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 0.9 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 loo::loo(fit)
 #> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
@@ -111,16 +111,16 @@ loo::loo(fit)
 #> Computed from 1000 by 10 log-likelihood matrix.
 #> 
 #>          Estimate  SE
-#> elpd_loo    -30.9 2.4
-#> p_loo         3.1 0.7
-#> looic        61.7 4.8
+#> elpd_loo    -30.7 2.3
+#> p_loo         2.9 0.6
+#> looic        61.4 4.5
 #> ------
 #> MCSE of elpd_loo is NA.
-#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.3, 0.6]).
+#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.3, 1.0]).
 #> 
 #> Pareto k diagnostic values:
 #>                           Count Pct.    Min. ESS
-#> (-Inf, 0.67]   (good)     9     90.0%   71      
+#> (-Inf, 0.67]   (good)     9     90.0%   147     
 #>    (0.67, 1]   (bad)      1     10.0%   <NA>    
 #>     (1, Inf)   (very bad) 0      0.0%   <NA>    
 #> See help('pareto-k-diagnostic') for details.

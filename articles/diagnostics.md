@@ -63,7 +63,7 @@ if (fit$backend == "cmdstanr") {
 #> [1] 0 0 0 0
 #> 
 #> $ebfmi
-#> [1] 0.9778086 0.8496679 0.9392410 0.8887845
+#> [1] 0.9386499 0.9232065 0.8302273 0.9414717
 ```
 
 The three things to look for (see Stan’s own [guide to runtime warnings
@@ -111,14 +111,14 @@ summary(fit)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.256 0.120 0.048 0.522 1.003     1485      891
-#>    Deer 0.368 0.074 0.201 0.495 1.003     1568     1031
-#>    Hare 0.376 0.050 0.270 0.464 1.002     1685     1202
+#>  Beaver 0.253 0.125 0.036 0.519 1.005     1368      622
+#>    Deer 0.370 0.077 0.203 0.502 1.005     1492     1062
+#>    Hare 0.377 0.051 0.268 0.468 1.005     1435     1191
 #> 
 #> Error term(s):
-#>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 4.246 2.914 1.125 12.84 1.002     2513     1807
-#>     d15N 1.826 1.576 0.477  5.60 1.001     2706     1952
+#>  isotope  mean    sd  q2.5  q97.5 rhat ess_bulk ess_tail
+#>     d13C 4.188 2.824 1.118 11.891    1     2527     1765
+#>     d15N 1.817 1.453 0.487  5.722    1     3206     2207
 ```
 
 As a rule of thumb ([Vehtari et al.

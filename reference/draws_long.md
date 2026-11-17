@@ -96,21 +96,21 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.4 seconds.
+#> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 1.0 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 p_arr <- posterior_proportions(fit)
 long <- draws_long(p_arr, var_col = "source", value_col = "proportion")
 head(long)
 #>   draw row source proportion
-#> 1    1   1 Beaver 0.20041774
-#> 2    2   1 Beaver 0.28020488
-#> 3    3   1 Beaver 0.06652705
-#> 4    4   1 Beaver 0.20382201
-#> 5    5   1 Beaver 0.16805357
-#> 6    6   1 Beaver 0.18870313
+#> 1    1   1 Beaver 0.22695506
+#> 2    2   1 Beaver 0.23259222
+#> 3    3   1 Beaver 0.18899583
+#> 4    4   1 Beaver 0.04119577
+#> 5    5   1 Beaver 0.33216834
+#> 6    6   1 Beaver 0.24041503
 # }
 ```

@@ -84,7 +84,7 @@ fit <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.5 seconds.
+#> Chain 1 finished in 0.3 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -97,11 +97,11 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.5 seconds.
+#> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.5 seconds.
-#> Total execution time: 1.2 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 fit <- add_criterion(fit, "loo")
 fit$criteria$loo
@@ -111,10 +111,10 @@ fit$criteria$loo
 #>          Estimate  SE
 #> elpd_loo    -30.7 2.2
 #> p_loo         2.8 0.6
-#> looic        61.4 4.4
+#> looic        61.3 4.4
 #> ------
 #> MCSE of elpd_loo is 0.1.
-#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.3, 0.9]).
+#> MCSE and ESS estimates assume MCMC draws (r_eff in [0.4, 0.9]).
 #> 
 #> All Pareto k estimates are good (k < 0.67).
 #> See help('pareto-k-diagnostic') for details.

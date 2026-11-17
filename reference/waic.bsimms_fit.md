@@ -80,7 +80,7 @@ fit <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.4 seconds.
+#> Chain 1 finished in 0.3 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -96,8 +96,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 0.9 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 loo::waic(fit)
 #> Warning: 
@@ -107,8 +107,8 @@ loo::waic(fit)
 #> 
 #>           Estimate  SE
 #> elpd_waic    -30.3 2.2
-#> p_waic         2.6 0.6
-#> waic          60.5 4.4
+#> p_waic         2.7 0.5
+#> waic          60.6 4.4
 #> 
 #> 2 (20.0%) p_waic estimates greater than 0.4. We recommend trying loo instead. 
 # }

@@ -2,10 +2,10 @@
 
 ## Overview
 
-bsimms is an R package for fitting Bayesian stable isotope mixing models
-(SIMMs) via Stan, estimating the proportional contribution of two or
-more sources to a mixture from tracer data such as stable isotopes. It
-brings together mixing-model advances developed across the literature
+**bsimms** is an R package for fitting Bayesian stable isotope mixing
+models (SIMMs) via Stan, estimating the proportional contribution of two
+or more sources to a mixture from tracer data such as stable isotopes.
+It brings together mixing-model advances developed across the literature
 and implemented in the JAGS-based package MixSIAR — hierarchical source
 fitting, fractionation error, concentration dependence, cross-tracer
 covariance, flexible error structures — and extends them by letting
@@ -14,7 +14,8 @@ random-effects formula of mixture-level covariates.
 
 ## Installation
 
-You can install the development version of bsimms from GitHub like so:
+You can install the development version of **bsimms** from GitHub like
+so:
 
 ``` r
 
@@ -137,14 +138,14 @@ summary(fit)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.249 0.122 0.033 0.511 1.003     1100      725
-#>    Deer 0.372 0.075 0.209 0.504 1.002     1100      931
-#>    Hare 0.379 0.050 0.272 0.472 1.002     1306      984
+#>  Beaver 0.253 0.121 0.042 0.519 1.002     1340      912
+#>    Deer 0.370 0.075 0.204 0.498 1.002     1432     1108
+#>    Hare 0.378 0.050 0.270 0.469 1.002     1499     1237
 #> 
 #> Error term(s):
 #>  isotope  mean    sd  q2.5  q97.5  rhat ess_bulk ess_tail
-#>     d13C 4.094 2.706 1.090 11.724 1.000     3042     1821
-#>     d15N 1.823 1.443 0.482  5.455 1.002     2384     1812
+#>     d13C 4.101 2.664 1.113 11.455 1.000     3140     2018
+#>     d15N 1.779 1.258 0.480  5.165 1.001     2838     2616
 ```
 
 `rhat` close to 1 and large effective sample sizes indicate the chains

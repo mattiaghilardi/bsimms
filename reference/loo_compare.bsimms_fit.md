@@ -108,7 +108,7 @@ fit1 <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.4 seconds.
+#> Total execution time: 0.3 seconds.
 #> 
 fit2 <- bsimm(
   ~Sex,
@@ -139,7 +139,7 @@ fit2 <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.3 seconds.
+#> Chain 1 finished in 0.2 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -156,7 +156,7 @@ fit2 <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.2 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.4 seconds.
 #> 
 loo::loo_compare(fit1, fit2)
 #> Computing "loo" for model "fit1" (not cached; use `add_criterion()` to cache it
@@ -165,7 +165,7 @@ loo::loo_compare(fit1, fit2)
 #> for reuse).
 #> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
 #>  model elpd_diff se_diff p_worse diag_diff       diag_elpd
-#>   fit2       0.0     0.0      NA           2 k_psis > 0.67
+#>   fit2       0.0     0.0      NA           1 k_psis > 0.67
 #>   fit1     -17.4     2.0    1.00   N < 100                
 #> 
 #> Diagnostic flags present.

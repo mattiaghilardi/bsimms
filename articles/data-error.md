@@ -225,14 +225,14 @@ summary(fit_resid)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.203 0.094 0.021 0.404 1.023      269      186
-#>    Deer 0.399 0.060 0.275 0.508 1.020      330      246
-#>    Hare 0.399 0.036 0.324 0.468 1.022      241      187
+#>  Beaver 0.206 0.090 0.052 0.394 1.003      283      312
+#>    Deer 0.398 0.056 0.275 0.493 1.003      294      331
+#>    Hare 0.396 0.036 0.319 0.465 1.005      301      346
 #> 
 #> Error term(s):
 #>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 0.542 0.139 0.342 0.886 1.003     1446      765
-#>     d15N 0.374 0.100 0.239 0.624 1.009      981      522
+#>     d13C 0.548 0.146 0.351 0.884 1.002      639      638
+#>     d15N 0.374 0.094 0.239 0.605 1.001     1027      586
 ```
 
 The error term is now `sigma` rather than `resid_prop`.
