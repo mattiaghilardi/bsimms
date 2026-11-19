@@ -13,6 +13,8 @@ make_standata(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   prior = NULL,
   source_col = "Source"
@@ -65,14 +67,23 @@ data is raw and there are 2+ isotopes. This asymmetry is intentional
 correlation is a rare combination in practice), not an oversight, but
 could be added symmetrically to \code{source_cor} if needed.}
 
-\item{conc_dep}{Logical; enable elemental concentration dependence
-(default \code{FALSE})? If \code{TRUE}, \code{source_data} must have a \verb{<isotope>_conc}
+\item{conc_dep}{Logical (default \code{FALSE}); enable elemental concentration
+dependence? If \code{TRUE}, \code{source_data} must have a \verb{<isotope>_conc}
 column for every isotope in \code{isotope_names}, giving that source's
 proportional elemental concentration (in \verb{(0, 1]}) for that isotope's
 element -- one value per raw sample (averaged per source) if
 \code{source_means_sds = FALSE}, or one value per source if
 \code{source_means_sds = TRUE}. Since these are proportions of the same
 source's total mass, they cannot sum to more than 1 across isotopes.}
+
+\item{center}{Logical (default \code{TRUE}); centre continuous fixed-effect
+covariates (subtract their mean) before building the design matrix?
+Only continuous columns are affected; factor/dummy-coded columns
+(including interactions involving a factor) are never centred.}
+
+\item{scale}{Logical (default \code{TRUE}); scale continuous fixed-effect
+covariates (divide by their SD) before building the design matrix?
+Only continuous columns are affected, as for \code{center}.}
 
 \item{error_structure}{One of \code{"process_residual"} (default: source/TDF
 variance propagated into the mixture and scaled by an estimated

@@ -11,6 +11,7 @@
        error structure: process_residual
        source data:     raw
        tdf data:        summary
+       covariates:      centred and scaled
        group-level terms:
          ((Intercept) | Region), 2 levels
        backend:         cmdstanr

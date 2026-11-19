@@ -87,6 +87,91 @@ test_that("has_conc_dep reflects the conc_dep argument", {
   expect_equal(dim(spec_on$conc), c(2L, 1L))
 })
 
+test_that("center/scale default to TRUE and are captured on the spec", {
+  spec <- build_bsimms_spec(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_true(spec$center)
+  expect_true(spec$scale)
+
+  spec_off <- build_bsimms_spec(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    center = FALSE,
+    scale = FALSE
+  )
+  expect_false(spec_off$center)
+  expect_false(spec_off$scale)
+
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~1,
+      mixture_data = mixture_data,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      center = "yes"
+    )
+  )
+})
+
+test_that("x_continuous is aligned with fixed_names and the dropped intercept", {
+  mixture_data_x <- cbind(mixture_data, Age = c(1, 2, 3, 4, 5, 6))
+  spec <- build_bsimms_spec(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_length(spec$x_continuous, spec$P)
+  expect_true(spec$x_continuous[spec$fixed_names == "Age"])
+  expect_false(any(spec$x_continuous[grepl("^Sex", spec$fixed_names)]))
+})
+
+test_that("has_beta_raw/has_ilr_global_raw reflect center/scale and x_continuous", {
+  mixture_data_x <- cbind(mixture_data, Age = c(1, 2, 3, 4, 5, 6))
+  spec_cont <- build_bsimms_spec(
+    formula = ~Age,
+    mixture_data = mixture_data_x,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_true(spec_cont$has_beta_raw)
+  expect_true(spec_cont$has_ilr_global_raw)
+
+  spec_center_only <- build_bsimms_spec(
+    formula = ~Age,
+    mixture_data = mixture_data_x,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    scale = FALSE
+  )
+  expect_false(spec_center_only$has_beta_raw)
+  expect_true(spec_center_only$has_ilr_global_raw)
+
+  # requested but with nothing continuous to apply to: no effect
+  spec_factor_only <- build_bsimms_spec(
+    formula = ~Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_false(spec_factor_only$has_beta_raw)
+  expect_false(spec_factor_only$has_ilr_global_raw)
+})
+
 test_that("error_structure defaults to process_residual and is validated", {
   spec <- build_bsimms_spec(
     formula = ~1,

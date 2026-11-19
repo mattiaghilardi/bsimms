@@ -17,9 +17,10 @@
 \description{
 Prints a one-screen overview of a fitted model: formula, source/isotope/
 mixture counts and names, error structure, source/TDF data mode,
-whether concentration dependence is enabled, group-level terms (if any),
-and the fitting backend used. For posterior summaries, use
-\code{\link[=summary.bsimms_fit]{summary.bsimms_fit()}}.
+whether concentration dependence is enabled, whether (and how)
+continuous fixed-effect covariates were centred/scaled, group-level
+terms (if any), and the fitting backend used. For posterior summaries,
+use \code{\link[=summary.bsimms_fit]{summary.bsimms_fit()}}.
 }
 \examples{
 \donttest{

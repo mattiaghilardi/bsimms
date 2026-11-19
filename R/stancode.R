@@ -45,14 +45,21 @@
 #'   (raw TDF data with enough replicates per source to usefully estimate a
 #'   correlation is a rare combination in practice), not an oversight, but
 #'   could be added symmetrically to `source_cor` if needed.
-#' @param conc_dep Logical; enable elemental concentration dependence
-#'   (default `FALSE`)? If `TRUE`, `source_data` must have a `<isotope>_conc`
+#' @param conc_dep Logical (default `FALSE`); enable elemental concentration
+#'   dependence? If `TRUE`, `source_data` must have a `<isotope>_conc`
 #'   column for every isotope in `isotope_names`, giving that source's
 #'   proportional elemental concentration (in `(0, 1]`) for that isotope's
 #'   element -- one value per raw sample (averaged per source) if
 #'   `source_means_sds = FALSE`, or one value per source if
 #'   `source_means_sds = TRUE`. Since these are proportions of the same
 #'   source's total mass, they cannot sum to more than 1 across isotopes.
+#' @param center Logical (default `TRUE`); centre continuous fixed-effect
+#'   covariates (subtract their mean) before building the design matrix?
+#'   Only continuous columns are affected; factor/dummy-coded columns
+#'   (including interactions involving a factor) are never centred.
+#' @param scale Logical (default `TRUE`); scale continuous fixed-effect
+#'   covariates (divide by their SD) before building the design matrix?
+#'   Only continuous columns are affected, as for `center`.
 #' @param error_structure One of `"process_residual"` (default: source/TDF
 #'   variance propagated into the mixture and scaled by an estimated
 #'   multiplicative residual-error factor, i.e. the "Residual * Process"
@@ -113,6 +120,8 @@ make_stancode <- function(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   prior = NULL,
   source_col = "Source"
@@ -127,6 +136,8 @@ make_stancode <- function(
     source_means_sds = source_means_sds,
     tdf_means_sds = tdf_means_sds,
     conc_dep = conc_dep,
+    center = center,
+    scale = scale,
     error_structure = error_structure,
     source_col = source_col
   )
@@ -273,6 +284,27 @@ indent <- function(lines, n = 2) {
   paste0(pad, lines)
 }
 
+#' Label describing which of `center`/`scale` actually standardises at
+#' least one continuous fixed-effect column (`spec$has_ilr_global_raw`/
+#' `has_beta_raw`), for display purposes: the Stan program header,
+#' `transformed data`'s `Xc` declaration, and `print.bsimms_fit()`.
+#'
+#' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
+#' @return `"centred"`, `"scaled"`, or `"centred and scaled"`; `NULL` if
+#'   neither applies.
+#' @noRd
+standardisation_label <- function(spec) {
+  if (spec$has_ilr_global_raw && spec$has_beta_raw) {
+    "centred and scaled"
+  } else if (spec$has_ilr_global_raw) {
+    "centred"
+  } else if (spec$has_beta_raw) {
+    "scaled"
+  } else {
+    NULL
+  }
+}
+
 #' Build the leading comment-only lines of the Stan program: a
 #' human-readable summary of the model (sources, isotopes, fixed/
 #' group-level terms, error structure, source/TDF data mode).
@@ -297,6 +329,10 @@ stan_header <- function(spec) {
         "(none)"
       }
     ),
+    {
+      label <- standardisation_label(spec)
+      if (!is.null(label)) paste0("// covariates: ", label)
+    },
     if (length(spec$re_terms) > 0) {
       paste0(
         "// group-level terms: ",
@@ -483,6 +519,56 @@ stan_transformed_data_lines <- function(spec) {
       "matrix[K, J] tdf_sd = tdf_sd_data;  // alias: TDF SDs as supplied"
     )
   }
+  if (spec$has_ilr_global_raw || spec$has_beta_raw) {
+    xc_label <- standardisation_label(spec)
+    decl <- character(0)
+    if (spec$has_ilr_global_raw) {
+      decl <- c(decl, "vector[P] means_X;  // centering: per-column mean")
+    }
+    if (spec$has_beta_raw) {
+      decl <- c(decl, "vector[P] sds_X;  // scaling: per-column SD")
+    }
+    decl <- c(
+      decl,
+      sprintf("matrix[N, P] Xc;  // %s fixed-effect design matrix", xc_label)
+    )
+    lines <- c(lines, if (length(lines) > 0) "", decl)
+
+    for (p in seq_len(spec$P)) {
+      if (spec$has_ilr_global_raw) {
+        mean_expr <- if (spec$x_continuous[p]) {
+          sprintf("mean(X[, %d])", p)
+        } else {
+          "0"
+        }
+        lines <- c(
+          lines,
+          sprintf("means_X[%d] = %s;  // %s", p, mean_expr, spec$fixed_names[p])
+        )
+      }
+      if (spec$has_beta_raw) {
+        sd_expr <- if (spec$x_continuous[p]) sprintf("sd(X[, %d])", p) else "1"
+        lines <- c(
+          lines,
+          sprintf("sds_X[%d] = %s;  // %s", p, sd_expr, spec$fixed_names[p])
+        )
+      }
+    }
+
+    xc_expr <- if (spec$has_ilr_global_raw && spec$has_beta_raw) {
+      "(X[, p] - means_X[p]) / sds_X[p]"
+    } else if (spec$has_ilr_global_raw) {
+      "X[, p] - means_X[p]"
+    } else {
+      "X[, p] / sds_X[p]"
+    }
+    lines <- c(
+      lines,
+      "for (p in 1:P) {",
+      indent(sprintf("Xc[, p] = %s;", xc_expr)),
+      "}"
+    )
+  }
   lines
 }
 
@@ -632,7 +718,15 @@ stan_transformed_parameters_lines <- function(
     "}",
     "",
     if (spec$P > 0) {
-      "matrix[N, D] eta = rep_matrix(to_row_vector(ilr_global), N) + X * beta;  // per-mixture-sample ILR predictor: global baseline + covariate effects"
+      design_var <- if (spec$has_ilr_global_raw || spec$has_beta_raw) {
+        "Xc"
+      } else {
+        "X"
+      }
+      sprintf(
+        "matrix[N, D] eta = rep_matrix(to_row_vector(ilr_global), N) + %s * beta;  // per-mixture-sample ILR predictor: global baseline + covariate effects",
+        design_var
+      )
     } else {
       "matrix[N, D] eta = rep_matrix(to_row_vector(ilr_global), N);  // per-mixture-sample ILR predictor: global baseline only (no covariates)"
     }
@@ -1173,8 +1267,13 @@ stan_generated_quantities_lines <- function(
   needs_mv,
   needs_resid_cor
 ) {
+  conv_lines <- stan_beta_raw_lines(spec)
+  sep <- if (length(conv_lines) > 0) "" else character(0)
+
   if (needs_mv) {
     return(c(
+      conv_lines,
+      sep,
       "vector[N] log_lik;  // joint log density per mixture sample (for loo)",
       "matrix[N, J] y_rep;",
       "for (i in 1:N) {",
@@ -1190,6 +1289,8 @@ stan_generated_quantities_lines <- function(
 
   if (needs_resid_cor) {
     return(c(
+      conv_lines,
+      sep,
       "vector[N] log_lik;  // joint log density per mixture sample (for loo)",
       "matrix[N, J] y_rep;",
       "for (i in 1:N) {",
@@ -1211,6 +1312,8 @@ stan_generated_quantities_lines <- function(
     "sigma[j]"
   }
   c(
+    conv_lines,
+    sep,
     "vector[N] log_lik;  // joint log density per mixture sample (isotopes summed; for loo)",
     "matrix[N, J] y_rep;",
     "for (i in 1:N) {",
@@ -1221,6 +1324,60 @@ stan_generated_quantities_lines <- function(
     indent(indent("y_rep[i, j] = normal_rng(mu[i, j], sd_ij);")),
     indent("}"),
     indent("log_lik[i] = ll_i;"),
+    "}"
+  )
+}
+
+#' Build the standardisation back-conversion lines for the `generated
+#' quantities` block: `beta_raw`/`ilr_global_raw`, undoing scaling/
+#' centering so `predict.R` can combine them with a raw (unstandardised)
+#' new design matrix without ever needing to re-derive `means_X`/`sds_X`
+#' itself. Declared only for whichever of `center`/`scale` actually
+#' standardised at least one continuous column (`spec$has_beta_raw`/
+#' `spec$has_ilr_global_raw`, see `build_bsimms_spec()`); `character(0)`
+#' if neither does.
+#'
+#' @param spec A `bsimms_spec` (see `build_bsimms_spec()`).
+#' @return Character vector of Stan code lines.
+#' @noRd
+stan_beta_raw_lines <- function(spec) {
+  if (!spec$has_beta_raw && !spec$has_ilr_global_raw) {
+    return(character(0))
+  }
+
+  decl <- character(0)
+  if (spec$has_beta_raw) {
+    decl <- c(
+      decl,
+      "matrix[P, D] beta_raw;  // beta, on X's natural (unstandardised) scale"
+    )
+  }
+  if (spec$has_ilr_global_raw) {
+    decl <- c(
+      decl,
+      "vector[D] ilr_global_raw;  // ilr_global, undoing centering"
+    )
+  }
+
+  body <- character(0)
+  if (spec$has_beta_raw) {
+    body <- c(body, "beta_raw[, d] = beta[, d] ./ sds_X;")
+  }
+  if (spec$has_ilr_global_raw) {
+    beta_term <- if (spec$has_beta_raw) "beta_raw[, d]" else "beta[, d]"
+    body <- c(
+      body,
+      sprintf(
+        "ilr_global_raw[d] = ilr_global[d] - dot_product(means_X, %s);",
+        beta_term
+      )
+    )
+  }
+
+  c(
+    decl,
+    "for (d in 1:D) {",
+    indent(body),
     "}"
   )
 }

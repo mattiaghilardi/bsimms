@@ -67,6 +67,18 @@ back onto the source simplex, giving $p_i$, a vector of $K$ source
 proportions -- the $p_{i, k}$ used in Equation (1) of
 [`vignette("data-error")`](data-error.html).
 
+By default (`center = TRUE`, `scale = TRUE` in `bsimm()`/
+`make_stancode()`/`make_standata()`), every continuous fixed-effect
+column of $\mathbf{x}_i$ is centred and scaled before fitting --
+factor/dummy-coded columns are left untouched. This means `p_global`
+represents the population-average proportions when every continuous
+covariate is at its mean value, not at a raw value of zero, which can be
+a nonsensical point to extrapolate to (e.g. a consumer's body length of
+zero). `fitted_proportions()`/`predict()`/`conditional_effects()` all
+report values on the original covariate scale regardless, so this only
+affects how `p_global` and $\boldsymbol{\beta}$ themselves are
+interpreted, not predictions at any particular covariate value.
+
 ## Fixed and random effects
 
 Here we simulate a factor fixed effect (`Sex`), a continuous fixed

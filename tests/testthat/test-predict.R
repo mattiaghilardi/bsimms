@@ -621,3 +621,71 @@ test_that("posterior_proportions errors on an unseen factor level for a fixed ef
     )
   )
 })
+
+# standardisation (center/scale) ----------------------------------------------
+
+standardise_mixture_data <- data.frame(
+  d13C = c(-20, -21, -19, -22, -20.5, -21.5),
+  d15N = c(10, 11, 9, 12, 10.5, 11.5),
+  elevation = c(100, 120, 110, 300, 320, 310)
+)
+standardise_source_data <- data.frame(
+  Source = c("Beaver", "Deer", "Otter"),
+  d13C_mean = c(-26, -14, -20),
+  d13C_sd = c(1, 1, 1),
+  d15N_mean = c(4, 6, 3),
+  d15N_sd = c(1, 1, 1)
+)
+standardise_tdf_data <- data.frame(
+  Source = c("Beaver", "Deer", "Otter"),
+  d13C_mean = c(0.8, 0.9, 1.0),
+  d13C_sd = c(0.2, 0.2, 0.2),
+  d15N_mean = c(3.2, 3.3, 3.4),
+  d15N_sd = c(0.3, 0.3, 0.3)
+)
+standardise_fit <- bsimm(
+  formula = ~elevation,
+  mixture_data = standardise_mixture_data,
+  source_data = standardise_source_data,
+  tdf_data = standardise_tdf_data,
+  isotope_names = c("d13C", "d15N"),
+  source_means_sds = TRUE,
+  chains = 1,
+  iter_warmup = 200,
+  iter_sampling = 100,
+  seed = 1,
+  refresh = 0,
+  show_messages = FALSE,
+  show_exceptions = FALSE
+)
+
+test_that("beta_raw/ilr_global_raw combined with raw X_new reproduce beta/ilr_global combined with hand-standardised Xc_new", {
+  newdata <- data.frame(elevation = c(150, 250))
+  p_via_raw <- posterior_proportions(standardise_fit, newdata = newdata)
+
+  dm <- draws_matrix(standardise_fit)
+  spec <- standardise_fit$spec
+  n_draws <- nrow(dm)
+
+  ilr_global_arr <- extract_array_draws(dm, "ilr_global", spec$D)
+  beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D)
+  means_X <- mean(spec$X[, 1])
+  sds_X <- sd(spec$X[, 1])
+  Xc_new <- matrix((newdata$elevation - means_X) / sds_X, ncol = 1)
+
+  eta_arr <- array(0, dim = c(n_draws, 2, spec$D))
+  for (s in seq_len(n_draws)) {
+    eta_arr[s, , ] <- matrix(
+      ilr_global_arr[s, ],
+      nrow = 2,
+      ncol = spec$D,
+      byrow = TRUE
+    ) +
+      Xc_new %*% beta_arr[s, , ]
+  }
+  p_hand <- array(0, dim = c(n_draws, 2, spec$K))
+  for (s in seq_len(n_draws)) {
+    p_hand[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
+  }
+  expect_equal(unname(p_via_raw), p_hand, tolerance = 1e-6)
+})

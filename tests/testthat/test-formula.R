@@ -74,3 +74,28 @@ test_that("the site/individual shorthand is expanded the same way as lme4", {
   groups <- vapply(pf$re_terms, function(x) x$group, character(1))
   expect_setequal(groups, c("individual:site", "site"))
 })
+
+test_that("continuous columns are classified correctly for standardisation", {
+  d <- data.frame(
+    Age = c(1, 2, 3, 4, 5, 6),
+    Weight = c(10, 20, 30, 40, 50, 60),
+    Sex = factor(c("M", "F", "M", "F", "M", "F")),
+    Flag = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
+  )
+  classify <- function(f) {
+    pf <- parse_bsimms_formula(formula = f, data = d)
+    stats::setNames(pf$x_continuous, pf$fixed_names)
+  }
+
+  expect_equal(classify(~1), c("(Intercept)" = FALSE))
+  expect_equal(classify(~Age)[["Age"]], TRUE)
+  expect_false(any(classify(~Sex)[-1]))
+  expect_true(classify(~ Age:Weight)[["Age:Weight"]])
+  expect_false(any(classify(~ Age:Sex)[-1]))
+  expect_false(any(classify(~Flag)[-1]))
+
+  mixed <- classify(~ Age + Sex + Age:Sex)
+  expect_true(mixed[["Age"]])
+  expect_false(mixed[[grep("^Sex", names(mixed), value = TRUE)]])
+  expect_false(mixed[[grep("^Age:Sex", names(mixed), value = TRUE)]])
+})

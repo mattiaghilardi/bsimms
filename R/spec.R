@@ -7,7 +7,7 @@
 #' and the default priors, so those downstream steps never re-derive or
 #' re-validate anything from the raw arguments themselves.
 #'
-#' @param formula,mixture_data,source_data,tdf_data,isotope_names,source_means_sds,tdf_means_sds,conc_dep,error_structure,source_col
+#' @param formula,mixture_data,source_data,tdf_data,isotope_names,source_means_sds,tdf_means_sds,conc_dep,center,scale,error_structure,source_col
 #'   Same meaning as the corresponding arguments of `make_stancode()`.
 #' @return A list of class `bsimms_spec` with elements: `formula`;
 #'   `isotope_names`, `source_names` (sorted), `source_col`; dimensions `K`
@@ -16,11 +16,15 @@
 #'   excluded); `V` (ILR basis, from `ilr_basis()`); `y` (mixture isotope
 #'   matrix); `source` and `tdf` (as returned by `prep_iso_table()`); `conc`
 #'   (as returned by `prep_conc_dep()`, or `NULL`) and `has_conc_dep`; `X`,
-#'   `fixed_formula`, `fixed_names`, `fixed_frame` (fixed-effect design,
-#'   from `parse_bsimms_formula()`, with `(Intercept)` dropped since the
-#'   population-level baseline is `p_global`, not a `beta` intercept);
-#'   `re_terms` (group-level terms, from `parse_bsimms_formula()`);
-#'   `error_structure`; `source_means_sds`; `tdf_means_sds`.
+#'   `fixed_formula`, `fixed_names`, `fixed_frame`, `x_continuous`
+#'   (fixed-effect design, from `parse_bsimms_formula()`, with
+#'   `(Intercept)` dropped since the population-level baseline is
+#'   `p_global`, not a `beta` intercept); `re_terms` (group-level terms,
+#'   from `parse_bsimms_formula()`); `error_structure`; `source_means_sds`;
+#'   `tdf_means_sds`; `center`; `scale`; `has_beta_raw`/`has_ilr_global_raw`
+#'   (whether `scale`/`center` actually standardises at least one
+#'   continuous column, i.e. whether the generated Stan program ends up
+#'   with a `beta_raw`/`ilr_global_raw` at all).
 #' @noRd
 build_bsimms_spec <- function(
   formula,
@@ -31,10 +35,25 @@ build_bsimms_spec <- function(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   source_col = "Source"
 ) {
   error_structure <- rlang::arg_match(error_structure)
+
+  if (!isTRUE(center) && !isFALSE(center)) {
+    cli::cli_abort(
+      "{.arg center} must be {.code TRUE} or {.code FALSE}.",
+      call = NULL
+    )
+  }
+  if (!isTRUE(scale) && !isFALSE(scale)) {
+    cli::cli_abort(
+      "{.arg scale} must be {.code TRUE} or {.code FALSE}.",
+      call = NULL
+    )
+  }
 
   if (!is.character(isotope_names) || length(isotope_names) < 1) {
     cli::cli_abort(
@@ -184,6 +203,16 @@ build_bsimms_spec <- function(
   keep <- pf$fixed_names != "(Intercept)"
   X <- pf$X[, keep, drop = FALSE]
   fixed_names <- pf$fixed_names[keep]
+  x_continuous <- pf$x_continuous[keep]
+
+  # Whether the generated Stan program actually ends up with a `beta_raw`/
+  # `ilr_global_raw` (and therefore `sds_X`/`means_X`/`Xc`) at all: not just
+  # whether the user asked for `scale`/`center`, but whether at least one
+  # column is continuous for that request to have any effect on. A request
+  # with no applicable column (e.g. `center = TRUE` on an all-factor
+  # formula) generates no standardisation code at all, same as `P == 0`.
+  has_beta_raw <- ncol(X) > 0 && scale && any(x_continuous)
+  has_ilr_global_raw <- ncol(X) > 0 && center && any(x_continuous)
 
   structure(
     list(
@@ -204,12 +233,17 @@ build_bsimms_spec <- function(
       fixed_formula = pf$fixed_formula,
       fixed_names = fixed_names,
       fixed_frame = pf$fixed_frame,
+      x_continuous = x_continuous,
       P = ncol(X),
       re_terms = pf$re_terms,
       error_structure = error_structure,
       source_means_sds = source_means_sds,
       tdf_means_sds = tdf_means_sds,
-      has_conc_dep = !is.null(conc)
+      has_conc_dep = !is.null(conc),
+      center = center,
+      scale = scale,
+      has_beta_raw = has_beta_raw,
+      has_ilr_global_raw = has_ilr_global_raw
     ),
     class = "bsimms_spec"
   )

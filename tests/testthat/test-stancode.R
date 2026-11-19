@@ -249,6 +249,94 @@ test_that("conc_dep = TRUE declares the concentration matrix and weights proport
   expect_match(code, "concentration-weighted")
 })
 
+test_that("center/scale standardise only continuous columns in transformed data", {
+  mixture_data_x <- cbind(mixture_data, Age = c(20, 30, 40, 50, 60, 70))
+
+  code_both <- make_stancode(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_match(code_both, "means_X\\[1\\] = mean\\(X\\[, 1\\]\\);  // Age")
+  expect_match(code_both, "sds_X\\[1\\] = sd\\(X\\[, 1\\]\\);  // Age")
+  expect_match(code_both, "means_X\\[2\\] = 0;  // SexM")
+  expect_match(code_both, "sds_X\\[2\\] = 1;  // SexM")
+  expect_match(
+    code_both,
+    "Xc\\[, p\\] = \\(X\\[, p\\] - means_X\\[p\\]\\) / sds_X\\[p\\];"
+  )
+  expect_match(code_both, "Xc * beta", fixed = TRUE)
+  expect_match(code_both, "matrix\\[P, D\\] beta_raw;")
+  expect_match(code_both, "vector\\[D\\] ilr_global_raw;")
+  expect_match(code_both, "// covariates: centred and scaled", fixed = TRUE)
+
+  code_center_only <- make_stancode(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N"),
+    scale = FALSE
+  )
+  expect_no_match(code_center_only, "sds_X")
+  expect_no_match(code_center_only, "matrix\\[P, D\\] beta_raw;")
+  expect_match(code_center_only, "vector\\[D\\] ilr_global_raw;")
+  expect_match(code_center_only, "Xc\\[, p\\] = X\\[, p\\] - means_X\\[p\\];")
+  expect_match(code_center_only, "// covariates: centred\n", fixed = TRUE)
+
+  code_scale_only <- make_stancode(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N"),
+    center = FALSE
+  )
+  expect_no_match(code_scale_only, "means_X")
+  expect_no_match(code_scale_only, "vector\\[D\\] ilr_global_raw;")
+  expect_match(code_scale_only, "matrix\\[P, D\\] beta_raw;")
+  expect_match(code_scale_only, "Xc\\[, p\\] = X\\[, p\\] / sds_X\\[p\\];")
+  expect_match(code_scale_only, "// covariates: scaled\n", fixed = TRUE)
+
+  code_neither <- make_stancode(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N"),
+    center = FALSE,
+    scale = FALSE
+  )
+  expect_no_match(code_neither, "means_X|sds_X|Xc|beta_raw|ilr_global_raw")
+  expect_no_match(code_neither, "// covariates:")
+  expect_match(code_neither, "X * beta", fixed = TRUE)
+})
+
+test_that("center/scale generate no standardisation code for an all-factor formula", {
+  code <- make_stancode(
+    formula = ~Sex,
+    mixture_data = mixture_data,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N")
+  )
+  expect_no_match(code, "means_X|sds_X|Xc|beta_raw|ilr_global_raw")
+  expect_no_match(code, "// covariates:")
+  expect_match(code, "X * beta", fixed = TRUE)
+})
+
+test_that("standardisation_label reflects has_ilr_global_raw/has_beta_raw", {
+  spec <- function(ilr_global_raw, beta_raw) {
+    list(has_ilr_global_raw = ilr_global_raw, has_beta_raw = beta_raw)
+  }
+  expect_equal(standardisation_label(spec(TRUE, TRUE)), "centred and scaled")
+  expect_equal(standardisation_label(spec(TRUE, FALSE)), "centred")
+  expect_equal(standardisation_label(spec(FALSE, TRUE)), "scaled")
+  expect_null(standardisation_label(spec(FALSE, FALSE)))
+})
+
 test_that("a user prior override replaces the default in the generated code", {
   code_default <- make_stancode(
     formula = ~Sex,
@@ -305,4 +393,19 @@ test_that("generated Stan code is syntactically valid across error structures/da
     source_means_sds = TRUE,
     error_structure = "process_only"
   )))
+
+  mixture_data_x <- cbind(mixture_data, Age = c(20, 30, 40, 50, 60, 70))
+  for (ctr in c(TRUE, FALSE)) {
+    for (scl in c(TRUE, FALSE)) {
+      expect_true(check_syntax(make_stancode(
+        formula = ~ Age + Sex,
+        mixture_data = mixture_data_x,
+        source_data = source_data_raw,
+        tdf_data = tdf_data_summary,
+        isotope_names = c("d13C", "d15N"),
+        center = ctr,
+        scale = scl
+      )))
+    }
+  }
 })

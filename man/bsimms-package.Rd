@@ -76,6 +76,7 @@ a new generation of Bayesian tracer mixing models. \emph{PeerJ}, 6, e5096.
 Useful links:
 \itemize{
   \item \url{https://github.com/mattiaghilardi/bsimms}
+  \item \url{https://mattiaghilardi.github.io/bsimms/}
   \item Report bugs at \url{https://github.com/mattiaghilardi/bsimms/issues}
 }
 

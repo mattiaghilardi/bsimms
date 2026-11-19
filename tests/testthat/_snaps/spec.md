@@ -1,3 +1,12 @@
+# center/scale default to TRUE and are captured on the spec
+
+    Code
+      build_bsimms_spec(formula = ~1, mixture_data = mixture_data, source_data = source_data,
+        tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), center = "yes")
+    Condition
+      Error:
+      ! `center` must be `TRUE` or `FALSE`.
+
 # error_structure defaults to process_residual and is validated
 
     Code

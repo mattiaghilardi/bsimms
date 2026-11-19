@@ -15,7 +15,9 @@ parse_bsimms_formula(formula, data)
 A list with elements \code{formula}, \code{fixed_formula}, \code{X} (fixed-effect
 design matrix), \code{fixed_names}, \code{fixed_frame} (model frame of the
 fixed-effect covariates, one column per named variable, character
-columns coerced to factor), and \code{re_terms} (a list, one element per
+columns coerced to factor), \code{x_continuous} (logical vector the same
+length as \code{ncol(X)}, \code{TRUE} for a column derived purely from
+continuous covariate(s)), and \code{re_terms} (a list, one element per
 group-level term, each with \code{group}, \code{term_names}, \code{Z}, \code{group_idx},
 \code{group_levels}).
 }

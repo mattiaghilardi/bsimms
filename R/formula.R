@@ -30,7 +30,9 @@
 #' @return A list with elements `formula`, `fixed_formula`, `X` (fixed-effect
 #'   design matrix), `fixed_names`, `fixed_frame` (model frame of the
 #'   fixed-effect covariates, one column per named variable, character
-#'   columns coerced to factor), and `re_terms` (a list, one element per
+#'   columns coerced to factor), `x_continuous` (logical vector the same
+#'   length as `ncol(X)`, `TRUE` for a column derived purely from
+#'   continuous covariate(s)), and `re_terms` (a list, one element per
 #'   group-level term, each with `group`, `term_names`, `Z`, `group_idx`,
 #'   `group_levels`).
 #' @export
@@ -80,6 +82,7 @@ parse_bsimms_formula <- function(formula, data) {
   fixed_frame[] <- lapply(fixed_frame, function(col) {
     if (is.character(col)) factor(col) else col
   })
+  x_continuous <- classify_continuous_columns(fixed_formula, X, fixed_frame)
 
   # Character columns must be coerced to factor before evaluating a
   # group-level term's grouping expression: base R's `:` only computes the
@@ -157,8 +160,56 @@ parse_bsimms_formula <- function(formula, data) {
     X = X,
     fixed_names = fixed_names,
     fixed_frame = fixed_frame,
+    x_continuous = x_continuous,
     re_terms = re_terms
   )
+}
+
+#' Classify each column of a fixed-effect design matrix as derived purely
+#' from continuous covariate(s), as opposed to involving a factor or
+#' logical variable (as a main effect, dummy, or through any interaction).
+#' Used to decide which columns are eligible for standardisation
+#' (`stancode.R`'s `center`/`scale`): a factor-derived column (already
+#' 0/1-coded, or any interaction touching a factor/logical) is never
+#' standardised.
+#'
+#' @param fixed_formula The fixed-effect formula (no bars).
+#' @param X The design matrix built from `fixed_formula` via
+#'   `stats::model.matrix()` (its `"assign"` attribute maps each column to
+#'   a model term, `0` for the intercept).
+#' @param fixed_frame The model frame of `fixed_formula`'s variables
+#'   (character columns already coerced to factor).
+#' @return A logical vector the same length as `ncol(X)`.
+#' @noRd
+classify_continuous_columns <- function(fixed_formula, X, fixed_frame) {
+  tt <- stats::terms(fixed_formula)
+  term_labels <- attr(tt, "term.labels")
+  assign <- attr(X, "assign")
+
+  if (length(term_labels) == 0) {
+    return(rep(FALSE, ncol(X)))
+  }
+
+  factors_mat <- attr(tt, "factors")
+  is_noncontinuous <- vapply(
+    fixed_frame,
+    function(col) is.factor(col) || is.logical(col),
+    logical(1)
+  )
+
+  term_is_continuous <- vapply(
+    seq_along(term_labels),
+    function(i) {
+      vars <- rownames(factors_mat)[factors_mat[, i] > 0]
+      !any(is_noncontinuous[vars])
+    },
+    logical(1)
+  )
+
+  out <- logical(length(assign))
+  nonzero <- assign > 0
+  out[nonzero] <- term_is_continuous[assign[nonzero]]
+  out
 }
 
 #' Sanitise a character vector into valid Stan identifiers: non-alphanumeric

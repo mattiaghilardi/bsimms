@@ -58,6 +58,8 @@ bsimm <- function(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   prior = NULL,
   source_col = "Source",
@@ -83,6 +85,8 @@ bsimm <- function(
     source_means_sds = source_means_sds,
     tdf_means_sds = tdf_means_sds,
     conc_dep = conc_dep,
+    center = center,
+    scale = scale,
     error_structure = error_structure,
     source_col = source_col
   )

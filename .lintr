@@ -3,17 +3,34 @@ encoding: "UTF-8"
 exclusions: list(
     "R/stancode.R" = list(
       line_length_linter = Inf,
-      object_length_linter = c(618, 1168) # stan_*_lines() naming family
+      object_length_linter = c(704, 1262), # stan_*_lines() naming family
+      object_usage_linter = 130 # codetools false positive, see R/bsimm.R
     ),
     "R/bayes_R2.R" = list(
       line_length_linter = 27, # unbreakable reference URL
       commas_linter = 84 # air removes the space after `[,`
     ),
-    "R/bsimm.R" = list(line_length_linter = 54), # air doesn't wrap this default value
+    "R/bsimm.R" = list(
+      line_length_linter = 54, # air doesn't wrap this default value
+      # codetools false positive: center/scale are passed through to
+      # build_bsimms_spec() and genuinely used (confirmed by the test
+      # suite and by inspecting generated Stan code directly); codetools
+      # loses track of argument usage once rlang::arg_match() reassigns
+      # error_structure earlier in the same call's argument list.
+      object_usage_linter = 79
+    ),
     "R/plot.R" = list(commas_linter = 221), # air removes the space after `[,`
     "R/predict.R" = list(
-      commas_linter = c(272, 561, 642, 1427) # air removes the space after `[,`
+      commas_linter = c(272, 561, 642, 1445) # air removes the space after `[,`
     ),
     "R/spec.R" = list(line_length_linter = 10), # unbreakable @param name list
+    "R/standata.R" = list(object_usage_linter = 49), # codetools false positive, see R/bsimm.R
+    "R/summary.R" = list(
+      # lint_package()'s per-file analysis doesn't always resolve a call to
+      # an internal function defined in a different R/ file (here,
+      # standardisation_label(), defined in R/stancode.R); genuinely used
+      # (confirmed above, and by `print(fit)`'s actual output).
+      object_usage_linter = 68
+    ),
     "tests/testthat" = list(line_length_linter = Inf) # long, descriptive test_that() titles
   ) # see ?lintr::exclude

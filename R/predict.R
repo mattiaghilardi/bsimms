@@ -679,8 +679,17 @@ compute_p_newdata <- function(
 
   # Global (population-average) baseline in ILR space (Egozcue et al. 2003,
   # eq. 25) -- same baseline for every row of `newdata`. Stan already
-  # computes and saves this as `ilr_global` (transformed parameters block).
-  ilr_global_arr <- extract_array_draws(dm, "ilr_global", spec$D) # n_draws x D
+  # computes and saves this as `ilr_global` (transformed parameters block),
+  # or `ilr_global_raw` when `center` standardised at least one continuous
+  # fixed-effect column (`spec$has_ilr_global_raw`): the back-converted
+  # quantity that combines correctly with `X_new` built on the raw
+  # (unstandardised) scale below, exactly as `newdata`'s covariates are.
+  ilr_global_name <- if (spec$has_ilr_global_raw) {
+    "ilr_global_raw"
+  } else {
+    "ilr_global"
+  }
+  ilr_global_arr <- extract_array_draws(dm, ilr_global_name, spec$D) # n x D
 
   eta_arr <- array(0, dim = c(n_draws, nrow(newdata), spec$D))
   for (s in seq_len(n_draws)) {
@@ -699,8 +708,10 @@ compute_p_newdata <- function(
       data = newdata_model_frame(spec$fixed_formula, spec$fixed_frame, newdata)
     )
     X_new <- align_columns(X_new, spec$fixed_names)
-    # n_draws x P x D
-    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D)
+    # n_draws x P x D; `beta_raw` (undoing `scale`) when
+    # `spec$has_beta_raw`, so it combines correctly with raw `X_new`.
+    beta_name <- if (spec$has_beta_raw) "beta_raw" else "beta"
+    beta_arr <- extract_array_draws(dm, beta_name, spec$P, spec$D)
     for (s in seq_len(n_draws)) {
       eta_arr[s, , ] <- eta_arr[s, , ] + X_new %*% beta_arr[s, , ]
     }
@@ -789,7 +800,12 @@ predict_p_newdata <- function(
 #' @noRd
 compute_p_fitted <- function(spec, dm, candidate_terms) {
   n_draws <- nrow(dm)
-  ilr_global_arr <- extract_array_draws(dm, "ilr_global", spec$D) # n_draws x D
+  ilr_global_name <- if (spec$has_ilr_global_raw) {
+    "ilr_global_raw"
+  } else {
+    "ilr_global"
+  }
+  ilr_global_arr <- extract_array_draws(dm, ilr_global_name, spec$D) # n x D
 
   eta_arr <- array(0, dim = c(n_draws, spec$N, spec$D))
   for (s in seq_len(n_draws)) {
@@ -802,8 +818,10 @@ compute_p_fitted <- function(spec, dm, candidate_terms) {
   }
 
   if (spec$P > 0) {
-    # n_draws x P x D
-    beta_arr <- extract_array_draws(dm, "beta", spec$P, spec$D)
+    # n_draws x P x D; `beta_raw` (undoing `scale`) when `spec$has_beta_raw`,
+    # so it combines correctly with raw `spec$X`.
+    beta_name <- if (spec$has_beta_raw) "beta_raw" else "beta"
+    beta_arr <- extract_array_draws(dm, beta_name, spec$P, spec$D)
     for (s in seq_len(n_draws)) {
       eta_arr[s, , ] <- eta_arr[s, , ] + spec$X %*% beta_arr[s, , ]
     }

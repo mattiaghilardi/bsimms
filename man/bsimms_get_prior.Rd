@@ -64,8 +64,8 @@ data is raw and there are 2+ isotopes. This asymmetry is intentional
 correlation is a rare combination in practice), not an oversight, but
 could be added symmetrically to \code{source_cor} if needed.}
 
-\item{conc_dep}{Logical; enable elemental concentration dependence
-(default \code{FALSE})? If \code{TRUE}, \code{source_data} must have a \verb{<isotope>_conc}
+\item{conc_dep}{Logical (default \code{FALSE}); enable elemental concentration
+dependence? If \code{TRUE}, \code{source_data} must have a \verb{<isotope>_conc}
 column for every isotope in \code{isotope_names}, giving that source's
 proportional elemental concentration (in \verb{(0, 1]}) for that isotope's
 element -- one value per raw sample (averaged per source) if

@@ -2,9 +2,10 @@
 #'
 #' Prints a one-screen overview of a fitted model: formula, source/isotope/
 #' mixture counts and names, error structure, source/TDF data mode,
-#' whether concentration dependence is enabled, group-level terms (if any),
-#' and the fitting backend used. For posterior summaries, use
-#' [summary.bsimms_fit()].
+#' whether concentration dependence is enabled, whether (and how)
+#' continuous fixed-effect covariates were centred/scaled, group-level
+#' terms (if any), and the fitting backend used. For posterior summaries,
+#' use [summary.bsimms_fit()].
 #'
 #' @param x A `bsimms_fit` object (as returned by [bsimm()]).
 #' @param ... Currently unused.
@@ -63,6 +64,10 @@ print.bsimms_fit <- function(x, ...) {
   cat(" tdf data:        ", spec$tdf$mode, "\n", sep = "")
   if (spec$has_conc_dep) {
     cat(" concentration dependence: yes\n")
+  }
+  covariates_label <- standardisation_label(spec)
+  if (!is.null(covariates_label)) {
+    cat(" covariates:      ", covariates_label, "\n", sep = "")
   }
   if (length(spec$re_terms) > 0) {
     cat(" group-level terms:\n")

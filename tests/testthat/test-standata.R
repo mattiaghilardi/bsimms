@@ -63,6 +63,26 @@ test_that("P/X are included only when the model has fixed effects", {
   expect_equal(dim(sdata_fe$X), c(6, 1))
 })
 
+test_that("X stays raw in the data list regardless of center/scale", {
+  mixture_data_x <- cbind(mixture_data, Age = c(20, 30, 40, 50, 60, 70))
+  x_raw <- stats::model.matrix(~Age, data = mixture_data_x)[, "Age"]
+
+  for (ctr in c(TRUE, FALSE)) {
+    for (scl in c(TRUE, FALSE)) {
+      sdata <- make_standata(
+        formula = ~Age,
+        mixture_data = mixture_data_x,
+        source_data = source_data_raw,
+        tdf_data = tdf_data_summary,
+        isotope_names = c("d13C", "d15N"),
+        center = ctr,
+        scale = scl
+      )
+      expect_equal(unname(sdata$X[, 1]), unname(x_raw))
+    }
+  }
+})
+
 test_that("group-level terms add N_re_*/M_re_*/Z_re_*/grp_re_* entries", {
   sdata <- make_standata(
     formula = ~ 1 + (1 | Region),
@@ -173,4 +193,39 @@ test_that("make_standata's data list is compatible with make_stancode's generate
   )
   draws <- fit$draws("p_global")
   expect_equal(dim(draws)[3], 2)
+})
+
+test_that("standardised fixed-effect design matrix compiles and samples at runtime", {
+  skip_if_not_installed("cmdstanr")
+  mixture_data_x <- cbind(mixture_data, Age = c(20, 30, 40, 50, 60, 70))
+  code <- make_stancode(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N")
+  )
+  sdata <- make_standata(
+    formula = ~ Age + Sex,
+    mixture_data = mixture_data_x,
+    source_data = source_data_raw,
+    tdf_data = tdf_data_summary,
+    isotope_names = c("d13C", "d15N")
+  )
+  f <- tempfile(fileext = ".stan")
+  on.exit(unlink(f))
+  writeLines(as.character(code), f)
+  mod <- cmdstanr::cmdstan_model(f, compile = TRUE, quiet = TRUE)
+  fit <- mod$sample(
+    data = unclass(sdata),
+    chains = 1,
+    iter_warmup = 100,
+    iter_sampling = 50,
+    refresh = 0,
+    seed = 1,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  draws <- fit$draws(c("beta", "beta_raw", "ilr_global_raw"))
+  expect_equal(dim(draws)[3], 5) # beta (P=2,D=1) + beta_raw (P=2,D=1) + ilr_global_raw (D=1)
 })

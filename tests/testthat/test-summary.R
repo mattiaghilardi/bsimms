@@ -49,6 +49,31 @@ test_that("print.bsimms_fit prints a one-screen model overview", {
   expect_snapshot(print(fit_full))
 })
 
+test_that("print.bsimms_fit shows the covariates line only when center/scale apply", {
+  out_full <- capture.output(print(fit_full))
+  expect_match(out_full, "covariates:\\s+centred and scaled", all = FALSE)
+
+  out_min <- capture.output(print(fit_min))
+  expect_false(any(grepl("covariates:", out_min)))
+
+  fit_off <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    center = FALSE,
+    scale = FALSE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  out_off <- capture.output(print(fit_off))
+  expect_false(any(grepl("covariates:", out_off)))
+})
+
 test_that("summary.bsimms_fit includes fixed/group/error sections when present", {
   s <- summary(fit_full)
   expect_s3_class(s, "summary.bsimms_fit")
