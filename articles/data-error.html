@@ -195,7 +195,11 @@ p_{i, k}^* = \frac{p_{i, k} \, c_{k, j}}{\sum_{l=1}^{K} p_{i, l} \,
 c_{l, j}},
 </span></p>
 <p>where <span class="math inline">c_{k, j}</span> is source <span class="math inline">k</span>’s elemental concentration for isotope <span class="math inline">j</span> (the <code>&lt;isotope&gt;_conc</code>
-column).</p>
+column), and the denominator sums over a dummy index <span class="math inline">l</span> rather than <span class="math inline">k</span>: <span class="math inline">k</span> is
+fixed throughout as the specific source being reweighted, so the sum
+over <em>all</em> sources (normalising the result back onto the simplex)
+needs a different index to avoid reusing <span class="math inline">k</span> for two different roles in the same
+equation.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mattiaghilardi/bsimms" class="external-link">bsimms</a></span><span class="op">)</span></span>
 <span></span>

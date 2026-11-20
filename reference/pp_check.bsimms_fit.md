@@ -109,8 +109,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.8 seconds.
+#> Mean chain execution time: 0.4 seconds.
+#> Total execution time: 1.0 seconds.
 #> 
 bayesplot::pp_check(fit, resp = "d13C")
 #> Using 10 posterior draws for ppc type "dens_overlay" by default.

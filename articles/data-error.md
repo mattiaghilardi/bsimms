@@ -110,7 +110,11 @@ p\_{i, k}^\* = \frac{p\_{i, k} \\ c\_{k, j}}{\sum\_{l=1}^{K} p\_{i, l}
 \\ c\_{l, j}},
 
 where c\_{k, j} is source k’s elemental concentration for isotope j (the
-`<isotope>_conc` column).
+`<isotope>_conc` column), and the denominator sums over a dummy index l
+rather than k: k is fixed throughout as the specific source being
+reweighted, so the sum over *all* sources (normalising the result back
+onto the simplex) needs a different index to avoid reusing k for two
+different roles in the same equation.
 
 ``` r
 
