@@ -114,6 +114,14 @@ fit_full <- bsimm(
 )
 ```
 
+`print()` confirms that `Age`, the only continuous fixed-effect
+covariate here, was centred and scaled by default (see the Overview
+above):
+
+```{r print-covariates}
+fit_full
+```
+
 `summary()` now also reports fixed-effect coefficients (ILR-scale
 deviations from `p_global`) and group-level standard deviations:
 
