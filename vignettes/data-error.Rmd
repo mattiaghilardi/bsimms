@@ -137,7 +137,12 @@ p_{i, k}^* = \frac{p_{i, k} \, c_{k, j}}{\sum_{l=1}^{K} p_{i, l} \, c_{l, j}},
 $$
 
 where $c_{k, j}$ is source $k$'s elemental concentration for isotope
-$j$ (the `<isotope>_conc` column).
+$j$ (the `<isotope>_conc` column), and the denominator sums over a
+dummy index $l$ rather than $k$: $k$ is fixed throughout as the
+specific source being reweighted, so the sum over *all* sources
+(normalising the result back onto the simplex) needs a different
+index to avoid reusing $k$ for two different roles in the same
+equation.
 
 ```{r conc-dep, message = FALSE, results = "hide"}
 library(bsimms)
