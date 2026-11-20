@@ -32,9 +32,10 @@ parse_bsimms_formula(formula, data)
 A list with elements `formula`, `fixed_formula`, `X` (fixed-effect
 design matrix), `fixed_names`, `fixed_frame` (model frame of the
 fixed-effect covariates, one column per named variable, character
-columns coerced to factor), and `re_terms` (a list, one element per
-group-level term, each with `group`, `term_names`, `Z`, `group_idx`,
-`group_levels`).
+columns coerced to factor), `x_continuous` (logical vector the same
+length as `ncol(X)`, `TRUE` for a column derived purely from continuous
+covariate(s)), and `re_terms` (a list, one element per group-level term,
+each with `group`, `term_names`, `Z`, `group_idx`, `group_levels`).
 
 ## Details
 

@@ -37,6 +37,20 @@ term per grouping factor, when `formula` has more than one); and
 a vector of K source proportions – the p\_{i, k} used in Equation (1) of
 [`vignette("data-error")`](https://mattiaghilardi.github.io/bsimms/articles/data-error.md).
 
+By default (`center = TRUE`, `scale = TRUE` in
+[`bsimm()`](https://mattiaghilardi.github.io/bsimms/reference/bsimm.md)/
+[`make_stancode()`](https://mattiaghilardi.github.io/bsimms/reference/make_stancode.md)/[`make_standata()`](https://mattiaghilardi.github.io/bsimms/reference/make_standata.md)),
+every continuous fixed-effect column of \mathbf{x}\_i is centred and
+scaled before fitting – factor/dummy-coded columns are left untouched.
+This means `p_global` represents the population-average proportions when
+every continuous covariate is at its mean value, not at a raw value of
+zero, which can be a nonsensical point to extrapolate to (e.g. a
+consumer’s body length of zero).
+[`fitted_proportions()`](https://mattiaghilardi.github.io/bsimms/reference/fitted_proportions.md)/[`predict()`](https://rdrr.io/r/stats/predict.html)/[`conditional_effects()`](https://mattiaghilardi.github.io/bsimms/reference/conditional_effects.md)
+all report values on the original covariate scale regardless, so this
+only affects how `p_global` and \boldsymbol{\beta} themselves are
+interpreted, not predictions at any particular covariate value.
+
 ## Fixed and random effects
 
 Here we simulate a factor fixed effect (`Sex`), a continuous fixed
@@ -85,28 +99,28 @@ summary(fit_full)
 #> 
 #> Population-average source proportions:
 #>  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Beaver 0.336 0.091 0.168 0.534 1.002     1489     1667
-#>    Deer 0.383 0.098 0.181 0.582 1.006      825      535
-#>    Hare 0.281 0.082 0.145 0.476 1.002      991      770
+#>  Beaver 0.344 0.099 0.168 0.586 1.007      500      156
+#>    Deer 0.380 0.098 0.182 0.582 1.003     1015      741
+#>    Hare 0.277 0.081 0.132 0.470 1.006      501      161
 #> 
 #> Fixed effects (ILR scale, deviations from the global proportions):
 #>  coefficient ilr_dim   mean    sd   q2.5  q97.5  rhat ess_bulk ess_tail
-#>         SexB       1  0.977 0.240  0.531  1.461 1.001     2846     2343
-#>          Age       1  0.002 0.108 -0.212  0.218 1.002     2407     1917
-#>     SexB:Age       1 -0.629 0.169 -0.966 -0.308 1.000     2650     2691
-#>         SexB       2 -0.731 0.117 -0.965 -0.503 1.001     2480     2607
-#>          Age       2  0.177 0.064  0.050  0.302 1.002     2398     2679
-#>     SexB:Age       2  0.062 0.104 -0.140  0.265 1.002     2047     2180
+#>         SexB       1  0.973 0.236  0.542  1.483 1.001     2192     1669
+#>          Age       1  0.006 0.089 -0.164  0.190 1.002     2160     2309
+#>     SexB:Age       1 -0.643 0.165 -0.971 -0.327 1.000     2247     2694
+#>         SexB       2 -0.732 0.114 -0.969 -0.511 1.002     1669     2288
+#>          Age       2  0.158 0.054  0.056  0.269 1.004     2260     2550
+#>     SexB:Age       2  0.055 0.100 -0.137  0.262 1.003     1699     2026
 #> 
 #> Group-level standard deviations (ILR scale):
 #>   group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>  Region (Intercept)       1 0.581 0.393 0.144 1.599 1.001     1605     2172
-#>  Region (Intercept)       2 0.529 0.331 0.151 1.413 1.002      977      625
+#>  Region (Intercept)       1 0.598 0.398 0.144 1.603 1.003      864      821
+#>  Region (Intercept)       2 0.544 0.347 0.153 1.460 1.006      532      153
 #> 
 #> Error term(s):
 #>  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail
-#>     d13C 2.998 0.938 1.485 5.117 1.001     2512     2628
-#>     d15N 1.929 0.566 1.034 3.244 1.002     2528     2791
+#>     d13C 2.913 0.931 1.530 5.151 1.003     1044     1175
+#>     d15N 1.889 0.582 0.997 3.241 1.003     1246     1173
 ```
 
 ## Nested and crossed random effects
@@ -219,8 +233,8 @@ loo::loo_compare(fit_full, fit_null_cov)
 #> Computing "loo" for model "fit_null_cov" (not cached; use `add_criterion()` to
 #> cache it for reuse).
 #>         model elpd_diff se_diff p_worse diag_diff      diag_elpd
-#>      fit_full       0.0     0.0      NA           2 k_psis > 0.7
-#>  fit_null_cov     -67.1     5.8    1.00   N < 100
+#>      fit_full       0.0     0.0      NA           1 k_psis > 0.7
+#>  fit_null_cov     -67.8     5.7    1.00   N < 100
 #> 
 #> Diagnostic flags present.
 #> See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)
@@ -243,8 +257,8 @@ where it is always ~0):
 
 rstantools::bayes_R2(fit_full)
 #>   isotope      mean         sd       q2.5     q97.5
-#> 1    d13C 0.1775111 0.06035563 0.06601869 0.2976717
-#> 2    d15N 0.8926811 0.01103966 0.86511717 0.9079263
+#> 1    d13C 0.1810730 0.05850717 0.06956615 0.2922865
+#> 2    d15N 0.8931277 0.01076105 0.86680106 0.9080341
 ```
 
 R² is reported per isotope, and relates directly to that isotope’s error
@@ -410,7 +424,7 @@ predict(
   allow_new_levels = TRUE,
   sample_new_levels = "gaussian"
 )
-#>   row isotope     mean       sd       q2.5     q97.5
-#> 1   1    d13C 4.100536 2.071552 -0.1580402  8.129324
-#> 2   1    d15N 5.675570 3.236674 -1.2966528 12.069178
+#>   row isotope     mean       sd       q2.5    q97.5
+#> 1   1    d13C 4.132239 2.086907 -0.1357657  8.09261
+#> 2   1    d15N 5.700961 3.232331 -1.0847577 12.16870
 ```

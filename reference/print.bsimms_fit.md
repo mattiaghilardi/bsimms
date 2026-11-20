@@ -2,8 +2,9 @@
 
 Prints a one-screen overview of a fitted model: formula, source/isotope/
 mixture counts and names, error structure, source/TDF data mode, whether
-concentration dependence is enabled, group-level terms (if any), and the
-fitting backend used. For posterior summaries, use
+concentration dependence is enabled, whether (and how) continuous
+fixed-effect covariates were centred/scaled, group-level terms (if any),
+and the fitting backend used. For posterior summaries, use
 [`summary.bsimms_fit()`](https://mattiaghilardi.github.io/bsimms/reference/summary.bsimms_fit.md).
 
 ## Usage

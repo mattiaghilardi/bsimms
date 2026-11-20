@@ -92,7 +92,7 @@ bsimms_get_prior(
 
 - conc_dep:
 
-  Logical; enable elemental concentration dependence (default `FALSE`)?
+  Logical (default `FALSE`); enable elemental concentration dependence?
   If `TRUE`, `source_data` must have a `<isotope>_conc` column for every
   isotope in `isotope_names`, giving that source's proportional
   elemental concentration (in `(0, 1]`) for that isotope's element – one

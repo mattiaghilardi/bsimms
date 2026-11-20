@@ -110,6 +110,8 @@ Useful links:
 
 - <https://github.com/mattiaghilardi/bsimms>
 
+- <https://mattiaghilardi.github.io/bsimms/>
+
 - Report bugs at <https://github.com/mattiaghilardi/bsimms/issues>
 
 ## Author

@@ -17,6 +17,8 @@ make_standata(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   prior = NULL,
   source_col = "Source"
@@ -88,7 +90,7 @@ make_standata(
 
 - conc_dep:
 
-  Logical; enable elemental concentration dependence (default `FALSE`)?
+  Logical (default `FALSE`); enable elemental concentration dependence?
   If `TRUE`, `source_data` must have a `<isotope>_conc` column for every
   isotope in `isotope_names`, giving that source's proportional
   elemental concentration (in `(0, 1]`) for that isotope's element – one
@@ -96,6 +98,19 @@ make_standata(
   `source_means_sds = FALSE`, or one value per source if
   `source_means_sds = TRUE`. Since these are proportions of the same
   source's total mass, they cannot sum to more than 1 across isotopes.
+
+- center:
+
+  Logical (default `TRUE`); centre continuous fixed-effect covariates
+  (subtract their mean) before building the design matrix? Only
+  continuous columns are affected; factor/dummy-coded columns (including
+  interactions involving a factor) are never centred.
+
+- scale:
+
+  Logical (default `TRUE`); scale continuous fixed-effect covariates
+  (divide by their SD) before building the design matrix? Only
+  continuous columns are affected, as for `center`.
 
 - error_structure:
 

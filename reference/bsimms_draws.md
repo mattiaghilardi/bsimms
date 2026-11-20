@@ -85,7 +85,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.8 seconds.
+#> Total execution time: 0.9 seconds.
 #> 
 bsimms_draws(fit, variable = "p_global")
 #> # A draws_array: 500 iterations, 2 chains, and 3 variables

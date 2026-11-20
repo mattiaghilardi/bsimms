@@ -18,6 +18,8 @@ bsimm(
   source_means_sds = FALSE,
   tdf_means_sds = TRUE,
   conc_dep = FALSE,
+  center = TRUE,
+  scale = TRUE,
   error_structure = c("process_residual", "process_only", "residual_only"),
   prior = NULL,
   source_col = "Source",
@@ -97,7 +99,7 @@ bsimm(
 
 - conc_dep:
 
-  Logical; enable elemental concentration dependence (default `FALSE`)?
+  Logical (default `FALSE`); enable elemental concentration dependence?
   If `TRUE`, `source_data` must have a `<isotope>_conc` column for every
   isotope in `isotope_names`, giving that source's proportional
   elemental concentration (in `(0, 1]`) for that isotope's element – one
@@ -105,6 +107,19 @@ bsimm(
   `source_means_sds = FALSE`, or one value per source if
   `source_means_sds = TRUE`. Since these are proportions of the same
   source's total mass, they cannot sum to more than 1 across isotopes.
+
+- center:
+
+  Logical (default `TRUE`); centre continuous fixed-effect covariates
+  (subtract their mean) before building the design matrix? Only
+  continuous columns are affected; factor/dummy-coded columns (including
+  interactions involving a factor) are never centred.
+
+- scale:
+
+  Logical (default `TRUE`); scale continuous fixed-effect covariates
+  (divide by their SD) before building the design matrix? Only
+  continuous columns are affected, as for `center`.
 
 - error_structure:
 
@@ -221,57 +236,57 @@ fit <- bsimm(
 #> 
 #> Chain 1 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -inf, but A[2,1] = -inf (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -inf, but A[2,1] = -inf (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 129, column 2 to column 41)
+#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 129, column 2 to column 41)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 130, column 2 to column 41)
+#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 130, column 2 to column 41)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 130, column 2 to column 41)
+#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 130, column 2 to column 41)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 1 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
 #> Chain 1 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 129, column 2 to column 41)
+#> Chain 1 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 129, column 2 to column 41)
 #> Chain 1 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 1 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 1 
@@ -289,47 +304,47 @@ fit <- bsimm(
 #> Chain 1 finished in 1.2 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = inf, but A[2,1] = inf (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = inf, but A[2,1] = inf (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 129, column 2 to column 41)
+#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 129, column 2 to column 41)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 129, column 2 to column 41)
+#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 129, column 2 to column 41)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 102, column 4 to column 83)
+#> Chain 2 Exception: cholesky_decompose: A is not symmetric. A[1,2] = -nan, but A[2,1] = -nan (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 102, column 4 to column 83)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
 #> Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
-#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/Rtmphvi3Oc/model-1ce9d677358.stan', line 129, column 2 to column 41)
+#> Chain 2 Exception: lkj_corr_cholesky_lpdf: Random variable[2] is 0, but must be positive! (in '/tmp/RtmprrizCF/model-1b517c387a70.stan', line 129, column 2 to column 41)
 #> Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
 #> Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
 #> Chain 2 
@@ -344,11 +359,11 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 1.1 seconds.
+#> Chain 2 finished in 1.2 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 1.1 seconds.
-#> Total execution time: 2.4 seconds.
+#> Mean chain execution time: 1.2 seconds.
+#> Total execution time: 2.5 seconds.
 #> 
 # }
 ```

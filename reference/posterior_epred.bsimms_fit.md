@@ -154,7 +154,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 mu_arr <- rstantools::posterior_epred(fit)
 dim(mu_arr)

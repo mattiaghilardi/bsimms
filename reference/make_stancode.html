@@ -73,6 +73,8 @@ is the model, and it can be inspected, hand-edited, and compiled with
 <span>  source_means_sds <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  tdf_means_sds <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  conc_dep <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  center <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  error_structure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"process_residual"</span>, <span class="st">"process_only"</span>, <span class="st">"residual_only"</span><span class="op">)</span>,</span>
 <span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  source_col <span class="op">=</span> <span class="st">"Source"</span></span>
@@ -144,14 +146,27 @@ could be added symmetrically to <code>source_cor</code> if needed.</p></dd>
 
 
 <dt id="arg-conc-dep">conc_dep<a class="anchor" aria-label="anchor" href="#arg-conc-dep"></a></dt>
-<dd><p>Logical; enable elemental concentration dependence
-(default <code>FALSE</code>)? If <code>TRUE</code>, <code>source_data</code> must have a <code>&lt;isotope&gt;_conc</code>
+<dd><p>Logical (default <code>FALSE</code>); enable elemental concentration
+dependence? If <code>TRUE</code>, <code>source_data</code> must have a <code>&lt;isotope&gt;_conc</code>
 column for every isotope in <code>isotope_names</code>, giving that source's
 proportional elemental concentration (in <code>(0, 1]</code>) for that isotope's
 element – one value per raw sample (averaged per source) if
 <code>source_means_sds = FALSE</code>, or one value per source if
 <code>source_means_sds = TRUE</code>. Since these are proportions of the same
 source's total mass, they cannot sum to more than 1 across isotopes.</p></dd>
+
+
+<dt id="arg-center">center<a class="anchor" aria-label="anchor" href="#arg-center"></a></dt>
+<dd><p>Logical (default <code>TRUE</code>); centre continuous fixed-effect
+covariates (subtract their mean) before building the design matrix?
+Only continuous columns are affected; factor/dummy-coded columns
+(including interactions involving a factor) are never centred.</p></dd>
+
+
+<dt id="arg-scale">scale<a class="anchor" aria-label="anchor" href="#arg-scale"></a></dt>
+<dd><p>Logical (default <code>TRUE</code>); scale continuous fixed-effect
+covariates (divide by their SD) before building the design matrix?
+Only continuous columns are affected, as for <code>center</code>.</p></dd>
 
 
 <dt id="arg-error-structure">error_structure<a class="anchor" aria-label="anchor" href="#arg-error-structure"></a></dt>

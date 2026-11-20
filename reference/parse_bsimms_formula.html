@@ -96,7 +96,9 @@ the isotope mixture likelihood.</p>
     <p>A list with elements <code>formula</code>, <code>fixed_formula</code>, <code>X</code> (fixed-effect
 design matrix), <code>fixed_names</code>, <code>fixed_frame</code> (model frame of the
 fixed-effect covariates, one column per named variable, character
-columns coerced to factor), and <code>re_terms</code> (a list, one element per
+columns coerced to factor), <code>x_continuous</code> (logical vector the same
+length as <code>ncol(X)</code>, <code>TRUE</code> for a column derived purely from
+continuous covariate(s)), and <code>re_terms</code> (a list, one element per
 group-level term, each with <code>group</code>, <code>term_names</code>, <code>Z</code>, <code>group_idx</code>,
 <code>group_levels</code>).</p>
     </div>

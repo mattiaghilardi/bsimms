@@ -76,7 +76,7 @@
                         <h4 data-toc-skip class="author">Mattia
 Ghilardi</h4>
             
-            <h4 data-toc-skip class="date">2026-11-17</h4>
+            <h4 data-toc-skip class="date">2026-11-20</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/mattiaghilardi/bsimms/blob/main/vignettes/covariates.Rmd" class="external-link"><code>vignettes/covariates.Rmd</code></a></small>
       <div class="d-none name"><code>covariates.Rmd</code></div>
@@ -119,6 +119,19 @@ of their own; <span class="math inline">\mathbf{z}_i</span> and <span class="mat
 random-effect design row and group-level deviation for the group <span class="math inline">g(i)</span> sample <span class="math inline">i</span> belongs to (one such term per grouping
 factor, when <code>formula</code> has more than one); and <span class="math inline">\mathrm{ilr}^{-1}</span> maps <span class="math inline">\eta_i</span> back onto the source simplex, giving
 <span class="math inline">p_i</span>, a vector of <span class="math inline">K</span> source proportions – the <span class="math inline">p_{i, k}</span> used in Equation (1) of <a href="data-error.html"><code>vignette("data-error")</code></a>.</p>
+<p>By default (<code>center = TRUE</code>, <code>scale = TRUE</code> in
+<code><a href="../reference/bsimm.html">bsimm()</a></code>/
+<code><a href="../reference/make_stancode.html">make_stancode()</a></code>/<code><a href="../reference/make_standata.html">make_standata()</a></code>), every
+continuous fixed-effect column of <span class="math inline">\mathbf{x}_i</span> is centred and scaled before
+fitting – factor/dummy-coded columns are left untouched. This means
+<code>p_global</code> represents the population-average proportions when
+every continuous covariate is at its mean value, not at a raw value of
+zero, which can be a nonsensical point to extrapolate to (e.g. a
+consumer’s body length of zero).
+<code><a href="../reference/fitted_proportions.html">fitted_proportions()</a></code>/<code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>/<code><a href="../reference/conditional_effects.html">conditional_effects()</a></code>
+all report values on the original covariate scale regardless, so this
+only affects how <code>p_global</code> and <span class="math inline">\boldsymbol{\beta}</span> themselves are
+interpreted, not predictions at any particular covariate value.</p>
 </div>
 <div class="section level2">
 <h2 id="fixed-and-random-effects">Fixed and random effects<a class="anchor" aria-label="anchor" href="#fixed-and-random-effects"></a>
@@ -163,28 +176,28 @@ standard deviations:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Population-average source proportions:</span></span>
 <span><span class="co">#&gt;  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;  Beaver 0.336 0.091 0.168 0.534 1.002     1489     1667</span></span>
-<span><span class="co">#&gt;    Deer 0.383 0.098 0.181 0.582 1.006      825      535</span></span>
-<span><span class="co">#&gt;    Hare 0.281 0.082 0.145 0.476 1.002      991      770</span></span>
+<span><span class="co">#&gt;  Beaver 0.344 0.099 0.168 0.586 1.007      500      156</span></span>
+<span><span class="co">#&gt;    Deer 0.380 0.098 0.182 0.582 1.003     1015      741</span></span>
+<span><span class="co">#&gt;    Hare 0.277 0.081 0.132 0.470 1.006      501      161</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Fixed effects (ILR scale, deviations from the global proportions):</span></span>
 <span><span class="co">#&gt;  coefficient ilr_dim   mean    sd   q2.5  q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;         SexB       1  0.977 0.240  0.531  1.461 1.001     2846     2343</span></span>
-<span><span class="co">#&gt;          Age       1  0.002 0.108 -0.212  0.218 1.002     2407     1917</span></span>
-<span><span class="co">#&gt;     SexB:Age       1 -0.629 0.169 -0.966 -0.308 1.000     2650     2691</span></span>
-<span><span class="co">#&gt;         SexB       2 -0.731 0.117 -0.965 -0.503 1.001     2480     2607</span></span>
-<span><span class="co">#&gt;          Age       2  0.177 0.064  0.050  0.302 1.002     2398     2679</span></span>
-<span><span class="co">#&gt;     SexB:Age       2  0.062 0.104 -0.140  0.265 1.002     2047     2180</span></span>
+<span><span class="co">#&gt;         SexB       1  0.973 0.236  0.542  1.483 1.001     2192     1669</span></span>
+<span><span class="co">#&gt;          Age       1  0.006 0.089 -0.164  0.190 1.002     2160     2309</span></span>
+<span><span class="co">#&gt;     SexB:Age       1 -0.643 0.165 -0.971 -0.327 1.000     2247     2694</span></span>
+<span><span class="co">#&gt;         SexB       2 -0.732 0.114 -0.969 -0.511 1.002     1669     2288</span></span>
+<span><span class="co">#&gt;          Age       2  0.158 0.054  0.056  0.269 1.004     2260     2550</span></span>
+<span><span class="co">#&gt;     SexB:Age       2  0.055 0.100 -0.137  0.262 1.003     1699     2026</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group-level standard deviations (ILR scale):</span></span>
 <span><span class="co">#&gt;   group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;  Region (Intercept)       1 0.581 0.393 0.144 1.599 1.001     1605     2172</span></span>
-<span><span class="co">#&gt;  Region (Intercept)       2 0.529 0.331 0.151 1.413 1.002      977      625</span></span>
+<span><span class="co">#&gt;  Region (Intercept)       1 0.598 0.398 0.144 1.603 1.003      864      821</span></span>
+<span><span class="co">#&gt;  Region (Intercept)       2 0.544 0.347 0.153 1.460 1.006      532      153</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Error term(s):</span></span>
 <span><span class="co">#&gt;  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;     d13C 2.998 0.938 1.485 5.117 1.001     2512     2628</span></span>
-<span><span class="co">#&gt;     d15N 1.929 0.566 1.034 3.244 1.002     2528     2791</span></span></code></pre></div>
+<span><span class="co">#&gt;     d13C 2.913 0.931 1.530 5.151 1.003     1044     1175</span></span>
+<span><span class="co">#&gt;     d15N 1.889 0.582 0.997 3.241 1.003     1246     1173</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="nested-and-crossed-random-effects">Nested and crossed random effects<a class="anchor" aria-label="anchor" href="#nested-and-crossed-random-effects"></a>
@@ -290,8 +303,8 @@ together, are worth including, fit the same data with the null
 <span><span class="co">#&gt; Computing <span style="color: #0000BB;">"loo"</span> for model <span style="color: #0000BB;">"fit_null_cov"</span> (not cached; use `add_criterion()` to</span></span>
 <span><span class="co">#&gt; cache it for reuse).</span></span>
 <span><span class="co">#&gt;         model elpd_diff se_diff p_worse diag_diff      diag_elpd</span></span>
-<span><span class="co">#&gt;      fit_full       0.0     0.0      NA           2 k_psis &gt; 0.7</span></span>
-<span><span class="co">#&gt;  fit_null_cov     -67.1     5.8    1.00   N &lt; 100</span></span>
+<span><span class="co">#&gt;      fit_full       0.0     0.0      NA           1 k_psis &gt; 0.7</span></span>
+<span><span class="co">#&gt;  fit_null_cov     -67.8     5.7    1.00   N &lt; 100</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Diagnostic flags present.</span></span>
 <span><span class="co">#&gt; See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)</span></span>
@@ -310,8 +323,8 @@ where it is always ~0):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">rstantools</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">bayes_R2</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   isotope      mean         sd       q2.5     q97.5</span></span>
-<span><span class="co">#&gt; 1    d13C 0.1775111 0.06035563 0.06601869 0.2976717</span></span>
-<span><span class="co">#&gt; 2    d15N 0.8926811 0.01103966 0.86511717 0.9079263</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    d13C 0.1810730 0.05850717 0.06956615 0.2922865</span></span>
+<span><span class="co">#&gt; 2    d15N 0.8931277 0.01076105 0.86680106 0.9080341</span></span></code></pre></div>
 <p>R<sup>2</sup> is reported per isotope, and relates directly to that
 isotope’s error term in <code>summary(fit_full)</code> above:
 <code>resid_prop</code> scales how much source/TDF process variance is
@@ -439,9 +452,9 @@ the whole fitted dataset:</p>
 <span>  allow_new_levels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sample_new_levels <span class="op">=</span> <span class="st">"gaussian"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   row isotope     mean       sd       q2.5     q97.5</span></span>
-<span><span class="co">#&gt; 1   1    d13C 4.100536 2.071552 -0.1580402  8.129324</span></span>
-<span><span class="co">#&gt; 2   1    d15N 5.675570 3.236674 -1.2966528 12.069178</span></span></code></pre></div>
+<span><span class="co">#&gt;   row isotope     mean       sd       q2.5    q97.5</span></span>
+<span><span class="co">#&gt; 1   1    d13C 4.132239 2.086907 -0.1357657  8.09261</span></span>
+<span><span class="co">#&gt; 2   1    d15N 5.700961 3.232331 -1.0847577 12.16870</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
