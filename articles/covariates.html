@@ -166,38 +166,55 @@ random intercept (<code>Region</code>, 3 levels):</p>
 <span>  cores <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> confirms that <code>Age</code>, the only
+continuous fixed-effect covariate here, was centred and scaled by
+default (see the Overview above):</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_full</span></span>
+<span><span class="co">#&gt; Bayesian stable isotope mixing model (bsimms)</span></span>
+<span><span class="co">#&gt;  formula:         ~Sex * Age + (1 | Region)</span></span>
+<span><span class="co">#&gt;  sources (K):     3 (Beaver, Deer, Hare)</span></span>
+<span><span class="co">#&gt;  isotopes (J):    2 (d13C, d15N)</span></span>
+<span><span class="co">#&gt;  mixtures (N):    60</span></span>
+<span><span class="co">#&gt;  error structure: process_residual</span></span>
+<span><span class="co">#&gt;  source data:     raw</span></span>
+<span><span class="co">#&gt;  tdf data:        summary</span></span>
+<span><span class="co">#&gt;  covariates:      centred and scaled</span></span>
+<span><span class="co">#&gt;  group-level terms:</span></span>
+<span><span class="co">#&gt;    ((Intercept) | Region), 3 levels</span></span>
+<span><span class="co">#&gt;  backend:         cmdstanr</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> now also reports fixed-effect coefficients
 (ILR-scale deviations from <code>p_global</code>) and group-level
 standard deviations:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Bayesian stable isotope mixing model</span></span>
 <span><span class="co">#&gt;  formula: ~Sex * Age + (1 | Region)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Population-average source proportions:</span></span>
 <span><span class="co">#&gt;  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;  Beaver 0.344 0.099 0.168 0.586 1.007      500      156</span></span>
-<span><span class="co">#&gt;    Deer 0.380 0.098 0.182 0.582 1.003     1015      741</span></span>
-<span><span class="co">#&gt;    Hare 0.277 0.081 0.132 0.470 1.006      501      161</span></span>
+<span><span class="co">#&gt;  Beaver 0.338 0.094 0.161 0.542 1.004     1501     1573</span></span>
+<span><span class="co">#&gt;    Deer 0.384 0.095 0.196 0.579 1.003     1592     1662</span></span>
+<span><span class="co">#&gt;    Hare 0.278 0.078 0.143 0.452 1.005     1179     1550</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Fixed effects (ILR scale, deviations from the global proportions):</span></span>
 <span><span class="co">#&gt;  coefficient ilr_dim   mean    sd   q2.5  q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;         SexB       1  0.973 0.236  0.542  1.483 1.001     2192     1669</span></span>
-<span><span class="co">#&gt;          Age       1  0.006 0.089 -0.164  0.190 1.002     2160     2309</span></span>
-<span><span class="co">#&gt;     SexB:Age       1 -0.643 0.165 -0.971 -0.327 1.000     2247     2694</span></span>
-<span><span class="co">#&gt;         SexB       2 -0.732 0.114 -0.969 -0.511 1.002     1669     2288</span></span>
-<span><span class="co">#&gt;          Age       2  0.158 0.054  0.056  0.269 1.004     2260     2550</span></span>
-<span><span class="co">#&gt;     SexB:Age       2  0.055 0.100 -0.137  0.262 1.003     1699     2026</span></span>
+<span><span class="co">#&gt;         SexB       1  0.976 0.245  0.536  1.501 1.001     2221     2088</span></span>
+<span><span class="co">#&gt;          Age       1  0.003 0.096 -0.187  0.193 1.000     1914     2269</span></span>
+<span><span class="co">#&gt;     SexB:Age       1 -0.639 0.175 -0.989 -0.300 1.001     2223     2338</span></span>
+<span><span class="co">#&gt;         SexB       2 -0.732 0.112 -0.958 -0.516 1.001     2027     2420</span></span>
+<span><span class="co">#&gt;          Age       2  0.158 0.056  0.044  0.267 1.001     2011     1891</span></span>
+<span><span class="co">#&gt;     SexB:Age       2  0.057 0.105 -0.146  0.269 1.000     1785     2115</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group-level standard deviations (ILR scale):</span></span>
 <span><span class="co">#&gt;   group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;  Region (Intercept)       1 0.598 0.398 0.144 1.603 1.003      864      821</span></span>
-<span><span class="co">#&gt;  Region (Intercept)       2 0.544 0.347 0.153 1.460 1.006      532      153</span></span>
+<span><span class="co">#&gt;  Region (Intercept)       1 0.567 0.380 0.138 1.563 1.002     1503     1616</span></span>
+<span><span class="co">#&gt;  Region (Intercept)       2 0.527 0.314 0.160 1.317 1.001     1369     1388</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Error term(s):</span></span>
 <span><span class="co">#&gt;  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;     d13C 2.913 0.931 1.530 5.151 1.003     1044     1175</span></span>
-<span><span class="co">#&gt;     d15N 1.889 0.582 0.997 3.241 1.003     1246     1173</span></span></code></pre></div>
+<span><span class="co">#&gt;     d13C 2.929 0.925 1.484 5.032 1.001     1983     1911</span></span>
+<span><span class="co">#&gt;     d15N 1.897 0.553 1.017 3.167 1.002     2383     2100</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="nested-and-crossed-random-effects">Nested and crossed random effects<a class="anchor" aria-label="anchor" href="#nested-and-crossed-random-effects"></a>
@@ -213,7 +230,7 @@ effects, where the grouping factors have no parent/child relationship
 without the implied nesting.
 <code>chains</code>/<code>iter_warmup</code>/<code>iter_sampling</code>
 are reduced below purely to keep this demonstration fast.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim_nested</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_bsimms_data.html">simulate_bsimms_data</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Region</span> <span class="op">/</span> <span class="va">Site</span><span class="op">)</span>,</span>
 <span>  n_mixture_obs <span class="op">=</span> <span class="fl">60</span>,</span>
@@ -245,33 +262,33 @@ baseline deviation, and each site’s further deviation within its region.
 <code>n_groups$Site</code>’s total (<code>6</code>) is split across
 <code>Region</code>’s levels the same way <code>n_mixture_obs</code> is
 split across a factor’s levels elsewhere, here 2 sites per region:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_nested</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Bayesian stable isotope mixing model</span></span>
 <span><span class="co">#&gt;  formula: ~(1 | Region/Site)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Population-average source proportions:</span></span>
 <span><span class="co">#&gt;  source  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;  Beaver 0.410 0.128 0.153 0.654 1.005      375      388</span></span>
-<span><span class="co">#&gt;    Deer 0.398 0.106 0.198 0.630 1.001      431      455</span></span>
-<span><span class="co">#&gt;    Hare 0.192 0.095 0.035 0.417 1.008      412      338</span></span>
+<span><span class="co">#&gt;  Beaver 0.422 0.127 0.185 0.680 1.003      367      410</span></span>
+<span><span class="co">#&gt;    Deer 0.395 0.094 0.197 0.583 1.005      438      625</span></span>
+<span><span class="co">#&gt;    Hare 0.183 0.083 0.039 0.363 1.003      485      356</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Group-level standard deviations (ILR scale):</span></span>
 <span><span class="co">#&gt;        group        term ilr_dim  mean    sd  q2.5 q97.5  rhat ess_bulk</span></span>
-<span><span class="co">#&gt;  Site:Region (Intercept)       1 0.248 0.207 0.008 0.777 1.002      358</span></span>
-<span><span class="co">#&gt;  Site:Region (Intercept)       2 0.289 0.294 0.015 1.115 1.006      372</span></span>
-<span><span class="co">#&gt;       Region (Intercept)       1 0.578 0.461 0.034 1.683 1.002      425</span></span>
-<span><span class="co">#&gt;       Region (Intercept)       2 0.517 0.490 0.016 1.871 1.002      557</span></span>
+<span><span class="co">#&gt;  Site:Region (Intercept)       1 0.229 0.206 0.006 0.794 1.003      347</span></span>
+<span><span class="co">#&gt;  Site:Region (Intercept)       2 0.299 0.335 0.009 1.153 1.001      464</span></span>
+<span><span class="co">#&gt;       Region (Intercept)       1 0.568 0.433 0.027 1.614 1.003      401</span></span>
+<span><span class="co">#&gt;       Region (Intercept)       2 0.525 0.505 0.014 1.910 1.003      560</span></span>
 <span><span class="co">#&gt;  ess_tail</span></span>
-<span><span class="co">#&gt;       406</span></span>
-<span><span class="co">#&gt;       662</span></span>
-<span><span class="co">#&gt;       437</span></span>
-<span><span class="co">#&gt;       570</span></span>
+<span><span class="co">#&gt;       399</span></span>
+<span><span class="co">#&gt;       644</span></span>
+<span><span class="co">#&gt;       307</span></span>
+<span><span class="co">#&gt;       507</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Error term(s):</span></span>
-<span><span class="co">#&gt;  isotope  mean    sd  q2.5 q97.5 rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;     d13C 1.728 0.585 0.824 3.052    1      717      599</span></span>
-<span><span class="co">#&gt;     d15N 2.768 0.797 1.429 4.482    1      706      599</span></span></code></pre></div>
+<span><span class="co">#&gt;  isotope  mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
+<span><span class="co">#&gt;     d13C 1.726 0.582 0.814 3.122 1.001      763      601</span></span>
+<span><span class="co">#&gt;     d15N 2.783 0.798 1.506 4.590 1.003      781      794</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="model-comparison">Model comparison<a class="anchor" aria-label="anchor" href="#model-comparison"></a>
@@ -280,7 +297,7 @@ split across a factor’s levels elsewhere, here 2 sites per region:</p>
 (<code>Sex</code>, <code>Age</code>, and <code>Region</code>), taken
 together, are worth including, fit the same data with the null
 (intercept-only) model and compare with <code>loo_compare()</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_null_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bsimm.html">bsimm</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span><span class="fl">1</span>,</span>
 <span>  mixture_data <span class="op">=</span> <span class="va">sim_cov</span><span class="op">$</span><span class="va">mixture_data</span>,</span>
@@ -295,16 +312,15 @@ together, are worth including, fit the same data with the null
 <span>  cores <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">loo</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo_compare</a></span><span class="op">(</span><span class="va">fit_full</span>, <span class="va">fit_null_cov</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Computing <span style="color: #0000BB;">"loo"</span> for model <span style="color: #0000BB;">"fit_full"</span> (not cached; use `add_criterion()` to</span></span>
 <span><span class="co">#&gt; cache it for reuse).</span></span>
-<span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
 <span><span class="co">#&gt; Computing <span style="color: #0000BB;">"loo"</span> for model <span style="color: #0000BB;">"fit_null_cov"</span> (not cached; use `add_criterion()` to</span></span>
 <span><span class="co">#&gt; cache it for reuse).</span></span>
-<span><span class="co">#&gt;         model elpd_diff se_diff p_worse diag_diff      diag_elpd</span></span>
-<span><span class="co">#&gt;      fit_full       0.0     0.0      NA           1 k_psis &gt; 0.7</span></span>
-<span><span class="co">#&gt;  fit_null_cov     -67.8     5.7    1.00   N &lt; 100</span></span>
+<span><span class="co">#&gt;         model elpd_diff se_diff p_worse diag_diff diag_elpd</span></span>
+<span><span class="co">#&gt;      fit_full       0.0     0.0      NA                    </span></span>
+<span><span class="co">#&gt;  fit_null_cov     -67.2     5.8    1.00   N &lt; 100</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Diagnostic flags present.</span></span>
 <span><span class="co">#&gt; See ?`loo-glossary` (sections `diag_diff` and `diag_elpd`)</span></span>
@@ -320,11 +336,11 @@ the runner-up would indicate a real difference in predictive fit.</p>
 <code><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">rstantools::bayes_R2()</a></code> is now informative (unlike the
 intercept-only case in <a href="getting-started.html"><code>vignette("getting-started")</code></a>,
 where it is always ~0):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">rstantools</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">bayes_R2</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   isotope      mean         sd       q2.5     q97.5</span></span>
-<span><span class="co">#&gt; 1    d13C 0.1810730 0.05850717 0.06956615 0.2922865</span></span>
-<span><span class="co">#&gt; 2    d15N 0.8931277 0.01076105 0.86680106 0.9080341</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    d13C 0.1805656 0.05989236 0.06898159 0.2991976</span></span>
+<span><span class="co">#&gt; 2    d15N 0.8929404 0.01127905 0.86540764 0.9083137</span></span></code></pre></div>
 <p>R<sup>2</sup> is reported per isotope, and relates directly to that
 isotope’s error term in <code>summary(fit_full)</code> above:
 <code>resid_prop</code> scales how much source/TDF process variance is
@@ -345,7 +361,7 @@ reference value and group-level terms at their population-average level.
 With no <code>effects</code> argument, it computes one plot per term of
 the fixed-effect formula – main effects and two-way interactions
 alike:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ce</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/conditional_effects.html">conditional_effects</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ce</span><span class="op">)</span></span></code></pre></div>
 <p><img src="covariates-conditional-effects-1.png" class="r-plt" alt="Forest plot of posterior source proportions for Beaver, Deer, and Hare across the two levels of Sex, each with 50% and 95% credible intervals." width="70%" style="display: block; margin: auto;"><img src="covariates-conditional-effects-2.png" class="r-plt" alt="Ribbon plot of posterior source proportions for Beaver, Deer, and Hare across the range of Age, each with 50% and 95% credible intervals." width="70%" style="display: block; margin: auto;"><img src="covariates-conditional-effects-3.png" class="r-plt" alt="Forest plot of posterior source proportions for Beaver, Deer, and Hare across the two levels of Sex, faceted by three representative values of Age, each with 50% and 95% credible intervals." width="70%" style="display: block; margin: auto;"></p>
@@ -360,7 +376,7 @@ first) and which becomes the moderator (the second), so naming the same
 interaction the other way round – <code>"Age:Sex"</code> instead of
 <code>"Sex:Age"</code> – instead sweeps <code>Age</code> as a ribbon,
 faceted by <code>Sex</code>’s two levels:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ce_age</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/conditional_effects.html">conditional_effects</a></span><span class="op">(</span><span class="va">fit_full</span>, effects <span class="op">=</span> <span class="st">"Age:Sex"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ce_age</span><span class="op">)</span></span></code></pre></div>
 <p><img src="covariates-conditional-effects-swap-1.png" class="r-plt" alt="Ribbon plot of posterior source proportions for Beaver, Deer, and Hare across the range of Age, faceted by the two levels of Sex, each with 50% and 95% credible intervals." width="70%" style="display: block; margin: auto;"></p>
@@ -380,7 +396,7 @@ three fitted levels with
 and <code>newdata</code>, holding <code>Sex</code>/<code>Age</code> at a
 reference value and conditioning on <code>Region</code> via
 <code>re_formula</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">region_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">sim_cov</span><span class="op">$</span><span class="va">mixture_data</span><span class="op">$</span><span class="va">Sex</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
 <span>  Age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">sim_cov</span><span class="op">$</span><span class="va">mixture_data</span><span class="op">$</span><span class="va">Age</span><span class="op">)</span>,</span>
@@ -391,7 +407,7 @@ reference value and conditioning on <code>Region</code> via
 <span><span class="co">#&gt; 1   A -0.04012237      A</span></span>
 <span><span class="co">#&gt; 2   A -0.04012237      B</span></span>
 <span><span class="co">#&gt; 3   A -0.04012237      C</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_region</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/posterior_proportions.html">posterior_proportions</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit_full</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="va">region_data</span>,</span>
@@ -403,7 +419,7 @@ returned by <code><a href="../reference/posterior_proportions.html">posterior_pr
 about what varies between rows. It returns a plain <code>ggplot</code>
 object, though, so relabelling it with <code>Region</code>’s own values
 needs only a couple of <code>ggplot2</code> calls appended:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_proportions.html">plot_proportions</a></span><span class="op">(</span><span class="va">p_region</span>, type <span class="op">=</span> <span class="st">"interval"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Region"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_discrete.html" class="external-link">scale_x_discrete</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="va">region_data</span><span class="op">$</span><span class="va">Region</span><span class="op">)</span></span></code></pre></div>
@@ -422,7 +438,7 @@ here, <code>sample_new_levels = "gaussian"</code> (drawing from the
 estimated group-level SD) is more appropriate than the default
 <code>"uncertainty"</code> (resampling one of the existing levels’
 draws):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">new_region_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sex <span class="op">=</span> <span class="st">"B"</span>, Age <span class="op">=</span> <span class="fl">2</span>, Region <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
 <span><span class="va">p_new_region</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/posterior_proportions.html">posterior_proportions</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit_full</span>,</span>
@@ -431,7 +447,7 @@ draws):</p>
 <span>  allow_new_levels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sample_new_levels <span class="op">=</span> <span class="st">"gaussian"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_proportions.html">plot_proportions</a></span><span class="op">(</span><span class="va">p_new_region</span>, type <span class="op">=</span> <span class="st">"density"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="covariates-plot-new-region-1.png" class="r-plt" alt="Density plot of posterior source proportions for Beaver, Deer, and Hare for a new, previously unobserved Region." width="70%" style="display: block; margin: auto;"></p>
 <p>The same
@@ -444,7 +460,7 @@ is a benchmark to flag a surprising sample: compare its observed isotope
 values against it, the same idea as <a href="getting-started.html"><code>vignette("getting-started")</code></a>’s
 posterior predictive checks, but for one specific new sample rather than
 the whole fitted dataset:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit_full</span>,</span>
 <span>  newdata <span class="op">=</span> <span class="va">new_region_data</span>,</span>
@@ -452,9 +468,9 @@ the whole fitted dataset:</p>
 <span>  allow_new_levels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  sample_new_levels <span class="op">=</span> <span class="st">"gaussian"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;   row isotope     mean       sd       q2.5    q97.5</span></span>
-<span><span class="co">#&gt; 1   1    d13C 4.132239 2.086907 -0.1357657  8.09261</span></span>
-<span><span class="co">#&gt; 2   1    d15N 5.700961 3.232331 -1.0847577 12.16870</span></span></code></pre></div>
+<span><span class="co">#&gt;   row isotope     mean       sd       q2.5     q97.5</span></span>
+<span><span class="co">#&gt; 1   1    d13C 4.144067 2.050610 -0.1768738  8.061565</span></span>
+<span><span class="co">#&gt; 2   1    d15N 5.734920 3.178086 -0.8252824 12.202831</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
