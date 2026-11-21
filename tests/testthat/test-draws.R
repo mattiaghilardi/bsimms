@@ -121,6 +121,44 @@ test_that("extract_array_draws reshapes a matrix parameter", {
   arr <- extract_array_draws(dm, "source_mean", dim1 = 2, dim2 = 2)
   expect_equal(dim(arr), c(100, 2, 2))
   expect_equal(arr[, 1, 1], as.numeric(dm[, "source_mean[1,1]"]))
+
+  expect_snapshot(
+    error = TRUE,
+    extract_array_draws(dm, "source_mean", dim1 = 2, dim2 = 5)
+  )
+})
+
+test_that("extract_array_of_matrices reshapes an array of matrices and errors when draws are missing", {
+  skip_if_not_installed("cmdstanr")
+  fit <- bsimm(
+    formula = ~ 1 + (1 | Region),
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  dm <- draws_matrix(fit, variable = "Lcorr_source")
+  arr <- extract_array_of_matrices(dm, "Lcorr_source", dim1 = 2, dim2 = 2)
+  expect_equal(dim(arr), c(100, 2, 2, 2))
+  expect_equal(arr[, 1, 1, 1], as.numeric(dm[, "Lcorr_source[1,1,1]"]))
+
+  expect_snapshot(
+    error = TRUE,
+    extract_array_of_matrices(dm, "Lcorr_source", dim1 = 5, dim2 = 2)
+  )
+})
+
+test_that("subset_ndraws errors on an invalid ndraws", {
+  dm <- matrix(1:10, nrow = 5)
+  expect_snapshot(error = TRUE, subset_ndraws(dm, ndraws = -1))
+  expect_snapshot(error = TRUE, subset_ndraws(dm, ndraws = "a"))
+  expect_snapshot(error = TRUE, subset_ndraws(dm, ndraws = 1.5))
+  expect_snapshot(error = TRUE, subset_ndraws(dm, ndraws = c(1, 2)))
 })
 
 test_that("draws_long reshapes an array into (draw, row, variable, value)", {

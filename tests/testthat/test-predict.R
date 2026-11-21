@@ -132,6 +132,12 @@ test_that("posterior_proportions predicts at the population-average level via re
   expect_equal(dim(p_arr), c(100, 2, 3))
 })
 
+test_that("posterior_proportions predicts at the population-average level via a bar-less re_formula", {
+  newdata <- data.frame(elevation = c(100, 200))
+  p_arr <- posterior_proportions(fit, newdata = newdata, re_formula = ~1)
+  expect_equal(dim(p_arr), c(100, 2, 3))
+})
+
 test_that("posterior_proportions errors on unseen group levels in newdata", {
   newdata <- data.frame(elevation = 100, Region = factor("C"))
   expect_snapshot(error = TRUE, posterior_proportions(fit, newdata = newdata))
@@ -195,6 +201,38 @@ test_that("posterior_proportions samples new levels when allow_new_levels = TRUE
     sample_new_levels = "gaussian"
   )
   expect_equal(dim(p_arr), c(100, 1, 3))
+  expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
+})
+
+test_that("posterior_proportions samples new levels (gaussian) for a 2-source (D = 1) random intercept", {
+  source_data_2k <- source_data[source_data$Source != "Otter", ]
+  tdf_data_2k <- tdf_data[tdf_data$Source != "Otter", ]
+  fit_2k <- bsimm(
+    formula = ~ elevation + (1 | Region),
+    mixture_data = mixture_data,
+    source_data = source_data_2k,
+    tdf_data = tdf_data_2k,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  newdata <- data.frame(
+    elevation = 100,
+    Region = factor("C", levels = c("A", "B", "C"))
+  )
+  p_arr <- posterior_proportions(
+    fit_2k,
+    newdata = newdata,
+    allow_new_levels = TRUE,
+    sample_new_levels = "gaussian"
+  )
+  expect_equal(dim(p_arr), c(100, 1, 2))
   expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
 })
 
@@ -330,6 +368,12 @@ test_that("fitted's ndraws is forwarded to posterior_epred", {
   expect_equal(dim(s), c(10, 6, 2))
 })
 
+test_that("fitted's resp selects and validates isotopes", {
+  s <- fitted(fit, resp = "d13C")
+  expect_equal(unique(s$isotope), "d13C")
+  expect_snapshot(error = TRUE, fitted(fit, resp = "banana"))
+})
+
 # posterior_predict / predict -------------------------------------------------
 
 test_that("posterior_predict returns an [n_draws, N, J] array for every isotope by default", {
@@ -383,6 +427,107 @@ test_that("posterior_predict's ndraws subsets the number of draws returned", {
 test_that("predict's ndraws is forwarded to posterior_predict", {
   s <- predict(fit, ndraws = 10, summary = FALSE)
   expect_equal(dim(s), c(10, 6, 2))
+})
+
+test_that("posterior_epred's newdata path handles raw TDF data", {
+  raw_tdf_data_replicates <- data.frame(
+    Source = rep(c("Beaver", "Deer", "Otter"), each = 3),
+    d13C = c(0.7, 0.8, 0.9, 0.85, 0.9, 0.95, 0.95, 1.0, 1.05),
+    d15N = c(3.0, 3.2, 3.4, 3.1, 3.3, 3.5, 3.2, 3.4, 3.6)
+  )
+  fit_raw_tdf <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = raw_tdf_data_replicates,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    tdf_means_sds = FALSE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  newdata <- data.frame(elevation = c(150, 250))
+  mu_new <- rstantools::posterior_epred(fit_raw_tdf, newdata = newdata)
+  expect_equal(dim(mu_new), c(100, 2, 2))
+})
+
+test_that("posterior_epred's newdata path propagates concentration dependence (mv-eligible model)", {
+  raw_source_data_conc <- cbind(
+    raw_source_data,
+    d13C_conc = c(0.3, 0.32, 0.28, 0.31, 0.2, 0.22, 0.18, 0.21),
+    d15N_conc = c(0.05, 0.05, 0.06, 0.05, 0.08, 0.07, 0.09, 0.08)
+  )
+  fit_conc <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = raw_source_data_conc,
+    tdf_data = raw_tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = FALSE,
+    conc_dep = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  newdata <- data.frame(elevation = c(150, 250))
+  yrep_new <- rstantools::posterior_predict(fit_conc, newdata = newdata)
+  expect_equal(dim(yrep_new), c(100, 2, 2))
+})
+
+test_that("posterior_predict's newdata path samples y_rep under residual_only error", {
+  fit_resid_2iso <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    error_structure = "residual_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  newdata <- data.frame(elevation = c(150, 250))
+  yrep_2iso <- rstantools::posterior_predict(fit_resid_2iso, newdata = newdata)
+  expect_equal(dim(yrep_2iso), c(100, 2, 2))
+
+  fit_resid_1iso <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = "d13C",
+    source_means_sds = TRUE,
+    error_structure = "residual_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  yrep_1iso <- rstantools::posterior_predict(fit_resid_1iso, newdata = newdata)
+  expect_equal(dim(yrep_1iso), c(100, 2, 1))
+})
+
+test_that("predict's resp selects and validates isotopes", {
+  s <- predict(fit, resp = "d13C")
+  expect_equal(unique(s$isotope), "d13C")
+  expect_snapshot(error = TRUE, predict(fit, resp = "banana"))
 })
 
 # posterior_epred / posterior_predict with re_formula and newdata = NULL ----
@@ -465,6 +610,43 @@ test_that("predict summarises y_rep for new data", {
   s <- predict(fit, newdata = newdata)
   expect_s3_class(s, "data.frame")
   expect_equal(nrow(s), 2 * 2)
+})
+
+test_that("posterior_proportions errors when newdata's random slope is missing a design-matrix column", {
+  mixture_data_season <- cbind(
+    mixture_data,
+    Season = factor(rep(
+      c("Spring", "Summer", "Winter"),
+      length.out = nrow(mixture_data)
+    ))
+  )
+  fit_slope <- bsimm(
+    formula = ~ Season + (Season | Region),
+    mixture_data = mixture_data_season,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  # Season supplied as plain character, not a pre-levelled factor: with
+  # only "Summer"/"Winter" present (no "Spring", the training reference
+  # level), model.matrix() builds a narrower design than the group-level
+  # term's own reference columns from fit time.
+  newdata <- data.frame(
+    Season = c("Summer", "Winter"),
+    Region = factor(c("A", "A"), levels = c("A", "B"))
+  )
+  expect_snapshot(
+    error = TRUE,
+    posterior_proportions(fit_slope, newdata = newdata)
+  )
 })
 
 # posterior_proportions with a nested/crossed group-level term ---------------
@@ -688,4 +870,29 @@ test_that("beta_raw/ilr_global_raw combined with raw X_new reproduce beta/ilr_gl
     p_hand[s, , ] <- ilr_inv(matrix(eta_arr[s, , ], ncol = spec$D), V = spec$V)
   }
   expect_equal(unname(p_via_raw), p_hand, tolerance = 1e-6)
+})
+
+test_that("compute_p_fitted uses plain beta/ilr_global (not _raw) when center/scale are off", {
+  fit_unstd <- bsimm(
+    formula = ~elevation,
+    mixture_data = standardise_mixture_data,
+    source_data = standardise_source_data,
+    tdf_data = standardise_tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    center = FALSE,
+    scale = FALSE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  expect_false(fit_unstd$spec$has_beta_raw)
+  expect_false(fit_unstd$spec$has_ilr_global_raw)
+  p_arr <- posterior_proportions(fit_unstd)
+  expect_equal(dim(p_arr), c(100, 6, 3))
+  expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
 })

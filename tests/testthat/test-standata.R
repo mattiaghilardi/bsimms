@@ -23,6 +23,11 @@ tdf_data_summary <- data.frame(
   d15N_mean = c(3, 3.1),
   d15N_sd = c(0.4, 0.5)
 )
+tdf_data_raw <- data.frame(
+  Source = rep(c("Beaver", "Deer"), each = 3),
+  d13C = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3),
+  d15N = c(2.9, 3.0, 3.1, 3.0, 3.1, 3.2)
+)
 
 test_that("make_standata returns a bsimms_standata list", {
   sdata <- make_standata(
@@ -123,6 +128,22 @@ test_that("summarised source data adds source_mean_data/source_sd_data instead",
   expect_equal(dim(sdata$source_mean_data), c(2, 2))
   expect_equal(dim(sdata$source_sd_data), c(2, 2))
   expect_null(sdata$source_raw)
+})
+
+test_that("raw TDF data adds N_tdf_raw/tdf_idx/tdf_raw", {
+  sdata <- make_standata(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data_summary,
+    tdf_data = tdf_data_raw,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    tdf_means_sds = FALSE
+  )
+  expect_equal(sdata$N_tdf_raw, 6)
+  expect_equal(sdata$tdf_idx, c(1, 1, 1, 2, 2, 2))
+  expect_equal(dim(sdata$tdf_raw), c(6, 2))
+  expect_null(sdata$tdf_mean_data)
 })
 
 test_that("conc_dep = TRUE adds the conc matrix", {

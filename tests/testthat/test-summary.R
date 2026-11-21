@@ -74,6 +74,52 @@ test_that("print.bsimms_fit shows the covariates line only when center/scale app
   expect_false(any(grepl("covariates:", out_off)))
 })
 
+test_that("print.bsimms_fit shows the concentration dependence line when conc_dep = TRUE", {
+  source_data_conc <- cbind(
+    source_data,
+    d13C_conc = c(0.3, 0.32, 0.28, 0.35, 0.33, 0.37, 0.25, 0.27, 0.29),
+    d15N_conc = c(0.05, 0.05, 0.06, 0.04, 0.05, 0.04, 0.06, 0.05, 0.05)
+  )
+  fit_conc <- bsimm(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data_conc,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    conc_dep = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  out <- capture.output(print(fit_conc))
+  expect_true(any(grepl("concentration dependence: yes", out)))
+})
+
+test_that("summary.bsimms_fit's error section uses sigma under residual_only", {
+  fit_resid <- bsimm(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    error_structure = "residual_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  s <- summary(fit_resid)
+  expect_equal(s$error$isotope, c("d13C", "d15N"))
+})
+
+test_that("print.summary.bsimms_fit's robust argument switches mean/sd for median/mad columns", {
+  out <- capture.output(print(summary(fit_full, robust = TRUE)))
+  expect_true(any(grepl("median", out)))
+})
+
 test_that("summary.bsimms_fit includes fixed/group/error sections when present", {
   s <- summary(fit_full)
   expect_s3_class(s, "summary.bsimms_fit")

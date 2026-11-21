@@ -23,6 +23,11 @@ tdf_data_summary <- data.frame(
   d15N_mean = c(3, 3.1),
   d15N_sd = c(0.4, 0.5)
 )
+tdf_data_raw <- data.frame(
+  Source = rep(c("Beaver", "Deer"), each = 3),
+  d13C = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3),
+  d15N = c(2.9, 3.0, 3.1, 3.0, 3.1, 3.2)
+)
 
 test_that("make_stancode returns a bsimms_stancode object", {
   code <- make_stancode(
@@ -131,6 +136,38 @@ test_that("raw source data declares source_raw/source_idx and a raw-source likel
   expect_match(
     code,
     "source_raw\\[n\\] ~ normal\\(source_mean\\[source_idx\\[n\\]\\], source_sd\\[source_idx\\[n\\]\\]\\);"
+  )
+})
+
+test_that("raw TDF data declares tdf_raw/tdf_idx, tdf_mean/tdf_sd parameters, and a raw-TDF likelihood", {
+  code <- make_stancode(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data_summary,
+    tdf_data = tdf_data_raw,
+    isotope_names = "d13C",
+    source_means_sds = TRUE,
+    tdf_means_sds = FALSE
+  )
+  expect_match(code, "int<lower=1> N_tdf_raw;")
+  expect_match(
+    code,
+    "array\\[N_tdf_raw\\] int<lower=1, upper=K> tdf_idx;"
+  )
+  expect_match(code, "matrix\\[N_tdf_raw, J\\] tdf_raw;")
+  expect_match(
+    code,
+    "matrix\\[K, J\\] tdf_mean;  // estimated TDF isotope means \\(raw TDF data\\)"
+  )
+  expect_match(
+    code,
+    "matrix<lower=0>\\[K, J\\] tdf_sd;  // estimated TDF isotope SDs \\(raw TDF data\\)"
+  )
+  expect_match(code, "tdf_mean\\[1, 1\\] ~ ")
+  expect_match(code, "tdf_sd\\[1, 1\\] ~ ")
+  expect_match(
+    code,
+    "tdf_raw\\[n\\] ~ normal\\(tdf_mean\\[tdf_idx\\[n\\]\\], tdf_sd\\[tdf_idx\\[n\\]\\]\\);"
   )
 })
 
@@ -327,6 +364,12 @@ test_that("center/scale generate no standardisation code for an all-factor formu
   expect_match(code, "X * beta", fixed = TRUE)
 })
 
+test_that("indent prefixes lines with spaces, and leaves an empty vector empty", {
+  expect_equal(indent(c("a", "b")), c("  a", "  b"))
+  expect_equal(indent(c("a", "b"), n = 4), c("    a", "    b"))
+  expect_equal(indent(character(0)), character(0))
+})
+
 test_that("standardisation_label reflects has_ilr_global_raw/has_beta_raw", {
   spec <- function(ilr_global_raw, beta_raw) {
     list(has_ilr_global_raw = ilr_global_raw, has_beta_raw = beta_raw)
@@ -392,6 +435,15 @@ test_that("generated Stan code is syntactically valid across error structures/da
     isotope_names = "d13C",
     source_means_sds = TRUE,
     error_structure = "process_only"
+  )))
+  expect_true(check_syntax(make_stancode(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data_summary,
+    tdf_data = tdf_data_raw,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    tdf_means_sds = FALSE
   )))
 
   mixture_data_x <- cbind(mixture_data, Age = c(20, 30, 40, 50, 60, 70))

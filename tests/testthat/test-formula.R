@@ -13,6 +13,12 @@ test_that("parse_bsimms_formula extracts fixed and random terms", {
   expect_equal(length(pf$re_terms[[1]]$group_levels), 3)
 })
 
+test_that("a character fixed-effect column is coerced to factor", {
+  d <- data.frame(Sex = c("M", "F", "F", "M", "M", "F"))
+  pf <- parse_bsimms_formula(formula = ~Sex, data = d)
+  expect_true(is.factor(pf$fixed_frame$Sex))
+})
+
 test_that("double-bar terms expand into uncorrelated single-bar terms", {
   d <- data.frame(Region = factor(rep(c("A", "B"), each = 5)), x = rnorm(10))
   pf <- parse_bsimms_formula(formula = ~ x + (x || Region), data = d)
@@ -21,9 +27,37 @@ test_that("double-bar terms expand into uncorrelated single-bar terms", {
 
 test_that("a two-sided formula is rejected", {
   d <- data.frame(y = 1:3, x = 1:3)
-  expect_error(
-    parse_bsimms_formula(formula = y ~ x, data = d),
-    "left-hand side"
+  expect_snapshot(error = TRUE, parse_bsimms_formula(formula = y ~ x, data = d))
+})
+
+test_that("a non-formula is rejected", {
+  d <- data.frame(y = 1:3, x = 1:3)
+  expect_snapshot(error = TRUE, parse_bsimms_formula(formula = "~x", data = d))
+})
+
+test_that("non-data-frame data is rejected", {
+  expect_snapshot(
+    error = TRUE,
+    parse_bsimms_formula(formula = ~x, data = list(x = 1:3))
+  )
+})
+
+test_that("a chained bar term is rejected", {
+  d <- data.frame(
+    a = factor(rep(c("x", "y"), 5)),
+    b = factor(rep(c("p", "q"), 5))
+  )
+  expect_snapshot(
+    error = TRUE,
+    parse_bsimms_formula(formula = ~ 1 + (1 | a | b), data = d)
+  )
+})
+
+test_that("a grouping factor with missing values is rejected", {
+  d <- data.frame(Region = factor(c("A", "A", "B", NA)), x = c(1, 2, 3, 4))
+  expect_snapshot(
+    error = TRUE,
+    parse_bsimms_formula(formula = ~ 1 + (1 | Region), data = d)
   )
 })
 

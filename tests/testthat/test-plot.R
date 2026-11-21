@@ -77,6 +77,47 @@ test_that("plot.bsimms_fit errors when no parameters match", {
   expect_snapshot(error = TRUE, plot(fit, variable = "banana", plot = FALSE))
 })
 
+test_that("plot.bsimms_fit's default variable set includes beta when the model has fixed effects", {
+  fit_fe <- bsimm(
+    formula = ~Region,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  plots <- plot(fit_fe, plot = FALSE)
+  expect_s3_class(plots[[1]], "bayesplot_grid")
+  plots_beta_only <- plot(fit_fe, variable = "beta", plot = FALSE)
+  expect_s3_class(plots_beta_only[[1]], "bayesplot_grid")
+})
+
+test_that("plot.bsimms_fit's default variable set includes sigma under residual_only error", {
+  fit_resid <- bsimm(
+    formula = ~1,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    error_structure = "residual_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  plots <- plot(fit_resid, plot = FALSE)
+  expect_s3_class(plots[[1]], "bayesplot_grid")
+  plots_sigma_only <- plot(fit_resid, variable = "sigma", plot = FALSE)
+  expect_s3_class(plots_sigma_only[[1]], "bayesplot_grid")
+})
+
 test_that("plot.bsimms_fit can actually draw to a graphics device", {
   grDevices::pdf(nullfile())
   on.exit(grDevices::dev.off())
@@ -167,6 +208,11 @@ test_that("plot_proportions builds an interval plot for multiple observations", 
 
 test_that("plot_proportions builds an interval plot for a single observation too", {
   g <- plot_proportions(p_arr[, 1, , drop = FALSE], type = "interval")
+  expect_s3_class(g, "ggplot")
+})
+
+test_that("plot_proportions builds an interval plot with robust = TRUE", {
+  g <- plot_proportions(p_arr, type = "interval", robust = TRUE)
   expect_s3_class(g, "ggplot")
 })
 

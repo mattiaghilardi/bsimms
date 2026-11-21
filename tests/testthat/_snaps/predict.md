@@ -64,6 +64,22 @@
       Error in `rstantools::posterior_epred()`:
       ! `resp` must be one of "d13C" or "d15N", not "banana".
 
+# fitted's resp selects and validates isotopes
+
+    Code
+      fitted(fit, resp = "banana")
+    Condition
+      Error in `fitted()`:
+      ! `resp` must be one of "d13C" or "d15N", not "banana".
+
+# predict's resp selects and validates isotopes
+
+    Code
+      predict(fit, resp = "banana")
+    Condition
+      Error in `predict()`:
+      ! `resp` must be one of "d13C" or "d15N", not "banana".
+
 # posterior_epred propagates posterior_proportions's newdata validation errors
 
     Code
@@ -71,6 +87,14 @@
     Condition
       Error:
       ! `newdata` is missing column Region, needed for its group-level term.
+
+# posterior_proportions errors when newdata's random slope is missing a design-matrix column
+
+    Code
+      posterior_proportions(fit_slope, newdata = newdata)
+    Condition
+      Error:
+      ! `newdata` is missing column needed to build the design matrix: SeasonSummer.
 
 # posterior_proportions errors by default when the inner nesting term's data is omitted
 

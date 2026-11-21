@@ -159,6 +159,17 @@ test_that("unknown n_levels/n_groups names are rejected", {
   )
 })
 
+test_that("a non-one-sided formula is rejected", {
+  expect_snapshot(
+    error = TRUE,
+    simulate_bsimms_data(y ~ x, n_mixture_obs = 10)
+  )
+})
+
+test_that("a non-positive-integer n_mixture_obs is rejected", {
+  expect_snapshot(error = TRUE, simulate_bsimms_data(n_mixture_obs = 0))
+})
+
 test_that("a grouping factor missing from n_groups is rejected", {
   expect_snapshot(
     error = TRUE,
@@ -237,6 +248,30 @@ test_that("sigma/resid_prop truth is only present for the relevant error_structu
   )
   expect_named(sim_pr$truth$resid_prop, c("isotope1", "isotope2"))
   expect_null(sim_pr$truth$sigma)
+})
+
+test_that("a wrong-length sigma is rejected under residual_only", {
+  expect_snapshot(
+    error = TRUE,
+    simulate_bsimms_data(
+      n_mixture_obs = 10,
+      error_structure = "residual_only",
+      sigma = c(0.1, 0.2, 0.3),
+      seed = 1
+    )
+  )
+})
+
+test_that("a wrong-length resid_prop is rejected under process_residual", {
+  expect_snapshot(
+    error = TRUE,
+    simulate_bsimms_data(
+      n_mixture_obs = 10,
+      error_structure = "process_residual",
+      resid_prop = c(1, 2, 3),
+      seed = 1
+    )
+  )
 })
 
 test_that("source/tdf mean-sd truth is only kept when the corresponding data is raw", {

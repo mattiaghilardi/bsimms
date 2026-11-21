@@ -423,6 +423,29 @@ test_that("conditional_effects requires resp for a multi-isotope model with meth
   )
 })
 
+test_that("method = posterior_epred defaults resp to the single isotope in a 1-isotope model", {
+  skip_if_not_installed("rstantools")
+  fit_1iso <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = "d13C",
+    source_means_sds = TRUE,
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0
+  )
+  ce <- conditional_effects(
+    fit_1iso,
+    effects = "elevation",
+    method = "posterior_epred"
+  )
+  expect_equal(attr(ce$elevation, "y_label"), "d13C")
+})
+
 test_that("conditional_effects errors on an unknown resp", {
   skip_if_not_installed("rstantools")
   expect_snapshot(

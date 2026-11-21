@@ -6,6 +6,54 @@
       Error:
       ! `object` must be a <bsimms_fit> object.
 
+# extract_array_draws reshapes a matrix parameter
+
+    Code
+      extract_array_draws(dm, "source_mean", dim1 = 2, dim2 = 5)
+    Condition
+      Error:
+      ! Could not find draws for: source_mean[1,3], source_mean[1,4], and source_mean[1,5].
+
+# extract_array_of_matrices reshapes an array of matrices and errors when draws are missing
+
+    Code
+      extract_array_of_matrices(dm, "Lcorr_source", dim1 = 5, dim2 = 2)
+    Condition
+      Error:
+      ! Could not find draws for: Lcorr_source[3,1,1] and Lcorr_source[3,1,2].
+
+# subset_ndraws errors on an invalid ndraws
+
+    Code
+      subset_ndraws(dm, ndraws = -1)
+    Condition
+      Error:
+      ! `ndraws` must be a single positive integer.
+
+---
+
+    Code
+      subset_ndraws(dm, ndraws = "a")
+    Condition
+      Error:
+      ! `ndraws` must be a single positive integer.
+
+---
+
+    Code
+      subset_ndraws(dm, ndraws = 1.5)
+    Condition
+      Error:
+      ! `ndraws` must be a single positive integer.
+
+---
+
+    Code
+      subset_ndraws(dm, ndraws = c(1, 2))
+    Condition
+      Error:
+      ! `ndraws` must be a single positive integer.
+
 # draws_long errors when arr lacks dimnames on the 3rd dimension
 
     Code

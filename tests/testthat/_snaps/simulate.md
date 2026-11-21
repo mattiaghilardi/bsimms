@@ -24,6 +24,22 @@
       Error:
       ! `n_groups` names variable not in `formula`: "banana".
 
+# a non-one-sided formula is rejected
+
+    Code
+      simulate_bsimms_data(y ~ x, n_mixture_obs = 10)
+    Condition
+      Error:
+      ! `formula` must be a one-sided formula, e.g. `~ Sex + (1 | Region)`.
+
+# a non-positive-integer n_mixture_obs is rejected
+
+    Code
+      simulate_bsimms_data(n_mixture_obs = 0)
+    Condition
+      Error:
+      ! `n_mixture_obs` must be a positive integer.
+
 # a grouping factor missing from n_groups is rejected
 
     Code
@@ -66,6 +82,24 @@
     Condition
       Error:
       ! `p_global` must be a vector of 3 strictly positive proportions summing to 1.
+
+# a wrong-length sigma is rejected under residual_only
+
+    Code
+      simulate_bsimms_data(n_mixture_obs = 10, error_structure = "residual_only",
+        sigma = c(0.1, 0.2, 0.3), seed = 1)
+    Condition
+      Error:
+      ! `sigma` must be a numeric vector of length 2.
+
+# a wrong-length resid_prop is rejected under process_residual
+
+    Code
+      simulate_bsimms_data(n_mixture_obs = 10, error_structure = "process_residual",
+        resid_prop = c(1, 2, 3), seed = 1)
+    Condition
+      Error:
+      ! `resid_prop` must be a numeric vector of length 2.
 
 # n_source_obs/n_tdf_obs reject the wrong length or non-positive values
 

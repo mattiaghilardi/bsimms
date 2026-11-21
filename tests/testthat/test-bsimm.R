@@ -28,6 +28,18 @@ test_that("resolve_backend validates an explicit backend is installed", {
   expect_equal(resolve_backend("rstan"), "rstan")
 })
 
+test_that("resolve_backend errors on an explicit backend that isn't installed", {
+  expect_snapshot(error = TRUE, resolve_backend("not_a_real_backend_pkg"))
+})
+
+test_that("resolve_backend errors when auto finds neither backend installed", {
+  local_mocked_bindings(
+    requireNamespace = function(...) FALSE,
+    .package = "base"
+  )
+  expect_snapshot(error = TRUE, resolve_backend("auto"))
+})
+
 test_that("bsimm errors on an invalid error_structure or backend", {
   expect_snapshot(
     error = TRUE,

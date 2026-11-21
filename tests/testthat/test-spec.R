@@ -121,6 +121,30 @@ test_that("center/scale default to TRUE and are captured on the spec", {
       center = "yes"
     )
   )
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~1,
+      mixture_data = mixture_data,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N"),
+      scale = "yes"
+    )
+  )
+})
+
+test_that("a group-level term with a length mismatch against the mixture data is rejected", {
+  expect_snapshot(
+    error = TRUE,
+    build_bsimms_spec(
+      formula = ~ (1 | Region[1:3]),
+      mixture_data = mixture_data,
+      source_data = source_data,
+      tdf_data = tdf_data,
+      isotope_names = c("d13C", "d15N")
+    )
+  )
 })
 
 test_that("x_continuous is aligned with fixed_names and the dropped intercept", {

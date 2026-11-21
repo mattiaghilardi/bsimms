@@ -7,6 +7,25 @@
       Error:
       ! `center` must be `TRUE` or `FALSE`.
 
+---
+
+    Code
+      build_bsimms_spec(formula = ~1, mixture_data = mixture_data, source_data = source_data,
+        tdf_data = tdf_data, isotope_names = c("d13C", "d15N"), scale = "yes")
+    Condition
+      Error:
+      ! `scale` must be `TRUE` or `FALSE`.
+
+# a group-level term with a length mismatch against the mixture data is rejected
+
+    Code
+      build_bsimms_spec(formula = ~ (1 | Region[1:3]), mixture_data = mixture_data,
+      source_data = source_data, tdf_data = tdf_data, isotope_names = c("d13C",
+        "d15N"))
+    Condition
+      Error:
+      ! Group-level term Region[1:3] has a different length than the mixture data.
+
 # error_structure defaults to process_residual and is validated
 
     Code
