@@ -12,7 +12,12 @@ Description: Fits Bayesian stable isotope mixing models (SIMMs) via
     data, concentration dependence, flexible error structures), and
     extends them by allowing source proportions to depend on an arbitrary
     'lme4'-style fixed- and random-effects formula of mixture-level
-    covariates.
+    covariates. References: Stock et al. (2018) <doi:10.7717/peerj.5096>;
+    Moore & Semmens (2008) <doi:10.1111/j.1461-0248.2008.01163.x>; Semmens
+    et al. (2009) <doi:10.1371/journal.pone.0006187>; Parnell et al.
+    (2010) <doi:10.1371/journal.pone.0009672>; Stock & Semmens (2016)
+    <doi:10.1002/ecy.1517>; Egozcue et al. (2003)
+    <doi:10.1023/A:1023818214614>.
 License: MIT + file LICENSE
 URL: https://github.com/mattiaghilardi/bsimms,
     https://mattiaghilardi.github.io/bsimms/
