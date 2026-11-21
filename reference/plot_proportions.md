@@ -125,8 +125,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 1.0 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 p_arr <- posterior_proportions(fit)
 plot_proportions(p_arr, type = "interval")

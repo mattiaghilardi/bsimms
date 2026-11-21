@@ -132,11 +132,11 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.4 seconds.
+#> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.9 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 plot(fit)
 
