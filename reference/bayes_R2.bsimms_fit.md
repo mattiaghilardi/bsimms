@@ -127,7 +127,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.2 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.4 seconds.
 #> 
 rstantools::bayes_R2(fit)
 #>   isotope      mean         sd       q2.5     q97.5
