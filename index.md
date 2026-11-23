@@ -179,3 +179,78 @@ plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 Hare; Beaver's distribution is shifted towards lower proportions and
 more widely spread than the overlapping Deer and Hare
 distributions.](reference/figures/README-plot-proportions-1.png)
+
+## Resources
+
+- [Website](https://mattiaghilardi.github.io/bsimms/): full function
+  reference and vignettes.
+- [Open an issue](https://github.com/mattiaghilardi/bsimms/issues):
+  report a bug or request a feature.
+
+## Similar packages
+
+**bsimms** sits alongside other R packages for Bayesian stable isotope
+mixing models, each with a different scope:
+
+- [MixSIAR](https://github.com/brianstock/MixSIAR): the JAGS-based
+  reference implementation **bsimms** reproduces the core modelling
+  options of (and extends with an `lme4`-style covariate formula).
+- [simmr](https://github.com/andrewcparnell/simmr): fits a restricted
+  set of models via JAGS (`simmr_mcmc()`) or, much faster, fixed-form
+  variational Bayes (`simmr_ffvb()`).
+- [cosimmr](https://github.com/emmagovan/cosimmr): simmr’s
+  variational-Bayes approach extended to continuous covariates.
+- [MixMustR](https://open-aims.github.io/MixMustR/): jointly fits tracer
+  data (e.g. stable isotopes, fatty acids) and independent
+  source-composition data (e.g. eDNA metabarcoding) via two linked
+  likelihoods, with an optional unsampled-source component relaxing the
+  sum-to-1 constraint.
+
+## Citing bsimms and related software
+
+``` r
+
+citation("bsimms")
+```
+
+As **bsimms** generates and fits ‘Stan’ programs, please additionally
+cite ‘Stan’:
+
+Carpenter, B., Gelman, A., Hoffman, M.D., Lee, D., Goodrich, B.,
+Betancourt, M., Brubaker, M., Guo, J., Li, P., & Riddell, A. (2017).
+Stan: A probabilistic programming language. *Journal of Statistical
+Software*, 76(1), 1-32. <doi:10.18637/jss.v076.i01>
+
+See <https://mc-stan.org/about/#citing-stan> for Stan’s own up-to-date
+citation guidance.
+
+Please also cite whichever backend you used to fit the model, the R
+interface actually compiling and sampling from the ‘Stan’ program:
+
+``` r
+
+citation("cmdstanr") # if backend = "cmdstanr" (the default, if installed)
+citation("rstan")    # if backend = "rstan"
+```
+
+If you use
+[`plot_proportions()`](https://mattiaghilardi.github.io/bsimms/reference/plot_proportions.md),
+[`plot_isospace()`](https://mattiaghilardi.github.io/bsimms/reference/plot_isospace.md),
+or
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html)/[`print()`](https://rdrr.io/r/base/print.html)
+on a
+[`conditional_effects()`](https://mattiaghilardi.github.io/bsimms/reference/conditional_effects.md)
+result, please also consider citing ‘ggplot2’. If you use
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html)/`pp_check()` on
+the fitted model itself, please consider citing ‘bayesplot’. If you use
+`loo()`/`waic()`/`loo_compare()`, please consider citing ‘loo’. All
+three provide the underlying implementation for these functions.
+
+## Contributing
+
+Contributions are welcome – see the [contributing
+guide](https://github.com/mattiaghilardi/bsimms/blob/main/.github/CONTRIBUTING.md)
+for how to propose a change, report a bug, or set up a development
+environment. This project is released with a [Contributor Code of
+Conduct](https://github.com/mattiaghilardi/bsimms/blob/main/.github/CODE_OF_CONDUCT.md);
+by participating, you agree to abide by its terms.
