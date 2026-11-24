@@ -186,6 +186,9 @@ distributions.](reference/figures/README-plot-proportions-1.png)
   reference and vignettes.
 - [Open an issue](https://github.com/mattiaghilardi/bsimms/issues):
   report a bug or request a feature.
+- [Best practices for SIMMs](https://doi.org/10.1139/cjz-2014-0127):
+  Phillips et al. (2014) on using stable isotope mixing models
+  responsibly in food-web studies.
 
 ## Similar packages
 
