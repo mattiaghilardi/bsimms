@@ -183,13 +183,13 @@ plot_proportions(p_arr[, 1, , drop = FALSE], type = "density")
 **bsimms** sits alongside other R packages for Bayesian stable isotope
 mixing models, each with a different scope:
 
-- [MixSIAR](https://github.com/brianstock/MixSIAR): the JAGS-based
+- [MixSIAR](https://brianstock.github.io/MixSIAR/): the JAGS-based
   reference implementation **bsimms** reproduces the core modelling
   options of (and extends with an `lme4`-style covariate formula).
-- [simmr](https://github.com/andrewcparnell/simmr): fits a restricted
+- [simmr](https://andrewcparnell.github.io/simmr/): fits a restricted
   set of models via JAGS (`simmr_mcmc()`) or, much faster, fixed-form
   variational Bayes (`simmr_ffvb()`).
-- [cosimmr](https://github.com/emmagovan/cosimmr): simmr's
+- [cosimmr](https://emmagovan.github.io/cosimmr/): simmr's
   variational-Bayes approach extended to continuous covariates.
 - [MixMustR](https://open-aims.github.io/MixMustR/): jointly fits tracer
   data (e.g. stable isotopes, fatty acids) and independent
