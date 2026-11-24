@@ -1,3 +1,32 @@
+test_that("sim_level_names uses letters up to 26 levels and L-prefixed names beyond", {
+  expect_equal(sim_level_names(3), c("A", "B", "C"))
+  expect_equal(sim_level_names(26), LETTERS)
+  expect_equal(sim_level_names(27), paste0("L", 1:27))
+  expect_equal(sim_level_names(28)[27:28], c("L27", "L28"))
+})
+
+test_that("simulate_bsimms_data restores global RNG state, including when none existed before", {
+  old_seed <- if (exists(".Random.seed", envir = .GlobalEnv)) {
+    get(".Random.seed", envir = .GlobalEnv)
+  } else {
+    NULL
+  }
+  on.exit({
+    if (!is.null(old_seed)) {
+      assign(".Random.seed", old_seed, envir = .GlobalEnv)
+    } else if (exists(".Random.seed", envir = .GlobalEnv)) {
+      rm(".Random.seed", envir = .GlobalEnv)
+    }
+  })
+  if (exists(".Random.seed", envir = .GlobalEnv)) {
+    rm(".Random.seed", envir = .GlobalEnv)
+  }
+
+  expect_false(exists(".Random.seed", envir = .GlobalEnv))
+  simulate_bsimms_data(n_mixture_obs = 5, seed = 1)
+  expect_false(exists(".Random.seed", envir = .GlobalEnv))
+})
+
 test_that("default call returns well-formed data and truth", {
   sim <- simulate_bsimms_data(n_mixture_obs = 20, seed = 1)
   expect_named(

@@ -524,6 +524,49 @@ test_that("posterior_predict's newdata path samples y_rep under residual_only er
   expect_equal(dim(yrep_1iso), c(100, 2, 1))
 })
 
+test_that("posterior_predict's newdata path samples y_rep under process_only error, with and without mv", {
+  # raw source data + 2 isotopes: needs$mv TRUE, needs$resid_prop FALSE
+  fit_proc_mv <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = raw_source_data,
+    tdf_data = raw_tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = FALSE,
+    error_structure = "process_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  newdata <- data.frame(elevation = c(150, 250))
+  yrep_mv <- rstantools::posterior_predict(fit_proc_mv, newdata = newdata)
+  expect_true(all(is.finite(yrep_mv)))
+
+  # summarised source data: needs$mv FALSE, needs$proc TRUE, needs$resid_prop FALSE
+  fit_proc <- bsimm(
+    formula = ~elevation,
+    mixture_data = mixture_data,
+    source_data = source_data,
+    tdf_data = tdf_data,
+    isotope_names = c("d13C", "d15N"),
+    source_means_sds = TRUE,
+    error_structure = "process_only",
+    chains = 1,
+    iter_warmup = 200,
+    iter_sampling = 100,
+    seed = 1,
+    refresh = 0,
+    show_messages = FALSE,
+    show_exceptions = FALSE
+  )
+  yrep <- rstantools::posterior_predict(fit_proc, newdata = newdata)
+  expect_true(all(is.finite(yrep)))
+})
+
 test_that("predict's resp selects and validates isotopes", {
   s <- predict(fit, resp = "d13C")
   expect_equal(unique(s$isotope), "d13C")
@@ -892,7 +935,9 @@ test_that("compute_p_fitted uses plain beta/ilr_global (not _raw) when center/sc
   )
   expect_false(fit_unstd$spec$has_beta_raw)
   expect_false(fit_unstd$spec$has_ilr_global_raw)
-  p_arr <- posterior_proportions(fit_unstd)
+  # re_formula must be non-NULL to route through compute_p_fitted() at all
+  # (re_formula = NULL takes a different, already-computed-`p` shortcut).
+  p_arr <- posterior_proportions(fit_unstd, re_formula = NA)
   expect_equal(dim(p_arr), c(100, 6, 3))
   expect_true(all(abs(apply(p_arr, c(1, 2), sum) - 1) < 1e-6))
 })

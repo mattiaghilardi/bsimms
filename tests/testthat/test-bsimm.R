@@ -40,6 +40,14 @@ test_that("resolve_backend errors when auto finds neither backend installed", {
   expect_snapshot(error = TRUE, resolve_backend("auto"))
 })
 
+test_that("resolve_backend falls back to rstan when auto finds cmdstanr unavailable", {
+  local_mocked_bindings(
+    requireNamespace = function(package, ...) package == "rstan",
+    .package = "base"
+  )
+  expect_equal(resolve_backend("auto"), "rstan")
+})
+
 test_that("bsimm errors on an invalid error_structure or backend", {
   expect_snapshot(
     error = TRUE,

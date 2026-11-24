@@ -6,6 +6,14 @@
       Error:
       ! Can't find the following variable(s) in the output: banana
 
+# plot.bsimms_fit's own no-matching-parameters check fires when bsimms_draws returns none
+
+    Code
+      plot(fit, plot = FALSE)
+    Condition
+      Error:
+      ! No matching parameters found.
+
 # pp_check.bsimms_fit requires resp for multi-isotope models
 
     Code

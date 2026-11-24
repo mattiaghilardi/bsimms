@@ -406,6 +406,14 @@ test_that("plot facets by the moderator for a two-way interaction", {
   expect_equal(length(unique(built$data[[1]]$PANEL)), 2)
 })
 
+test_that("plot labels facets with rounded values for a numeric moderator", {
+  ce <- conditional_effects(fit, effects = "elevation:rainfall", resolution = 5)
+  plots <- plot(ce)
+  built <- ggplot2::ggplot_build(plots[["elevation:rainfall"]])
+  strip_labels <- built$layout$layout$.moderator_label
+  expect_true(all(grepl("^rainfall: ", strip_labels)))
+})
+
 # method = posterior_epred / posterior_predict -------------------------------
 
 test_that("conditional_effects errors on an invalid method", {

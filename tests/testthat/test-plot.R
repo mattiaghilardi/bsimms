@@ -77,6 +77,21 @@ test_that("plot.bsimms_fit errors when no parameters match", {
   expect_snapshot(error = TRUE, plot(fit, variable = "banana", plot = FALSE))
 })
 
+test_that("plot.bsimms_fit's own no-matching-parameters check fires when bsimms_draws returns none", {
+  # Both backends error upstream (via cmdstanr/posterior) for a genuinely
+  # unmatched variable name, so plot.bsimms_fit()'s own
+  # `length(all_vars) == 0` check is never reached that way; mock
+  # bsimms_draws() to return an already-built, zero-variable draws object
+  # to exercise it directly.
+  local_mocked_bindings(
+    bsimms_draws = function(...) {
+      posterior::as_draws_array(array(numeric(0), dim = c(2, 1, 0)))
+    },
+    .package = "bsimms"
+  )
+  expect_snapshot(error = TRUE, plot(fit, plot = FALSE))
+})
+
 test_that("plot.bsimms_fit's default variable set includes beta when the model has fixed effects", {
   fit_fe <- bsimm(
     formula = ~Region,
