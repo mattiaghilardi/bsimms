@@ -13,7 +13,13 @@ is the same for every sample i: a single, population-average value,
 `formula` itself: an `lme4`-style specification of mixture-level
 covariates, spanning fixed effects (continuous, factor, interaction) and
 crossed/nested random effects, that instead let p\_{i, k} vary across
-samples.
+samples. Fixed and random effects on source proportions were first
+introduced to Bayesian SIMMs by [Semmens et al.
+(2009)](https://doi.org/10.1371/journal.pone.0006187) and continuous
+covariates by [Francis et al.
+(2011)](https://doi.org/10.1111/j.1461-0248.2011.01597.x); [Parnell et
+al. (2013)](https://doi.org/10.1002/env.2221) gives the general
+mathematical framework unifying these.
 
 Covariate effects are added, in isometric log-ratio (ILR) coordinates,
 as deviations from this `p_global` baseline. `p_global` is first
@@ -449,3 +455,20 @@ predict(
 #> 1   1    d13C 4.132239 2.086907 -0.1357657  8.09261
 #> 2   1    d15N 5.700961 3.232331 -1.0847577 12.16870
 ```
+
+## References
+
+Semmens BX, Ward EJ, Moore JW, Darimont CT (2009). “Quantifying Inter-
+and Intra-Population Niche Variability Using Hierarchical Bayesian
+Stable Isotope Mixing Models.” *PLoS ONE*, 4(7), e6187.
+[doi:10.1371/journal.pone.0006187](https://doi.org/10.1371/journal.pone.0006187)
+
+Francis TB, Schindler DE, Holtgrieve GW, Larson ER, Scheuerell MD,
+Semmens BX, Ward EJ (2011). “Habitat structure determines resource use
+by zooplankton in temperate lakes.” *Ecology Letters*, 14(4), 364-372.
+[doi:10.1111/j.1461-0248.2011.01597.x](https://doi.org/10.1111/j.1461-0248.2011.01597.x)
+
+Parnell AC, Phillips DL, Bearhop S, Semmens BX, Ward EJ, Moore JW,
+Jackson AL, Grey J, Kelly DJ, Inger R (2013). “Bayesian stable isotope
+mixing models.” *Environmetrics*, 24(6), 387-399.
+[doi:10.1002/env.2221](https://doi.org/10.1002/env.2221)

@@ -96,7 +96,13 @@ population-average value, <code>p_global</code>, drawn from a Dirichlet
 distribution. This vignette covers <code>formula</code> itself: an
 <code>lme4</code>-style specification of mixture-level covariates,
 spanning fixed effects (continuous, factor, interaction) and
-crossed/nested random effects, that instead let <span class="math inline">p_{i, k}</span> vary across samples.</p>
+crossed/nested random effects, that instead let <span class="math inline">p_{i, k}</span> vary across samples. Fixed and
+random effects on source proportions were first introduced to Bayesian
+SIMMs by <a href="https://doi.org/10.1371/journal.pone.0006187" class="external-link">Semmens
+et al. (2009)</a> and continuous covariates by <a href="https://doi.org/10.1111/j.1461-0248.2011.01597.x" class="external-link">Francis et al.
+(2011)</a>; <a href="https://doi.org/10.1002/env.2221" class="external-link">Parnell et
+al. (2013)</a> gives the general mathematical framework unifying
+these.</p>
 <p>Covariate effects are added, in isometric log-ratio (ILR)
 coordinates, as deviations from this <code>p_global</code> baseline.
 <code>p_global</code> is first forward-transformed into ILR coordinates,
@@ -472,6 +478,21 @@ the whole fitted dataset:</p>
 <span><span class="co">#&gt;   row isotope     mean       sd       q2.5    q97.5</span></span>
 <span><span class="co">#&gt; 1   1    d13C 4.132239 2.086907 -0.1357657  8.09261</span></span>
 <span><span class="co">#&gt; 2   1    d15N 5.700961 3.232331 -1.0847577 12.16870</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Semmens BX, Ward EJ, Moore JW, Darimont CT (2009). “Quantifying
+Inter- and Intra-Population Niche Variability Using Hierarchical
+Bayesian Stable Isotope Mixing Models.” <em>PLoS ONE</em>, 4(7), e6187.
+<a href="https://doi.org/10.1371/journal.pone.0006187" class="external-link">doi:10.1371/journal.pone.0006187</a></p>
+<p>Francis TB, Schindler DE, Holtgrieve GW, Larson ER, Scheuerell MD,
+Semmens BX, Ward EJ (2011). “Habitat structure determines resource use
+by zooplankton in temperate lakes.” <em>Ecology Letters</em>, 14(4),
+364-372. <a href="https://doi.org/10.1111/j.1461-0248.2011.01597.x" class="external-link">doi:10.1111/j.1461-0248.2011.01597.x</a></p>
+<p>Parnell AC, Phillips DL, Bearhop S, Semmens BX, Ward EJ, Moore JW,
+Jackson AL, Grey J, Kelly DJ, Inger R (2013). “Bayesian stable isotope
+mixing models.” <em>Environmetrics</em>, 24(6), 387-399. <a href="https://doi.org/10.1002/env.2221" class="external-link">doi:10.1002/env.2221</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

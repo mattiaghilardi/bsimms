@@ -108,7 +108,7 @@ fit1 <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.1 seconds.
-#> Total execution time: 0.3 seconds.
+#> Total execution time: 0.5 seconds.
 #> 
 fit2 <- bsimm(
   ~Sex,
@@ -139,7 +139,7 @@ fit2 <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.1 seconds.
+#> Chain 1 finished in 0.2 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -152,10 +152,10 @@ fit2 <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.1 seconds.
+#> Chain 2 finished in 0.2 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.1 seconds.
+#> Mean chain execution time: 0.2 seconds.
 #> Total execution time: 0.5 seconds.
 #> 
 loo::loo_compare(fit1, fit2)
