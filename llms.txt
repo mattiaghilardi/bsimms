@@ -208,13 +208,16 @@ mixing models, each with a different scope:
 
 ## Citing bsimms and related software
 
-``` r
+When using **bsimms**, please cite it as follows:
 
-citation("bsimms")
-```
+- Ghilardi M (YEAR). bsimms: Bayesian Stable Isotope Mixing Models using
+  ‘Stan’. R package version XXX.
+  <https://github.com/mattiaghilardi/bsimms>.
 
-As **bsimms** generates and fits ‘Stan’ programs, please additionally
-cite ‘Stan’:
+The same information can be obtained by running `citation("bsimms")`.
+
+As **bsimms** generates and fits Stan programs, please additionally cite
+Stan:
 
 Carpenter, B., Gelman, A., Hoffman, M.D., Lee, D., Goodrich, B.,
 Betancourt, M., Brubaker, M., Guo, J., Li, P., & Riddell, A. (2017).
@@ -225,13 +228,16 @@ See <https://mc-stan.org/about/#citing-stan> for Stan’s own up-to-date
 citation guidance.
 
 Please also cite whichever backend you used to fit the model, the R
-interface actually compiling and sampling from the ‘Stan’ program:
+interface actually compiling and sampling from the Stan program:
 
 ``` r
 
 citation("cmdstanr") # if backend = "cmdstanr" (the default, if installed)
 citation("rstan")    # if backend = "rstan"
 ```
+
+More generally, bsimms depends on R itself and on many other R packages;
+use the `citation` function to find out how to cite each of them.
 
 If you use
 [`plot_proportions()`](https://mattiaghilardi.github.io/bsimms/reference/plot_proportions.md),
@@ -240,11 +246,11 @@ or
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html)/[`print()`](https://rdrr.io/r/base/print.html)
 on a
 [`conditional_effects()`](https://mattiaghilardi.github.io/bsimms/reference/conditional_effects.md)
-result, please also consider citing ‘ggplot2’. If you use
+result, please also consider citing **ggplot2**. If you use
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html)/`pp_check()` on
-the fitted model itself, please consider citing ‘bayesplot’. If you use
-`loo()`/`waic()`/`loo_compare()`, please consider citing ‘loo’. All
-three provide the underlying implementation for these functions.
+the fitted model itself, please consider citing **bayesplot**. If you
+use `loo()`/`waic()`/`loo_compare()`, please consider citing **loo**.
+All three provide the underlying implementation for these functions.
 
 ## Contributing
 

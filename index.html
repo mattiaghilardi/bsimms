@@ -208,16 +208,20 @@
 <div class="section level2">
 <h2 id="citing-bsimms-and-related-software">Citing bsimms and related software<a class="anchor" aria-label="anchor" href="#citing-bsimms-and-related-software"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"bsimms"</span><span class="op">)</span></span></code></pre></div>
-<p>As <strong>bsimms</strong> generates and fits ‘Stan’ programs, please additionally cite ‘Stan’:</p>
+<p>When using <strong>bsimms</strong>, please cite it as follows:</p>
+<ul>
+<li>Ghilardi M (YEAR). bsimms: Bayesian Stable Isotope Mixing Models using ‘Stan’. R package version XXX. <a href="https://github.com/mattiaghilardi/bsimms" class="external-link uri">https://github.com/mattiaghilardi/bsimms</a>.</li>
+</ul>
+<p>The same information can be obtained by running <code>citation("bsimms")</code>.</p>
+<p>As <strong>bsimms</strong> generates and fits Stan programs, please additionally cite Stan:</p>
 <p>Carpenter, B., Gelman, A., Hoffman, M.D., Lee, D., Goodrich, B., Betancourt, M., Brubaker, M., Guo, J., Li, P., &amp; Riddell, A. (2017). Stan: A probabilistic programming language. <em>Journal of Statistical Software</em>, 76(1), 1-32. <a href="doi:10.18637/jss.v076.i01" class="uri">doi:10.18637/jss.v076.i01</a></p>
 <p>See <a href="https://mc-stan.org/about/#citing-stan" class="external-link uri">https://mc-stan.org/about/#citing-stan</a> for Stan’s own up-to-date citation guidance.</p>
-<p>Please also cite whichever backend you used to fit the model, the R interface actually compiling and sampling from the ‘Stan’ program:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>Please also cite whichever backend you used to fit the model, the R interface actually compiling and sampling from the Stan program:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"cmdstanr"</span><span class="op">)</span> <span class="co"># if backend = "cmdstanr" (the default, if installed)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"rstan"</span><span class="op">)</span>    <span class="co"># if backend = "rstan"</span></span></code></pre></div>
-<p>If you use <code><a href="reference/plot_proportions.html">plot_proportions()</a></code>, <code><a href="reference/plot_isospace.html">plot_isospace()</a></code>, or <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>/<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> on a <code><a href="reference/conditional_effects.html">conditional_effects()</a></code> result, please also consider citing ‘ggplot2’. If you use <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>/<code>pp_check()</code> on the fitted model itself, please consider citing ‘bayesplot’. If you use <code>loo()</code>/<code>waic()</code>/<code>loo_compare()</code>, please consider citing ‘loo’. All three provide the underlying implementation for these functions.</p>
+<p>More generally, bsimms depends on R itself and on many other R packages; use the <code>citation</code> function to find out how to cite each of them.</p>
+<p>If you use <code><a href="reference/plot_proportions.html">plot_proportions()</a></code>, <code><a href="reference/plot_isospace.html">plot_isospace()</a></code>, or <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>/<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> on a <code><a href="reference/conditional_effects.html">conditional_effects()</a></code> result, please also consider citing <strong>ggplot2</strong>. If you use <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>/<code>pp_check()</code> on the fitted model itself, please consider citing <strong>bayesplot</strong>. If you use <code>loo()</code>/<code>waic()</code>/<code>loo_compare()</code>, please consider citing <strong>loo</strong>. All three provide the underlying implementation for these functions.</p>
 </div>
 <div class="section level2">
 <h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
