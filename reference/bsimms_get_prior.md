@@ -120,7 +120,8 @@ bsimms_get_prior(
 
 ## Value
 
-A `bsimms_prior` data frame.
+A `bsimms_prior` data frame (see
+[`bsimms_prior()`](https://mattiaghilardi.github.io/bsimms/reference/bsimms_prior.md)).
 
 ## References
 

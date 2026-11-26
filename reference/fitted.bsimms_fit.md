@@ -170,7 +170,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.8 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 fitted(fit)
 #>    row isotope       mean        sd      q2.5     q97.5

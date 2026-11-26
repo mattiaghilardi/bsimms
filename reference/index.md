@@ -36,11 +36,6 @@ Preview, override, and print bsimms’s data-scaled default priors.
 
   Default priors for a `bsimms` model
 
-- [`print(`*`<bsimms_prior>`*`)`](https://mattiaghilardi.github.io/bsimms/reference/print.bsimms_prior.md)
-  :
-
-  Print a `bsimms_prior` specification
-
 ## Inspect a fit
 
 Print and summarise a fitted model.

@@ -1,10 +1,9 @@
 # Specify a prior for one or more `bsimms` parameters
 
 Build up a full prior specification by combining several calls with
-[`c()`](https://rdrr.io/r/base/c.html), e.g.
-`c(bsimms_prior("normal(0, 2)", class = "b"), bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter"))`.
-More specific rows (a given `coef`/`resp`/`group`) take precedence over
-the general class default when the Stan code is generated.
+[`c()`](https://rdrr.io/r/base/c.html). More specific rows (a given
+`coef`/`resp`/`group`) take precedence over the general class default
+when the Stan code is generated.
 
 ## Usage
 
@@ -19,7 +18,9 @@ bsimms_prior(prior, class = "b", coef = "", resp = "", group = "")
   Character string: a valid Stan distribution expression, e.g.
   `"normal(0, 1)"`, `"student_t(3, 0, 2.5)"`, `"lkj_corr_cholesky(2)"`,
   or, for `class = "p_global"`, a single positive number (a Dirichlet
-  concentration, e.g. `"1"`).
+  concentration, e.g. `"1"`). Not validated by `bsimms`; an invalid
+  expression will only surface as a Stan compilation error when the
+  model is fit.
 
 - class:
 
@@ -89,7 +90,9 @@ bsimms_prior(prior, class = "b", coef = "", resp = "", group = "")
 
 ## Value
 
-A one-row `data.frame` of class `bsimms_prior`.
+A one-row `data.frame` of class `bsimms_prior`; printed as a table with
+columns `prior`, `class`, `coef`, `resp` and `group` (blank where
+unset).
 
 ## Examples
 
@@ -128,4 +131,11 @@ bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
 bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")
 #>                 prior     class coef resp group
 #>  lkj_corr_cholesky(2) resid_cor                
+c(
+  bsimms_prior("normal(0, 2)", class = "b"),
+  bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter")
+)
+#>         prior class         coef resp group
+#>  normal(0, 2)     b                        
+#>  normal(1, 1)     b SeasonWinter           
 ```
