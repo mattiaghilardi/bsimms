@@ -18,7 +18,6 @@ reference:
   contents:
   - bsimms_prior
   - bsimms_get_prior
-  - print.bsimms_prior
 - title: Inspect a fit
   desc: Print and summarise a fitted model.
   contents:
