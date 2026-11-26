@@ -10,7 +10,9 @@ bsimms_prior(prior, class = "b", coef = "", resp = "", group = "")
 \item{prior}{Character string: a valid Stan distribution expression,
 e.g. \code{"normal(0, 1)"}, \code{"student_t(3, 0, 2.5)"}, \code{"lkj_corr_cholesky(2)"},
 or, for \code{class = "p_global"}, a single positive number (a Dirichlet
-concentration, e.g. \code{"1"}).}
+concentration, e.g. \code{"1"}). Not validated by \code{bsimms}; an invalid
+expression will only surface as a Stan compilation error when the
+model is fit.}
 
 \item{class}{One of:
 \itemize{
@@ -64,14 +66,15 @@ every source (and, except for \code{"source_cor"}, every isotope).
 }}
 }
 \value{
-A one-row \code{data.frame} of class \code{bsimms_prior}.
+A one-row \code{data.frame} of class \code{bsimms_prior}; printed as a
+table with columns \code{prior}, \code{class}, \code{coef}, \code{resp} and \code{group}
+(blank where unset).
 }
 \description{
 Build up a full prior specification by combining several calls with
-\code{\link[=c]{c()}}, e.g.
-\code{c(bsimms_prior("normal(0, 2)", class = "b"), bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter"))}.
-More specific rows (a given \code{coef}/\code{resp}/\code{group}) take precedence over
-the general class default when the Stan code is generated.
+\code{\link[=c]{c()}}. More specific rows (a given \code{coef}/\code{resp}/\code{group}) take
+precedence over the general class default when the Stan code is
+generated.
 }
 \examples{
 bsimms_prior("normal(0, 2)", class = "b")
@@ -92,4 +95,8 @@ bsimms_prior(
 bsimms_prior("2", class = "p_global", group = "Beaver")
 bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
 bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")
+c(
+  bsimms_prior("normal(0, 2)", class = "b"),
+  bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter")
+)
 }

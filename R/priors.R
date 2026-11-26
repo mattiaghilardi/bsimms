@@ -1,16 +1,16 @@
 #' Specify a prior for one or more `bsimms` parameters
 #'
 #' Build up a full prior specification by combining several calls with
-#' [c()], e.g.
-#' `c(bsimms_prior("normal(0, 2)", class = "b"),
-#'    bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter"))`.
-#' More specific rows (a given `coef`/`resp`/`group`) take precedence over
-#' the general class default when the Stan code is generated.
+#' [c()]. More specific rows (a given `coef`/`resp`/`group`) take
+#' precedence over the general class default when the Stan code is
+#' generated.
 #'
 #' @param prior Character string: a valid Stan distribution expression,
 #'   e.g. `"normal(0, 1)"`, `"student_t(3, 0, 2.5)"`, `"lkj_corr_cholesky(2)"`,
 #'   or, for `class = "p_global"`, a single positive number (a Dirichlet
-#'   concentration, e.g. `"1"`).
+#'   concentration, e.g. `"1"`). Not validated by `bsimms`; an invalid
+#'   expression will only surface as a Stan compilation error when the
+#'   model is fit.
 #' @param class One of:
 #'   - `"b"`: fixed-effect slopes (the population-level baseline is not a
 #'     `"b"` coefficient but `"p_global"`, see below).
@@ -54,7 +54,9 @@
 #'     discrimination factor priors can be made source-specific as well
 #'     as isotope-specific. Left unset (`""`), such a prior applies to
 #'     every source (and, except for `"source_cor"`, every isotope).
-#' @return A one-row `data.frame` of class `bsimms_prior`.
+#' @return A one-row `data.frame` of class `bsimms_prior`; printed as a
+#'   table with columns `prior`, `class`, `coef`, `resp` and `group`
+#'   (blank where unset).
 #' @export
 #' @examples
 #' bsimms_prior("normal(0, 2)", class = "b")
@@ -75,6 +77,10 @@
 #' bsimms_prior("2", class = "p_global", group = "Beaver")
 #' bsimms_prior("lkj_corr_cholesky(2)", class = "source_cor", group = "Beaver")
 #' bsimms_prior("lkj_corr_cholesky(2)", class = "resid_cor")
+#' c(
+#'   bsimms_prior("normal(0, 2)", class = "b"),
+#'   bsimms_prior("normal(1, 1)", class = "b", coef = "SeasonWinter")
+#' )
 bsimms_prior <- function(prior, class = "b", coef = "", resp = "", group = "") {
   class <- rlang::arg_match0(
     class,
@@ -121,15 +127,6 @@ c.bsimms_prior <- function(...) {
   out
 }
 
-#' Print a `bsimms_prior` specification
-#'
-#' Prints as a table with columns `prior`, `class`, `coef`, `resp` and
-#' `group` (blank where unset).
-#'
-#' @param x A `bsimms_prior` object (as returned by [bsimms_prior()] or
-#'   [bsimms_get_prior()]).
-#' @param ... Unused.
-#' @return `x`, invisibly.
 #' @export
 print.bsimms_prior <- function(x, ...) {
   print.data.frame(as.data.frame(x), row.names = FALSE, quote = FALSE)
@@ -484,7 +481,7 @@ select_prior <- function(prior_df, class, coef = "", resp = "", group = "") {
 #' `make_standata()` or `bsimm()` to override.
 #'
 #' @inheritParams make_stancode
-#' @return A `bsimms_prior` data frame.
+#' @return A `bsimms_prior` data frame (see [bsimms_prior()]).
 #' @references Moore, J.W., & Semmens, B.X. (2008). Incorporating
 #'   uncertainty and prior information into stable isotope mixing models.
 #'   *Ecology Letters*, 11(5), 470-480.

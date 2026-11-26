@@ -87,7 +87,7 @@ error term, as in the original SIAR model, Parnell et al. 2010).}
 \code{source_data} and \code{tdf_data}. Default \code{"Source"}.}
 }
 \value{
-A \code{bsimms_prior} data frame.
+A \code{bsimms_prior} data frame (see \code{\link[=bsimms_prior]{bsimms_prior()}}).
 }
 \description{
 Builds the model specification (design matrices, source/TDF data layout)
