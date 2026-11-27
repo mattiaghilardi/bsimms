@@ -101,7 +101,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 fit <- add_criterion(fit, "loo")
 fit$criteria$loo

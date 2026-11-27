@@ -156,7 +156,7 @@ fit2 <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.2 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.6 seconds.
 #> 
 loo_compare(fit1, fit2)
 #> Computing "loo" for model "fit1" (not cached; use `add_criterion()` to cache it

@@ -94,8 +94,8 @@ fit <- bsimm(
 #> Chain 2 finished in 0.4 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 1.0 seconds.
+#> Mean chain execution time: 0.3 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 summary(fit)
 #> Bayesian stable isotope mixing model

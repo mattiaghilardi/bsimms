@@ -110,7 +110,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.4 seconds.
-#> Total execution time: 1.0 seconds.
+#> Total execution time: 0.9 seconds.
 #> 
 pp_check(fit, resp = "d13C")
 #> Using 10 posterior draws for ppc type "dens_overlay" by default.
