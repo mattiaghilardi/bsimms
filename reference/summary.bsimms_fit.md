@@ -78,7 +78,7 @@ fit <- bsimm(
 #> Chain 1 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 1 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 1 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 1 finished in 0.3 seconds.
+#> Chain 1 finished in 0.2 seconds.
 #> Chain 2 Iteration:   1 / 1000 [  0%]  (Warmup) 
 #> Chain 2 Iteration: 100 / 1000 [ 10%]  (Warmup) 
 #> Chain 2 Iteration: 200 / 1000 [ 20%]  (Warmup) 
@@ -91,11 +91,11 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.4 seconds.
+#> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
-#> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.8 seconds.
+#> Mean chain execution time: 0.2 seconds.
+#> Total execution time: 0.6 seconds.
 #> 
 summary(fit)
 #> Bayesian stable isotope mixing model
