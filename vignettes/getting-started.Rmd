@@ -230,8 +230,8 @@ matching every wiggle.
 #|       Posterior predictive check for d15N: the observed density
 #|       falls within the spread of posterior predictive draws.
 #| fig.asp: 0.8
-bayesplot::pp_check(fit, resp = "d13C")
-bayesplot::pp_check(fit, resp = "d15N")
+pp_check(fit, resp = "d13C")
+pp_check(fit, resp = "d15N")
 ```
 
 ### Working with posterior source proportions
@@ -284,7 +284,7 @@ subset(fitted(fit), row == 1)
 
 ### Bayesian R^2^
 
-`rstantools::bayes_R2()` reports a Bayesian R-squared per isotope, but is
+`bayes_R2()` reports a Bayesian R-squared per isotope, but is
 not useful with no covariates: every mixture sample shares the same
 fitted value, so there is no across-sample variation for it to explain,
 and it is always ~0. See [`vignette("covariates")`](covariates.html),

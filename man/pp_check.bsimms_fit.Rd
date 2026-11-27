@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{pp_check.bsimms_fit}
 \alias{pp_check.bsimms_fit}
+\alias{pp_check}
 \title{Posterior predictive checks}
 \usage{
 \method{pp_check}{bsimms_fit}(object, resp = NULL, type = "dens_overlay", ndraws = NULL, ...)
@@ -63,6 +64,6 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-bayesplot::pp_check(fit, resp = "d13C")
+pp_check(fit, resp = "d13C")
 }
 }

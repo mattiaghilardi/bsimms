@@ -2,6 +2,7 @@
 % Please edit documentation in R/loo.R
 \name{loo_compare.bsimms_fit}
 \alias{loo_compare.bsimms_fit}
+\alias{loo_compare}
 \title{Compare \code{bsimms} models by approximate leave-one-out cross-validation}
 \usage{
 \method{loo_compare}{bsimms_fit}(x, ..., criterion = c("loo", "waic"), model_names = NULL)
@@ -75,6 +76,6 @@ fit2 <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-loo::loo_compare(fit1, fit2)
+loo_compare(fit1, fit2)
 }
 }

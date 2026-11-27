@@ -200,7 +200,11 @@ fitted_proportions <- function(
 #' @param ... Currently unused.
 #' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
 #'   names attached as the 3rd dimension's `dimnames`.
-#' @exportS3Method rstantools::posterior_epred
+#' @aliases posterior_epred
+#' @method posterior_epred bsimms_fit
+#' @importFrom rstantools posterior_epred
+#' @export
+#' @export posterior_epred
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -226,7 +230,7 @@ fitted_proportions <- function(
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' mu_arr <- rstantools::posterior_epred(fit)
+#' mu_arr <- posterior_epred(fit)
 #' dim(mu_arr)
 #' }
 posterior_epred.bsimms_fit <- function(
@@ -1364,7 +1368,11 @@ predict_y_rep_newdata <- function(
 #' @inheritParams posterior_epred.bsimms_fit
 #' @return A numeric `[n_draws, n_obs, length(resp)]` array, with isotope
 #'   names attached as the 3rd dimension's `dimnames`.
-#' @exportS3Method rstantools::posterior_predict
+#' @aliases posterior_predict
+#' @method posterior_predict bsimms_fit
+#' @importFrom rstantools posterior_predict
+#' @export
+#' @export posterior_predict
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -1390,7 +1398,7 @@ predict_y_rep_newdata <- function(
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' y_rep <- rstantools::posterior_predict(fit)
+#' y_rep <- posterior_predict(fit)
 #' dim(y_rep)
 #' }
 posterior_predict.bsimms_fit <- function(

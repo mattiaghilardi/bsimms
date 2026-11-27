@@ -2,6 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{posterior_predict.bsimms_fit}
 \alias{posterior_predict.bsimms_fit}
+\alias{posterior_predict}
 \title{Posterior predictive draws of mixture isotope values}
 \usage{
 \method{posterior_predict}{bsimms_fit}(
@@ -97,7 +98,7 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-y_rep <- rstantools::posterior_predict(fit)
+y_rep <- posterior_predict(fit)
 dim(y_rep)
 }
 }

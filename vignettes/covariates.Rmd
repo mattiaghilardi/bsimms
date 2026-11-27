@@ -208,7 +208,7 @@ fit_null_cov <- bsimm(
 ```
 
 ```{r loo-compare-result}
-loo::loo_compare(fit_full, fit_null_cov)
+loo_compare(fit_full, fit_null_cov)
 ```
 
 The best-fitting model is listed first (`elpd_diff = 0`); a positive,
@@ -218,13 +218,13 @@ indicate a real difference in predictive fit.
 ## Bayesian R^2^
 
 With covariates that create real across-sample variation,
-`rstantools::bayes_R2()` is now informative (unlike the
+`bayes_R2()` is now informative (unlike the
 intercept-only case in
 [`vignette("getting-started")`](getting-started.html), where it is
 always ~0):
 
 ```{r bayes-r2-covariates}
-rstantools::bayes_R2(fit_full)
+bayes_R2(fit_full)
 ```
 
 R^2^ is reported per isotope, and relates directly to that isotope's

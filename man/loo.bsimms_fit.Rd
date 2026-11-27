@@ -2,6 +2,7 @@
 % Please edit documentation in R/loo.R
 \name{loo.bsimms_fit}
 \alias{loo.bsimms_fit}
+\alias{loo}
 \title{Approximate leave-one-out cross-validation}
 \usage{
 \method{loo}{bsimms_fit}(x, cores = getOption("mc.cores", 1), ...)
@@ -49,7 +50,7 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-loo::loo(fit)
+loo(fit)
 }
 }
 \references{

@@ -2,6 +2,7 @@
 % Please edit documentation in R/bayes_R2.R
 \name{bayes_R2.bsimms_fit}
 \alias{bayes_R2.bsimms_fit}
+\alias{bayes_R2}
 \title{Bayesian R-squared}
 \usage{
 \method{bayes_R2}{bsimms_fit}(
@@ -70,7 +71,7 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-rstantools::bayes_R2(fit)
+bayes_R2(fit)
 }
 }
 \references{

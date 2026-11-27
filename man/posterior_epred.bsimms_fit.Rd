@@ -2,6 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{posterior_epred.bsimms_fit}
 \alias{posterior_epred.bsimms_fit}
+\alias{posterior_epred}
 \title{Expected mixture isotope values}
 \usage{
 \method{posterior_epred}{bsimms_fit}(
@@ -99,7 +100,7 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-mu_arr <- rstantools::posterior_epred(fit)
+mu_arr <- posterior_epred(fit)
 dim(mu_arr)
 }
 }

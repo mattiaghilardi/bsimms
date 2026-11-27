@@ -15,7 +15,11 @@
 #'   Bayesian model evaluation using leave-one-out cross-validation and WAIC.
 #'   *Statistics and Computing*, 27(5), 1413-1432.
 #'   \doi{10.1007/s11222-016-9696-4}
-#' @exportS3Method loo::loo
+#' @aliases loo
+#' @method loo bsimms_fit
+#' @importFrom loo loo
+#' @export
+#' @export loo
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -41,7 +45,7 @@
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' loo::loo(fit)
+#' loo(fit)
 #' }
 loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
@@ -64,7 +68,11 @@ loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
 #' @references Watanabe, S. (2010). Asymptotic equivalence of Bayes cross
 #'   validation and widely applicable information criterion in singular
 #'   learning theory. *Journal of Machine Learning Research*, 11, 3571-3594.
-#' @exportS3Method loo::waic
+#' @aliases waic
+#' @method waic bsimms_fit
+#' @importFrom loo waic
+#' @export
+#' @export waic
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -90,7 +98,7 @@ loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' loo::waic(fit)
+#' waic(fit)
 #' }
 waic.bsimms_fit <- function(x, ...) {
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
@@ -188,7 +196,11 @@ add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
 #' @return The result of [loo::loo_compare()]: model names are given in its
 #'   `model` column, ranked by expected log pointwise predictive density
 #'   (best model first).
-#' @exportS3Method loo::loo_compare
+#' @aliases loo_compare
+#' @method loo_compare bsimms_fit
+#' @importFrom loo loo_compare
+#' @export
+#' @export loo_compare
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -230,7 +242,7 @@ add_criterion.bsimms_fit <- function(x, criterion = "loo", ...) {
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' loo::loo_compare(fit1, fit2)
+#' loo_compare(fit1, fit2)
 #' }
 loo_compare.bsimms_fit <- function(
   x,

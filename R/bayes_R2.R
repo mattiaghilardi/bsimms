@@ -25,7 +25,11 @@
 #'   R-squared for Bayesian regression models. *The American Statistician*,
 #'   73(3), 307-309. \doi{10.1080/00031305.2018.1549100}.
 #'   ([Preprint](https://acris.aalto.fi/ws/portalfiles/portal/34206843/bayes_R2_v3.pdf))
-#' @exportS3Method rstantools::bayes_R2
+#' @aliases bayes_R2
+#' @method bayes_R2 bsimms_fit
+#' @importFrom rstantools bayes_R2
+#' @export
+#' @export bayes_R2
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -52,7 +56,7 @@
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' rstantools::bayes_R2(fit)
+#' bayes_R2(fit)
 #' }
 bayes_R2.bsimms_fit <- function(
   object,

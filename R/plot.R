@@ -132,7 +132,11 @@ plot.bsimms_fit <- function(
 #' @param ... Further arguments passed on to the underlying `ppc_*`
 #'   function, e.g. `group` for grouped types.
 #' @return A ggplot object, as returned by the underlying `ppc_*` function.
-#' @exportS3Method bayesplot::pp_check
+#' @aliases pp_check
+#' @method pp_check bsimms_fit
+#' @importFrom bayesplot pp_check
+#' @export
+#' @export pp_check
 #' @examples
 #' \donttest{
 #' sim <- simulate_bsimms_data(
@@ -158,7 +162,7 @@ plot.bsimms_fit <- function(
 #'   iter_warmup = 500,
 #'   iter_sampling = 500
 #' )
-#' bayesplot::pp_check(fit, resp = "d13C")
+#' pp_check(fit, resp = "d13C")
 #' }
 pp_check.bsimms_fit <- function(
   object,

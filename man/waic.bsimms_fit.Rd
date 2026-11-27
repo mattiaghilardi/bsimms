@@ -2,6 +2,7 @@
 % Please edit documentation in R/loo.R
 \name{waic.bsimms_fit}
 \alias{waic.bsimms_fit}
+\alias{waic}
 \title{Widely applicable information criterion (WAIC)}
 \usage{
 \method{waic}{bsimms_fit}(x, ...)
@@ -47,7 +48,7 @@ fit <- bsimm(
   iter_warmup = 500,
   iter_sampling = 500
 )
-loo::waic(fit)
+waic(fit)
 }
 }
 \references{
