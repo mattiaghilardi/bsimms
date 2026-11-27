@@ -64,13 +64,6 @@ plot.bsimms_fit <- function(
   newpage = TRUE,
   ...
 ) {
-  rlang::check_installed(
-    "bayesplot",
-    reason = paste0(
-      "to use `plot.bsimms_fit()` (or use `plot_proportions()` / ",
-      "`summary()` directly)."
-    )
-  )
   spec <- x$spec
   if (is.null(variable)) {
     variable <- c(
@@ -174,7 +167,6 @@ pp_check.bsimms_fit <- function(
   ndraws = NULL,
   ...
 ) {
-  rlang::check_installed("bayesplot", reason = "to use `pp_check()`.")
   spec <- object$spec
   if (is.null(resp)) {
     if (spec$J > 1) {
@@ -321,7 +313,6 @@ plot_proportions <- function(
   ...
 ) {
   type <- rlang::arg_match(type)
-  rlang::check_installed("ggplot2", reason = "to use `plot_proportions()`.")
 
   if (length(dim(p_arr)) != 3 || is.null(dimnames(p_arr)[[3]])) {
     cli::cli_abort(
@@ -644,7 +635,6 @@ plot_isospace <- function(
   isotopes = NULL,
   color_by = NULL
 ) {
-  rlang::check_installed("ggplot2", reason = "to use `plot_isospace()`.")
   # process_only avoids error-structure identifiability checks that are
   # irrelevant to (and would needlessly block) a data-only plot
   spec <- build_bsimms_spec(

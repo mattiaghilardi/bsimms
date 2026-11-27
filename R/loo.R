@@ -44,7 +44,6 @@
 #' loo::loo(fit)
 #' }
 loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
-  rlang::check_installed("loo", reason = "to use `loo()`.")
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
   r_eff <- loo::relative_eff(exp(ll), cores = cores)
   loo::loo(ll, r_eff = r_eff, cores = cores, ...)
@@ -94,7 +93,6 @@ loo.bsimms_fit <- function(x, cores = getOption("mc.cores", 1), ...) {
 #' loo::waic(fit)
 #' }
 waic.bsimms_fit <- function(x, ...) {
-  rlang::check_installed("loo", reason = "to use `waic()`.")
   ll <- unclass(bsimms_draws(x, variable = "log_lik")) # iteration x chain x N
   loo::waic(ll, ...)
 }
@@ -241,7 +239,6 @@ loo_compare.bsimms_fit <- function(
   model_names = NULL
 ) {
   criterion <- rlang::arg_match(criterion)
-  rlang::check_installed("loo", reason = "to use `loo_compare()`.")
   models <- c(list(x), list(...))
   if (is.null(model_names)) {
     call_args <- as.list(match.call())[-1]

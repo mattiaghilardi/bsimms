@@ -162,13 +162,6 @@ conditional_effects <- function(
   check_condition_names(int_conditions, "int_conditions", available)
 
   if (method != "posterior_proportions") {
-    rlang::check_installed(
-      "rstantools",
-      reason = paste0(
-        "to use `conditional_effects()` with method = ",
-        "\"posterior_epred\"/\"posterior_predict\"."
-      )
-    )
     if (is.null(resp)) {
       if (spec$J > 1) {
         cli::cli_abort(
@@ -255,10 +248,6 @@ conditional_effects <- function(
 #' @rdname conditional_effects
 #' @export
 plot.bsimms_conditional_effects <- function(x, plot = TRUE, ask = TRUE, ...) {
-  rlang::check_installed(
-    "ggplot2",
-    reason = "to use `plot.bsimms_conditional_effects()`."
-  )
   plots <- lapply(x, plot_one_conditional_effect, ...)
   names(plots) <- names(x)
   if (plot) {

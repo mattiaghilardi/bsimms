@@ -19,7 +19,7 @@ exclusions: list(
       # error_structure earlier in the same call's argument list.
       object_usage_linter = 79
     ),
-    "R/plot.R" = list(commas_linter = 221), # air removes the space after `[,`
+    "R/plot.R" = list(commas_linter = 213), # air removes the space after `[,`
     "R/predict.R" = list(
       commas_linter = c(272, 561, 642, 1445) # air removes the space after `[,`
     ),

@@ -25,24 +25,24 @@ BugReports: https://github.com/mattiaghilardi/bsimms/issues
 Depends:
     R (>= 4.1.0)
 Imports:
+    bayesplot,
     cli,
+    ggplot2,
     graphics,
     grDevices,
+    loo,
     posterior,
     reformulas,
     rlang,
+    rstantools,
     stats,
     utils
 Suggests:
-    bayesplot,
     cmdstanr,
-    ggplot2,
     knitr,
-    loo,
     markdown,
     rmarkdown,
     rstan (>= 2.26),
-    rstantools,
     testthat (>= 3.1.4)
 VignetteBuilder: 
     knitr
