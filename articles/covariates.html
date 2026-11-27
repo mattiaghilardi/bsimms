@@ -76,7 +76,7 @@
                         <h4 data-toc-skip class="author">Mattia
 Ghilardi</h4>
             
-            <h4 data-toc-skip class="date">2026-11-26</h4>
+            <h4 data-toc-skip class="date">2026-11-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/mattiaghilardi/bsimms/blob/main/vignettes/covariates.Rmd" class="external-link"><code>vignettes/covariates.Rmd</code></a></small>
       <div class="d-none name"><code>covariates.Rmd</code></div>
@@ -302,7 +302,7 @@ split across a factor’s levels elsewhere, here 2 sites per region:</p>
 <p>To check whether <code>fit_full</code>’s covariates
 (<code>Sex</code>, <code>Age</code>, and <code>Region</code>), taken
 together, are worth including, fit the same data with the null
-(intercept-only) model and compare with <code>loo_compare()</code>:</p>
+(intercept-only) model and compare with <code><a href="../reference/loo_compare.bsimms_fit.html">loo_compare()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_null_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bsimm.html">bsimm</a></span><span class="op">(</span></span>
 <span>  <span class="op">~</span><span class="fl">1</span>,</span>
@@ -319,7 +319,7 @@ together, are worth including, fit the same data with the null
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">loo</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/loo/reference/loo_compare.html" class="external-link">loo_compare</a></span><span class="op">(</span><span class="va">fit_full</span>, <span class="va">fit_null_cov</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/loo_compare.bsimms_fit.html">loo_compare</a></span><span class="op">(</span><span class="va">fit_full</span>, <span class="va">fit_null_cov</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Computing <span style="color: #0000BB;">"loo"</span> for model <span style="color: #0000BB;">"fit_full"</span> (not cached; use `add_criterion()` to</span></span>
 <span><span class="co">#&gt; cache it for reuse).</span></span>
 <span><span class="co">#&gt; Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.</span></span>
@@ -340,11 +340,11 @@ the runner-up would indicate a real difference in predictive fit.</p>
 <h2 id="bayesian-r2">Bayesian R<sup>2</sup><a class="anchor" aria-label="anchor" href="#bayesian-r2"></a>
 </h2>
 <p>With covariates that create real across-sample variation,
-<code><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">rstantools::bayes_R2()</a></code> is now informative (unlike the
-intercept-only case in <a href="getting-started.html"><code>vignette("getting-started")</code></a>,
+<code><a href="../reference/bayes_R2.bsimms_fit.html">bayes_R2()</a></code> is now informative (unlike the intercept-only
+case in <a href="getting-started.html"><code>vignette("getting-started")</code></a>,
 where it is always ~0):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">rstantools</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstantools/reference/bayes_R2.html" class="external-link">bayes_R2</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/bayes_R2.bsimms_fit.html">bayes_R2</a></span><span class="op">(</span><span class="va">fit_full</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   isotope      mean         sd       q2.5     q97.5</span></span>
 <span><span class="co">#&gt; 1    d13C 0.1810730 0.05850717 0.06956615 0.2922865</span></span>
 <span><span class="co">#&gt; 2    d15N 0.8931277 0.01076105 0.86680106 0.9080341</span></span></code></pre></div>

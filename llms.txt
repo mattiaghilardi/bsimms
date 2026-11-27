@@ -250,10 +250,12 @@ or
 on a
 [`conditional_effects()`](https://mattiaghilardi.github.io/bsimms/reference/conditional_effects.md)
 result, please also consider citing **ggplot2**. If you use
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html)/`pp_check()` on
-the fitted model itself, please consider citing **bayesplot**. If you
-use `loo()`/`waic()`/`loo_compare()`, please consider citing **loo**.
-All three provide the underlying implementation for these functions.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html)/[`pp_check()`](https://mattiaghilardi.github.io/bsimms/reference/pp_check.bsimms_fit.md)
+on the fitted model itself, please consider citing **bayesplot**. If you
+use
+[`loo()`](https://mattiaghilardi.github.io/bsimms/reference/loo.bsimms_fit.md)/[`waic()`](https://mattiaghilardi.github.io/bsimms/reference/waic.bsimms_fit.md)/[`loo_compare()`](https://mattiaghilardi.github.io/bsimms/reference/loo_compare.bsimms_fit.md),
+please consider citing **loo**. All three provide the underlying
+implementation for these functions.
 
 ## Contributing
 

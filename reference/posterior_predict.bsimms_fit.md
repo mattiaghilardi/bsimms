@@ -146,13 +146,13 @@ fit <- bsimm(
 #> Chain 2 Iteration: 800 / 1000 [ 80%]  (Sampling) 
 #> Chain 2 Iteration: 900 / 1000 [ 90%]  (Sampling) 
 #> Chain 2 Iteration: 1000 / 1000 [100%]  (Sampling) 
-#> Chain 2 finished in 0.2 seconds.
+#> Chain 2 finished in 0.3 seconds.
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.6 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
-y_rep <- rstantools::posterior_predict(fit)
+y_rep <- posterior_predict(fit)
 dim(y_rep)
 #> [1] 1000   10    2
 # }

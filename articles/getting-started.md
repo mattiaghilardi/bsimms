@@ -219,7 +219,8 @@ indicating good mixing.](getting-started-plot-fit-1.png)
 ### Posterior predictive checks
 
 Beyond `rhat`/effective sample size, it is worth checking that the
-fitted model actually reproduces the observed mixture data. `pp_check()`
+fitted model actually reproduces the observed mixture data.
+[`pp_check()`](https://mattiaghilardi.github.io/bsimms/reference/pp_check.bsimms_fit.md)
 overlays the observed isotope values (dark line) against posterior
 predictive draws (light lines), one isotope at a time, using
 `bayesplot`’s `dens_overlay` by default; pass `type` to use any other
@@ -231,7 +232,7 @@ matching every wiggle.
 
 ``` r
 
-bayesplot::pp_check(fit, resp = "d13C")
+pp_check(fit, resp = "d13C")
 #> Using 10 posterior draws for ppc type "dens_overlay" by default.
 ```
 
@@ -241,7 +242,7 @@ draws.](getting-started-pp-check-1.png)
 
 ``` r
 
-bayesplot::pp_check(fit, resp = "d15N")
+pp_check(fit, resp = "d15N")
 #> Using 10 posterior draws for ppc type "dens_overlay" by default.
 ```
 
@@ -343,7 +344,7 @@ subset(fitted(fit), row == 1)
 
 ### Bayesian R²
 
-[`rstantools::bayes_R2()`](https://mc-stan.org/rstantools/reference/bayes_R2.html)
+[`bayes_R2()`](https://mattiaghilardi.github.io/bsimms/reference/bayes_R2.bsimms_fit.md)
 reports a Bayesian R-squared per isotope, but is not useful with no
 covariates: every mixture sample shares the same fitted value, so there
 is no across-sample variation for it to explain, and it is always ~0.

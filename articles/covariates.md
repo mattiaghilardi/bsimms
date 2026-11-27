@@ -231,7 +231,8 @@ summary(fit_nested)
 
 To check whether `fit_full`’s covariates (`Sex`, `Age`, and `Region`),
 taken together, are worth including, fit the same data with the null
-(intercept-only) model and compare with `loo_compare()`:
+(intercept-only) model and compare with
+[`loo_compare()`](https://mattiaghilardi.github.io/bsimms/reference/loo_compare.bsimms_fit.md):
 
 ``` r
 
@@ -253,7 +254,7 @@ fit_null_cov <- bsimm(
 
 ``` r
 
-loo::loo_compare(fit_full, fit_null_cov)
+loo_compare(fit_full, fit_null_cov)
 #> Computing "loo" for model "fit_full" (not cached; use `add_criterion()` to
 #> cache it for reuse).
 #> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
@@ -275,14 +276,14 @@ indicate a real difference in predictive fit.
 ## Bayesian R²
 
 With covariates that create real across-sample variation,
-[`rstantools::bayes_R2()`](https://mc-stan.org/rstantools/reference/bayes_R2.html)
+[`bayes_R2()`](https://mattiaghilardi.github.io/bsimms/reference/bayes_R2.bsimms_fit.md)
 is now informative (unlike the intercept-only case in
 [`vignette("getting-started")`](https://mattiaghilardi.github.io/bsimms/articles/getting-started.md),
 where it is always ~0):
 
 ``` r
 
-rstantools::bayes_R2(fit_full)
+bayes_R2(fit_full)
 #>   isotope      mean         sd       q2.5     q97.5
 #> 1    d13C 0.1810730 0.05850717 0.06956615 0.2922865
 #> 2    d15N 0.8931277 0.01076105 0.86680106 0.9080341

@@ -97,9 +97,9 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.9 seconds.
 #> 
-loo::waic(fit)
+waic(fit)
 #> Warning: 
 #> 2 (20.0%) p_waic estimates greater than 0.4. We recommend trying loo instead.
 #> 

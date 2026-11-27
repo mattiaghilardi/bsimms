@@ -103,9 +103,9 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
-loo::loo(fit)
+loo(fit)
 #> Warning: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details.
 #> 
 #> Computed from 1000 by 10 log-likelihood matrix.
