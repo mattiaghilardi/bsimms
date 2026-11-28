@@ -19,7 +19,6 @@ tdf_data <- data.frame(
 )
 
 skip_if_not_installed("cmdstanr")
-skip_if_not_installed("rstantools")
 
 fit <- bsimm(
   formula = ~ 1 + (1 | Region),
@@ -38,33 +37,33 @@ fit <- bsimm(
 )
 
 test_that("bayes_R2 returns a summary data frame for every isotope by default", {
-  r2 <- rstantools::bayes_R2(fit)
+  r2 <- bayes_R2(fit)
   expect_s3_class(r2, "data.frame")
   expect_equal(r2$isotope, c("d13C", "d15N"))
   expect_true(all(c("mean", "sd", "q2.5", "q97.5") %in% names(r2)))
 })
 
 test_that("bayes_R2 respects an explicit resp", {
-  r2 <- rstantools::bayes_R2(fit, resp = "d15N")
+  r2 <- bayes_R2(fit, resp = "d15N")
   expect_equal(r2$isotope, "d15N")
 })
 
 test_that("bayes_R2 errors on an invalid resp", {
-  expect_snapshot(error = TRUE, rstantools::bayes_R2(fit, resp = "banana"))
+  expect_snapshot(error = TRUE, bayes_R2(fit, resp = "banana"))
 })
 
 test_that("bayes_R2's robust argument switches mean/sd for median/mad", {
-  r2 <- rstantools::bayes_R2(fit, robust = TRUE)
+  r2 <- bayes_R2(fit, robust = TRUE)
   expect_true(all(c("median", "mad", "q2.5", "q97.5") %in% names(r2)))
 })
 
 test_that("bayes_R2's probs argument controls the quantile columns", {
-  r2 <- rstantools::bayes_R2(fit, probs = c(0.1, 0.9))
+  r2 <- bayes_R2(fit, probs = c(0.1, 0.9))
   expect_true(all(c("q10", "q90") %in% names(r2)))
 })
 
 test_that("bayes_R2 returns raw draws when summary = FALSE", {
-  r2 <- rstantools::bayes_R2(fit, summary = FALSE)
+  r2 <- bayes_R2(fit, summary = FALSE)
   expect_true(is.matrix(r2))
   expect_equal(colnames(r2), c("d13C", "d15N"))
   expect_equal(nrow(r2), 100)
@@ -73,13 +72,13 @@ test_that("bayes_R2 returns raw draws when summary = FALSE", {
 
 test_that("bayes_R2 reuses a criterion cached via add_criterion", {
   fitc <- add_criterion(fit, criterion = "bayes_R2")
-  r2 <- rstantools::bayes_R2(fitc, summary = FALSE)
+  r2 <- bayes_R2(fitc, summary = FALSE)
   expect_identical(r2, fitc$criteria$bayes_R2)
 })
 
 test_that("bayes_R2 subsets a cached criterion by resp", {
   fitc <- add_criterion(fit, criterion = "bayes_R2")
-  r2 <- rstantools::bayes_R2(fitc, resp = "d15N", summary = FALSE)
+  r2 <- bayes_R2(fitc, resp = "d15N", summary = FALSE)
   expect_equal(colnames(r2), "d15N")
   expect_equal(r2[, "d15N"], fitc$criteria$bayes_R2[, "d15N"])
 })

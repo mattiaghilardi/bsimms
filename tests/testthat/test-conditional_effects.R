@@ -23,7 +23,6 @@ tdf_data <- data.frame(
 )
 
 skip_if_not_installed("cmdstanr")
-skip_if_not_installed("ggplot2")
 
 grDevices::pdf(nullfile())
 
@@ -424,7 +423,6 @@ test_that("conditional_effects errors on an invalid method", {
 })
 
 test_that("conditional_effects requires resp for a multi-isotope model with method = posterior_epred", {
-  skip_if_not_installed("rstantools")
   expect_snapshot(
     error = TRUE,
     conditional_effects(fit, effects = "elevation", method = "posterior_epred")
@@ -432,7 +430,6 @@ test_that("conditional_effects requires resp for a multi-isotope model with meth
 })
 
 test_that("method = posterior_epred defaults resp to the single isotope in a 1-isotope model", {
-  skip_if_not_installed("rstantools")
   fit_1iso <- bsimm(
     formula = ~elevation,
     mixture_data = mixture_data,
@@ -455,7 +452,6 @@ test_that("method = posterior_epred defaults resp to the single isotope in a 1-i
 })
 
 test_that("conditional_effects errors on an unknown resp", {
-  skip_if_not_installed("rstantools")
   expect_snapshot(
     error = TRUE,
     conditional_effects(
@@ -468,7 +464,6 @@ test_that("conditional_effects errors on an unknown resp", {
 })
 
 test_that("method = posterior_epred computes an isotope-labelled conditional effect", {
-  skip_if_not_installed("rstantools")
   ce <- conditional_effects(
     fit,
     effects = "elevation",
@@ -482,7 +477,6 @@ test_that("method = posterior_epred computes an isotope-labelled conditional eff
 })
 
 test_that("method = posterior_predict has wider intervals than posterior_epred", {
-  skip_if_not_installed("rstantools")
   ce_epred <- conditional_effects(
     fit,
     effects = "elevation",
@@ -503,7 +497,6 @@ test_that("method = posterior_predict has wider intervals than posterior_epred",
 })
 
 test_that("plot has no colour legend for method = posterior_epred/posterior_predict (single isotope)", {
-  skip_if_not_installed("rstantools")
   ce <- conditional_effects(
     fit,
     effects = "elevation",
@@ -521,7 +514,6 @@ test_that("plot still has a colour legend for the default method = posterior_pro
 })
 
 test_that("interval dodging doesn't split nested widths apart when there's no legend", {
-  skip_if_not_installed("rstantools")
   ce <- conditional_effects(
     fit,
     effects = "Region",

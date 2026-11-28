@@ -19,7 +19,6 @@ tdf_data <- data.frame(
 )
 
 skip_if_not_installed("cmdstanr")
-skip_if_not_installed("loo")
 
 fit1 <- bsimm(
   formula = ~1,
@@ -53,29 +52,29 @@ fit2 <- bsimm(
 )
 
 test_that("loo returns a psis_loo object", {
-  l <- suppressWarnings(loo::loo(fit1))
+  l <- suppressWarnings(loo(fit1))
   expect_true(loo::is.psis_loo(l))
 })
 
 test_that("waic returns a waic object", {
-  w <- suppressWarnings(loo::waic(fit1))
+  w <- suppressWarnings(waic(fit1))
   expect_true(loo::is.waic(w))
 })
 
 test_that("loo_compare ranks bsimms_fit objects by loo", {
-  cmp <- suppressWarnings(loo::loo_compare(fit1, fit2, criterion = "loo"))
+  cmp <- suppressWarnings(loo_compare(fit1, fit2, criterion = "loo"))
   expect_setequal(cmp$model, c("fit1", "fit2"))
 })
 
 test_that("loo_compare ranks bsimms_fit objects by waic", {
-  cmp <- suppressWarnings(loo::loo_compare(fit1, fit2, criterion = "waic"))
+  cmp <- suppressWarnings(loo_compare(fit1, fit2, criterion = "waic"))
   expect_setequal(cmp$model, c("fit1", "fit2"))
 })
 
 test_that("loo_compare accepts precomputed loo/waic objects", {
-  l2 <- suppressWarnings(loo::loo(fit2))
+  l2 <- suppressWarnings(loo(fit2))
   cmp <- suppressWarnings(
-    loo::loo_compare(
+    loo_compare(
       fit1,
       l2,
       criterion = "loo",
@@ -86,12 +85,12 @@ test_that("loo_compare accepts precomputed loo/waic objects", {
 })
 
 test_that("loo_compare errors when a precomputed object doesn't match criterion", {
-  l1 <- suppressWarnings(loo::loo(fit1))
-  expect_snapshot(error = TRUE, loo::loo_compare(fit2, l1, criterion = "waic"))
+  l1 <- suppressWarnings(loo(fit1))
+  expect_snapshot(error = TRUE, loo_compare(fit2, l1, criterion = "waic"))
 })
 
 test_that("loo_compare respects custom model_names", {
-  cmp <- suppressWarnings(loo::loo_compare(
+  cmp <- suppressWarnings(loo_compare(
     fit1,
     fit2,
     model_names = c("intercept_only", "region_re")
@@ -116,7 +115,6 @@ test_that("add_criterion can cache both loo and waic at once", {
 })
 
 test_that("add_criterion can cache bayes_R2 as raw draws", {
-  skip_if_not_installed("rstantools")
   fit1c <- add_criterion(fit1, criterion = "bayes_R2")
   expect_true(is.matrix(fit1c$criteria$bayes_R2))
   expect_equal(colnames(fit1c$criteria$bayes_R2), c("d13C", "d15N"))
@@ -124,7 +122,7 @@ test_that("add_criterion can cache bayes_R2 as raw draws", {
 
 test_that("loo_compare informs when a criterion is computed on the fly", {
   expect_message(
-    suppressWarnings(loo::loo_compare(fit1, fit2, criterion = "loo")),
+    suppressWarnings(loo_compare(fit1, fit2, criterion = "loo")),
     "not cached"
   )
 })
@@ -132,7 +130,7 @@ test_that("loo_compare informs when a criterion is computed on the fly", {
 test_that("loo_compare reuses a cached criterion without recomputing", {
   fit1c <- suppressWarnings(add_criterion(fit1, criterion = "loo"))
   msgs <- testthat::capture_messages(
-    suppressWarnings(loo::loo_compare(fit1c, fit2, criterion = "loo"))
+    suppressWarnings(loo_compare(fit1c, fit2, criterion = "loo"))
   )
   expect_true(any(grepl("fit2", msgs)))
   expect_false(any(grepl("fit1c", msgs)))

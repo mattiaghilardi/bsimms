@@ -19,7 +19,6 @@ tdf_data <- data.frame(
 )
 
 skip_if_not_installed("cmdstanr")
-skip_if_not_installed("bayesplot")
 
 grDevices::pdf(nullfile())
 
@@ -143,56 +142,54 @@ test_that("plot.bsimms_fit can actually draw to a graphics device", {
 # pp_check.bsimms_fit -------------------------------------------------------
 
 test_that("pp_check.bsimms_fit requires resp for multi-isotope models", {
-  expect_snapshot(error = TRUE, bayesplot::pp_check(fit))
+  expect_snapshot(error = TRUE, pp_check(fit))
 })
 
 test_that("pp_check.bsimms_fit defaults resp for single-isotope models", {
-  g <- bayesplot::pp_check(fit_1iso)
+  g <- pp_check(fit_1iso)
   expect_s3_class(g, "ggplot")
 })
 
 test_that("pp_check.bsimms_fit works with an explicit resp and type", {
-  g <- bayesplot::pp_check(fit, resp = "d15N", type = "hist")
+  g <- pp_check(fit, resp = "d15N", type = "hist")
   expect_s3_class(g, "ggplot")
 })
 
 test_that("pp_check.bsimms_fit errors on an invalid type", {
   expect_snapshot(
     error = TRUE,
-    bayesplot::pp_check(fit, resp = "d13C", type = "banana")
+    pp_check(fit, resp = "d13C", type = "banana")
   )
 })
 
 test_that("pp_check.bsimms_fit subsamples with ndraws", {
-  g <- bayesplot::pp_check(fit_1iso, ndraws = 10)
+  g <- pp_check(fit_1iso, ndraws = 10)
   expect_s3_class(g, "ggplot")
 })
 
 test_that("pp_check.bsimms_fit defaults to 10 draws for overlay-style types", {
   expect_message(
-    bayesplot::pp_check(fit_1iso, type = "hist"),
+    pp_check(fit_1iso, type = "hist"),
     "Using 10 posterior draws"
   )
 })
 
 test_that("pp_check.bsimms_fit defaults to all draws for aggregate types", {
   expect_message(
-    bayesplot::pp_check(fit_1iso, type = "stat"),
+    pp_check(fit_1iso, type = "stat"),
     "Using all posterior draws"
   )
 })
 
 test_that("pp_check.bsimms_fit doesn't message when ndraws is supplied explicitly", {
-  expect_no_message(bayesplot::pp_check(fit_1iso, ndraws = 5))
+  expect_no_message(pp_check(fit_1iso, ndraws = 5))
 })
 
 test_that("pp_check.bsimms_fit errors when ndraws exceeds the number of draws available", {
-  expect_snapshot(error = TRUE, bayesplot::pp_check(fit_1iso, ndraws = 1000))
+  expect_snapshot(error = TRUE, pp_check(fit_1iso, ndraws = 1000))
 })
 
 # plot_proportions ------------------------------------------------------------
-
-skip_if_not_installed("ggplot2")
 
 p_arr <- posterior_proportions(fit)
 

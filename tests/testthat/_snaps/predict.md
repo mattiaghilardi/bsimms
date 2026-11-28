@@ -59,9 +59,9 @@
 # posterior_epred errors on an invalid resp
 
     Code
-      rstantools::posterior_epred(fit, resp = "banana")
+      posterior_epred(fit, resp = "banana")
     Condition
-      Error in `rstantools::posterior_epred()`:
+      Error in `posterior_epred()`:
       ! `resp` must be one of "d13C" or "d15N", not "banana".
 
 # fitted's resp selects and validates isotopes
@@ -83,7 +83,7 @@
 # posterior_epred propagates posterior_proportions's newdata validation errors
 
     Code
-      rstantools::posterior_epred(fit, newdata = newdata)
+      posterior_epred(fit, newdata = newdata)
     Condition
       Error:
       ! `newdata` is missing column Region, needed for its group-level term.

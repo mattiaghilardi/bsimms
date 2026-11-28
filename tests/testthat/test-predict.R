@@ -20,7 +20,6 @@ tdf_data <- data.frame(
 )
 
 skip_if_not_installed("cmdstanr")
-skip_if_not_installed("rstantools")
 
 fit <- bsimm(
   formula = ~ elevation + (1 | Region),
@@ -317,24 +316,24 @@ test_that("re_formula ignores allow_new_levels/sample_new_levels when newdata is
 # posterior_epred / fitted ----------------------------------------------------
 
 test_that("posterior_epred returns an [n_draws, N, J] array for every isotope by default", {
-  mu_arr <- rstantools::posterior_epred(fit)
+  mu_arr <- posterior_epred(fit)
   expect_equal(dim(mu_arr), c(100, 6, 2))
 })
 
 test_that("posterior_epred respects an explicit resp", {
-  mu_arr <- rstantools::posterior_epred(fit, resp = "d15N")
+  mu_arr <- posterior_epred(fit, resp = "d15N")
   expect_equal(dim(mu_arr), c(100, 6, 1))
 })
 
 test_that("posterior_epred attaches isotope names as dimnames, matching resp", {
-  mu_arr <- rstantools::posterior_epred(fit)
+  mu_arr <- posterior_epred(fit)
   expect_equal(dimnames(mu_arr)[[3]], c("d13C", "d15N"))
-  mu_arr_d15N <- rstantools::posterior_epred(fit, resp = "d15N")
+  mu_arr_d15N <- posterior_epred(fit, resp = "d15N")
   expect_equal(dimnames(mu_arr_d15N)[[3]], "d15N")
 })
 
 test_that("draws_long works directly on posterior_epred's output", {
-  mu_arr <- rstantools::posterior_epred(fit)
+  mu_arr <- posterior_epred(fit)
   df <- draws_long(mu_arr, var_col = "isotope", value_col = "mu")
   expect_equal(names(df), c("draw", "row", "isotope", "mu"))
   expect_equal(nrow(df), 100 * 6 * 2)
@@ -343,7 +342,7 @@ test_that("draws_long works directly on posterior_epred's output", {
 test_that("posterior_epred errors on an invalid resp", {
   expect_snapshot(
     error = TRUE,
-    rstantools::posterior_epred(fit, resp = "banana")
+    posterior_epred(fit, resp = "banana")
   )
 })
 
@@ -355,11 +354,11 @@ test_that("fitted summarises mu by isotope", {
 })
 
 test_that("fitted with summary = FALSE matches posterior_epred", {
-  expect_equal(fitted(fit, summary = FALSE), rstantools::posterior_epred(fit))
+  expect_equal(fitted(fit, summary = FALSE), posterior_epred(fit))
 })
 
 test_that("posterior_epred's ndraws subsets the number of draws returned", {
-  mu_arr <- rstantools::posterior_epred(fit, ndraws = 10)
+  mu_arr <- posterior_epred(fit, ndraws = 10)
   expect_equal(dim(mu_arr), c(10, 6, 2))
 })
 
@@ -377,24 +376,24 @@ test_that("fitted's resp selects and validates isotopes", {
 # posterior_predict / predict -------------------------------------------------
 
 test_that("posterior_predict returns an [n_draws, N, J] array for every isotope by default", {
-  yrep_arr <- rstantools::posterior_predict(fit)
+  yrep_arr <- posterior_predict(fit)
   expect_equal(dim(yrep_arr), c(100, 6, 2))
 })
 
 test_that("posterior_predict respects an explicit resp", {
-  yrep_arr <- rstantools::posterior_predict(fit, resp = "d13C")
+  yrep_arr <- posterior_predict(fit, resp = "d13C")
   expect_equal(dim(yrep_arr), c(100, 6, 1))
 })
 
 test_that("posterior_predict attaches isotope names as dimnames, matching resp", {
-  yrep_arr <- rstantools::posterior_predict(fit)
+  yrep_arr <- posterior_predict(fit)
   expect_equal(dimnames(yrep_arr)[[3]], c("d13C", "d15N"))
-  yrep_arr_d13C <- rstantools::posterior_predict(fit, resp = "d13C")
+  yrep_arr_d13C <- posterior_predict(fit, resp = "d13C")
   expect_equal(dimnames(yrep_arr_d13C)[[3]], "d13C")
 })
 
 test_that("draws_long works directly on posterior_predict's output", {
-  yrep_arr <- rstantools::posterior_predict(fit)
+  yrep_arr <- posterior_predict(fit)
   df <- draws_long(yrep_arr, var_col = "isotope", value_col = "y_rep")
   expect_equal(names(df), c("draw", "row", "isotope", "y_rep"))
   expect_equal(nrow(df), 100 * 6 * 2)
@@ -410,7 +409,7 @@ test_that("predict summarises y_rep by isotope", {
 test_that("predict with summary = FALSE matches posterior_predict", {
   expect_equal(
     predict(fit, summary = FALSE),
-    rstantools::posterior_predict(fit)
+    posterior_predict(fit)
   )
 })
 
@@ -420,7 +419,7 @@ test_that("predict's probs argument controls the quantile columns", {
 })
 
 test_that("posterior_predict's ndraws subsets the number of draws returned", {
-  yrep_arr <- rstantools::posterior_predict(fit, ndraws = 10)
+  yrep_arr <- posterior_predict(fit, ndraws = 10)
   expect_equal(dim(yrep_arr), c(10, 6, 2))
 })
 
@@ -452,7 +451,7 @@ test_that("posterior_epred's newdata path handles raw TDF data", {
     show_exceptions = FALSE
   )
   newdata <- data.frame(elevation = c(150, 250))
-  mu_new <- rstantools::posterior_epred(fit_raw_tdf, newdata = newdata)
+  mu_new <- posterior_epred(fit_raw_tdf, newdata = newdata)
   expect_equal(dim(mu_new), c(100, 2, 2))
 })
 
@@ -479,7 +478,7 @@ test_that("posterior_epred's newdata path propagates concentration dependence (m
     show_exceptions = FALSE
   )
   newdata <- data.frame(elevation = c(150, 250))
-  yrep_new <- rstantools::posterior_predict(fit_conc, newdata = newdata)
+  yrep_new <- posterior_predict(fit_conc, newdata = newdata)
   expect_equal(dim(yrep_new), c(100, 2, 2))
 })
 
@@ -501,7 +500,7 @@ test_that("posterior_predict's newdata path samples y_rep under residual_only er
     show_exceptions = FALSE
   )
   newdata <- data.frame(elevation = c(150, 250))
-  yrep_2iso <- rstantools::posterior_predict(fit_resid_2iso, newdata = newdata)
+  yrep_2iso <- posterior_predict(fit_resid_2iso, newdata = newdata)
   expect_equal(dim(yrep_2iso), c(100, 2, 2))
 
   fit_resid_1iso <- bsimm(
@@ -520,7 +519,7 @@ test_that("posterior_predict's newdata path samples y_rep under residual_only er
     show_messages = FALSE,
     show_exceptions = FALSE
   )
-  yrep_1iso <- rstantools::posterior_predict(fit_resid_1iso, newdata = newdata)
+  yrep_1iso <- posterior_predict(fit_resid_1iso, newdata = newdata)
   expect_equal(dim(yrep_1iso), c(100, 2, 1))
 })
 
@@ -543,7 +542,7 @@ test_that("posterior_predict's newdata path samples y_rep under process_only err
     show_exceptions = FALSE
   )
   newdata <- data.frame(elevation = c(150, 250))
-  yrep_mv <- rstantools::posterior_predict(fit_proc_mv, newdata = newdata)
+  yrep_mv <- posterior_predict(fit_proc_mv, newdata = newdata)
   expect_true(all(is.finite(yrep_mv)))
 
   # summarised source data: needs$mv FALSE, needs$proc TRUE, needs$resid_prop FALSE
@@ -563,7 +562,7 @@ test_that("posterior_predict's newdata path samples y_rep under process_only err
     show_messages = FALSE,
     show_exceptions = FALSE
   )
-  yrep <- rstantools::posterior_predict(fit_proc, newdata = newdata)
+  yrep <- posterior_predict(fit_proc, newdata = newdata)
   expect_true(all(is.finite(yrep)))
 })
 
@@ -576,14 +575,14 @@ test_that("predict's resp selects and validates isotopes", {
 # posterior_epred / posterior_predict with re_formula and newdata = NULL ----
 
 test_that("posterior_epred's re_formula gives population-average mu for the fitted mixture data", {
-  mu_default <- rstantools::posterior_epred(fit)
-  mu_marginal <- rstantools::posterior_epred(fit, re_formula = NA)
+  mu_default <- posterior_epred(fit)
+  mu_marginal <- posterior_epred(fit, re_formula = NA)
   expect_equal(dim(mu_marginal), dim(mu_default))
   expect_false(isTRUE(all.equal(mu_marginal, mu_default)))
 })
 
 test_that("posterior_predict's re_formula gives population-average y_rep for the fitted mixture data", {
-  yrep_arr <- rstantools::posterior_predict(fit, re_formula = NA)
+  yrep_arr <- posterior_predict(fit, re_formula = NA)
   expect_equal(dim(yrep_arr), c(100, 6, 2))
   expect_true(all(is.finite(yrep_arr)))
 })
@@ -591,14 +590,14 @@ test_that("posterior_predict's re_formula gives population-average y_rep for the
 # posterior_epred / posterior_predict with newdata ---------------------------
 
 test_that("posterior_epred reproduces fitted mu when newdata repeats the fitted mixture data", {
-  mu_fitted <- rstantools::posterior_epred(fit)
-  mu_new <- rstantools::posterior_epred(fit, newdata = mixture_data)
+  mu_fitted <- posterior_epred(fit)
+  mu_new <- posterior_epred(fit, newdata = mixture_data)
   expect_equal(mu_new, mu_fitted, tolerance = 1e-5)
 })
 
 test_that("posterior_epred reproduces fitted mu for raw source data too (mv-eligible model)", {
-  mu_fitted <- rstantools::posterior_epred(raw_fit)
-  mu_new <- rstantools::posterior_epred(raw_fit, newdata = mixture_data)
+  mu_fitted <- posterior_epred(raw_fit)
+  mu_new <- posterior_epred(raw_fit, newdata = mixture_data)
   expect_equal(mu_new, mu_fitted, tolerance = 1e-5)
 })
 
@@ -607,7 +606,7 @@ test_that("posterior_epred's newdata prediction respects resp/re_formula/allow_n
     elevation = 100,
     Region = factor("C", levels = c("A", "B", "C"))
   )
-  mu_new <- rstantools::posterior_epred(
+  mu_new <- posterior_epred(
     fit,
     newdata = newdata,
     resp = "d15N",
@@ -621,14 +620,14 @@ test_that("posterior_epred propagates posterior_proportions's newdata validation
   newdata <- data.frame(elevation = c(100, 200))
   expect_snapshot(
     error = TRUE,
-    rstantools::posterior_epred(fit, newdata = newdata)
+    posterior_epred(fit, newdata = newdata)
   )
 })
 
 test_that("posterior_predict for new data adds observation noise (not just point predictions)", {
   newdata <- data.frame(elevation = c(100, 200), Region = factor(c("A", "B")))
-  mu_new <- rstantools::posterior_epred(fit, newdata = newdata)
-  yrep_new <- rstantools::posterior_predict(fit, newdata = newdata)
+  mu_new <- posterior_epred(fit, newdata = newdata)
+  yrep_new <- posterior_predict(fit, newdata = newdata)
   expect_equal(dim(yrep_new), dim(mu_new))
   expect_true(all(is.finite(yrep_new)))
   expect_false(isTRUE(all.equal(yrep_new, mu_new)))
@@ -636,7 +635,7 @@ test_that("posterior_predict for new data adds observation noise (not just point
 
 test_that("posterior_predict handles the multivariate (raw source, process + residual) branch for new data", {
   newdata <- data.frame(elevation = c(100, 200), Region = factor(c("A", "B")))
-  yrep_new <- rstantools::posterior_predict(raw_fit, newdata = newdata)
+  yrep_new <- posterior_predict(raw_fit, newdata = newdata)
   expect_equal(dim(yrep_new), c(100, 2, 2))
   expect_true(all(is.finite(yrep_new)))
 })
