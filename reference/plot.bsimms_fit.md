@@ -136,7 +136,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.2 seconds.
-#> Total execution time: 0.5 seconds.
+#> Total execution time: 0.7 seconds.
 #> 
 plot(fit)
 

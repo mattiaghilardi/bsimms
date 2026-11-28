@@ -233,7 +233,7 @@ sim <- simulate_bsimms_data(
 str(sim, max.level = 1)
 #> List of 11
 #>  $ formula         :Class 'formula'  language ~Sex + (1 | Region)
-#>   .. ..- attr(*, ".Environment")=<environment: 0x62b9812a6660> 
+#>   .. ..- attr(*, ".Environment")=<environment: 0x5a39aaf23388> 
 #>  $ mixture_data    :'data.frame':    60 obs. of  4 variables:
 #>  $ source_data     :'data.frame':    30 obs. of  3 variables:
 #>  $ tdf_data        :'data.frame':    3 obs. of  5 variables:

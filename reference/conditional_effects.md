@@ -237,7 +237,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.2 seconds.
-#> Total execution time: 0.5 seconds.
+#> Total execution time: 0.6 seconds.
 #> 
 ce <- conditional_effects(fit)
 plot(ce)
