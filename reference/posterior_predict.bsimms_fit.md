@@ -150,7 +150,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.8 seconds.
 #> 
 y_rep <- posterior_predict(fit)
 dim(y_rep)

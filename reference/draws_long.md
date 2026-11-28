@@ -100,7 +100,7 @@ fit <- bsimm(
 #> 
 #> Both chains finished successfully.
 #> Mean chain execution time: 0.3 seconds.
-#> Total execution time: 0.7 seconds.
+#> Total execution time: 0.9 seconds.
 #> 
 p_arr <- posterior_proportions(fit)
 long <- draws_long(p_arr, var_col = "source", value_col = "proportion")
