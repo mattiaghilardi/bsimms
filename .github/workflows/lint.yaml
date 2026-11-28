@@ -32,14 +32,10 @@ jobs:
           extra-packages: |
             local::.
             any::lintr
-            any::bayesplot
-            any::ggplot2
             any::knitr
-            any::loo
             any::markdown
             any::rmarkdown
             any::rstan
-            any::rstantools
             any::testthat
             any::BH
             any::RcppEigen

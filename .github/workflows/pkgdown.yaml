@@ -41,14 +41,10 @@ jobs:
           extra-packages: |
             any::pkgdown
             local::.
-            any::bayesplot
-            any::ggplot2
             any::knitr
-            any::loo
             any::markdown
             any::rmarkdown
             any::rstan
-            any::rstantools
             any::BH
             any::RcppEigen
             stan-dev/cmdstanr
