@@ -65,7 +65,7 @@ test_that("bsimms_draws returns a draws_array for an rstan fit", {
 })
 
 test_that("draws_matrix collapses chains into the draws dimension", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~1,
     mixture_data = mixture_data,
@@ -84,7 +84,7 @@ test_that("draws_matrix collapses chains into the draws dimension", {
 })
 
 test_that("extract_array_draws reshapes a vector parameter", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~1,
     mixture_data = mixture_data,
@@ -104,7 +104,7 @@ test_that("extract_array_draws reshapes a vector parameter", {
 })
 
 test_that("extract_array_draws reshapes a matrix parameter", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~ 1 + (1 | Region),
     mixture_data = mixture_data,
@@ -129,7 +129,7 @@ test_that("extract_array_draws reshapes a matrix parameter", {
 })
 
 test_that("extract_array_of_matrices reshapes an array of matrices and errors when draws are missing", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~ 1 + (1 | Region),
     mixture_data = mixture_data,
@@ -193,7 +193,7 @@ test_that("draws_long errors when var_col and value_col are identical", {
 })
 
 test_that("extract_array_draws errors when the requested draws are missing", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~1,
     mixture_data = mixture_data,

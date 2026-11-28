@@ -19,7 +19,7 @@ tdf_data <- data.frame(
   d15N_sd = c(0.3, 0.3, 0.3)
 )
 
-skip_if_not_installed("cmdstanr")
+skip_if_no_backend()
 
 fit <- bsimm(
   formula = ~ elevation + (1 | Region),

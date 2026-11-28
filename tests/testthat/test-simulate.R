@@ -498,7 +498,7 @@ test_that("simulated data validates against make_standata() across configuration
 })
 
 test_that("simulated data fits via bsimm()", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   sim <- simulate_bsimms_data(
     ~ elevation + Sex + (1 | Region),
     n_mixture_obs = 40,

@@ -19,8 +19,13 @@ tdf_data <- data.frame(
 )
 
 test_that("resolve_backend resolves auto to an installed backend", {
-  skip_if_not_installed("cmdstanr")
-  expect_equal(resolve_backend("auto"), "cmdstanr")
+  skip_if_no_backend()
+  expected <- if (requireNamespace("cmdstanr", quietly = TRUE)) {
+    "cmdstanr"
+  } else {
+    "rstan"
+  }
+  expect_equal(resolve_backend("auto"), expected)
 })
 
 test_that("resolve_backend validates an explicit backend is installed", {
@@ -126,7 +131,7 @@ test_that("bsimm fits via rstan when explicitly requested", {
 })
 
 test_that("a user prior override is reflected in the fitted object", {
-  skip_if_not_installed("cmdstanr")
+  skip_if_no_backend()
   fit <- bsimm(
     formula = ~1,
     mixture_data = mixture_data,
